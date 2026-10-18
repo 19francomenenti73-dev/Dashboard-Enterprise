@@ -126,26 +126,6 @@
     .tactical-btn.alert { border-color: #ff2a5f; color: #ff2a5f; }
     .tactical-btn.alert.active { background: #ff2a5f; color: #fff; }
 
-    /* Stile specifico per il bottone N.E.M.O. 2 verde pulsante */
-    .tactical-btn.nemo2-btn {
-      border-color: #22c55e;
-      color: #22c55e;
-      animation: green-btn-pulse 1.8s infinite ease-in-out;
-    }
-
-    .tactical-btn.nemo2-btn.active {
-      background: #22c55e;
-      color: #030712;
-      font-weight: 900;
-      animation: none;
-    }
-
-    @keyframes green-btn-pulse {
-      0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); }
-      70% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
-    }
-
     /* Contenitore Mappa flessibile al 100% */
     .viewscreen-container {
       width: 100%;
@@ -176,11 +156,8 @@
   <audio id="tactical-audio" src="https://files.catbox.moe/ltr70o.mp3" loop preload="auto"></audio>
 
   <nav class="tactical-nav">
-    <!-- N.E.M.O. Primo pulsante attivo all'avvio -->
-    <button class="tactical-btn active" onclick="switchTracker('https://19francomenenti73-dev.github.io/Dashboard-Enterprise/nemo_view.html', this)">⚡ N.E.M.O. Engine</button>
-    <!-- N.E.M.O. 2 inserito come secondo pulsante con stile verde pulsante -->
-    <button class="tactical-btn nemo2-btn" onclick="switchTracker('https://19francomenenti73-dev.github.io/NEMO2/', this)">⚡ N.E.M.O. 2</button>
-    <button class="tactical-btn" onclick="switchTracker('https://19francomenenti73-dev.github.io/Dashboard-Enterprise/3d-mesoscale.html', this)">⚡ 3D Mesoscala</button>
+    <!-- Primo pulsante attivo all'avvio: 3D Mesoscala -->
+    <button class="tactical-btn active" onclick="switchTracker('https://19francomenenti73-dev.github.io/Dashboard-Enterprise/3d-mesoscale.html', this)">⚡ 3D Mesoscala</button>
     <button class="tactical-btn amber" onclick="switchTracker('https://19francomenenti73-dev.github.io/3D-Nowcasting-Italia-Storm-Tracker/', this)">🛰️ Storm Tracker</button>
     <button class="tactical-btn amber" onclick="switchTracker('https://19francomenenti73-dev.github.io/Snow-tracker/', this)">❄️ Snow Tracker</button>
     <button class="tactical-btn alert" onclick="switchTracker('https://19francomenenti73-dev.github.io/NOWCASTING-ITALIA-TITAN-CONVECTIVE-TRACKER/', this)">🌐 Mesoscale TITAN</button>
@@ -191,7 +168,7 @@
   </nav>
 
   <div class="viewscreen-container">
-    <iframe id="viewscreen-iframe" src="https://19francomenenti73-dev.github.io/Dashboard-Enterprise/nemo_view.html" allowfullscreen></iframe>
+    <iframe id="viewscreen-iframe" src="https://19francomenenti73-dev.github.io/Dashboard-Enterprise/3d-mesoscale.html" allowfullscreen></iframe>
   </div>
 
   <script>
