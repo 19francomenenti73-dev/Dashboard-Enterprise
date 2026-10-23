@@ -1,414 +1,289 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Geodetic Correlation Observatory</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body {
-      width: 100%; height: 100%;
-      background: #030712;
-      font-family: system-ui, -apple-system, sans-serif;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      overflow-x: hidden;
-    }
-    .header {
-      background: #080e1c;
-      padding: 10px;
-      border-bottom: 2px solid #00f0ff;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-shrink: 0;
-    }
-    .header h1 {
-      font-size: 10px;
-      font-weight: 900;
-      color: #00f0ff;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geodetic & Space Weather Correlation Observatory</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --panel-bg: rgba(16, 23, 38, 0.90);
+            --border-color: #1e293b;
+            --accent-cyan: #00f3ff;
+            --accent-amber: #f59e0b;
+            --accent-pink: #ec4899;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
 
-    /* Pannello Matrice di Corrispondenza */
-    .matrix-panel {
-      background: #0d1527;
-      border-bottom: 1px solid rgba(0,240,255,0.3);
-      padding: 8px 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      flex-shrink: 0;
-    }
-    .matrix-header-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .matrix-title {
-      font-size: 8.5px;
-      font-weight: 800;
-      color: #94a3b8;
-      text-transform: uppercase;
-    }
-    
-    .correspondence-badge {
-      padding: 3px 10px;
-      border-radius: 4px;
-      font-size: 8px;
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .correspondence-badge:hover { opacity: 0.8; transform: scale(1.02); }
-    
-    .match-low { background: rgba(74, 222, 128, 0.2); color: #4ade80; border: 1px solid #4ade80; }
-    .match-mid { background: rgba(250, 204, 21, 0.2); color: #facc15; border: 1px solid #facc15; }
-    .match-high { background: rgba(249, 115, 22, 0.2); color: #f97316; border: 1px solid #f97316; }
-    .match-total { background: rgba(0, 240, 255, 0.25); color: #00f0ff; border: 1px solid #00f0ff; box-shadow: 0 0 8px rgba(0,240,255,0.4); }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
 
-    .indicators-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 4px;
-    }
-    .indicator-box {
-      background: #030712;
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 3px;
-      padding: 4px;
-      text-align: center;
-    }
-    .indicator-name { font-size: 7px; color: #94a3b8; text-transform: uppercase; }
-    .indicator-state { font-size: 8px; font-weight: 800; margin-top: 2px; }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 15px;
+            padding-bottom: 75px;
+        }
 
-    /* Modale Dettaglio */
-    #detailModal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(3, 7, 18, 0.85);
-      z-index: 100;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-    .modal-content {
-      background: #0d1527;
-      border: 1px solid #00f0ff;
-      border-radius: 6px;
-      width: 100%;
-      max-width: 340px;
-      padding: 16px;
-      box-shadow: 0 0 20px rgba(0,240,255,0.2);
-    }
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-      border-bottom: 1px solid rgba(0,240,255,0.2);
-      padding-bottom: 6px;
-    }
-    .modal-title { font-size: 10px; font-weight: 900; color: #00f0ff; text-transform: uppercase; }
-    .close-btn { background: none; border: none; color: #ff2a5f; font-size: 14px; font-weight: 900; cursor: pointer; }
-    .modal-body { font-size: 8.5px; color: #cbd5e1; line-height: 1.4; display: flex; flex-direction: column; gap: 6px; }
-    .detail-row { display: flex; justify-content: space-between; background: #030712; padding: 4px 6px; border-radius: 3px; }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--accent-cyan);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
 
-    .controls {
-      padding: 8px 12px;
-      background: #080e1c;
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      border-bottom: 1px solid rgba(0,240,255,0.2);
-      flex-wrap: wrap;
-      flex-shrink: 0;
-    }
-    .controls label { font-size: 8.5px; color: #94a3b8; font-weight: 700; text-transform: uppercase; }
-    .controls select {
-      background: #030712;
-      color: #00f0ff;
-      border: 1px solid rgba(0,240,255,0.4);
-      padding: 3px 6px;
-      border-radius: 4px;
-      font-size: 8.5px;
-      font-weight: 800;
-    }
+        h1 {
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+        }
 
-    .chart-container {
-      flex: 1;
-      padding: 8px;
-      position: relative;
-      min-height: 250px;
-      background: #030712;
-    }
-    canvas { width: 100% !important; height: 100% !important; }
-  </style>
+        .status-badge {
+            background: rgba(0, 243, 255, 0.1);
+            border: 1px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .card h3 {
+            font-size: 0.9rem;
+            color: var(--accent-amber);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .metric-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        .metric-sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        .chart-container {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            position: relative;
+            height: 320px;
+        }
+
+        /* Banner Fisso in Basso per le Fonti Ufficiali */
+        .sources-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(11, 15, 25, 0.98);
+            border-top: 1px solid var(--accent-cyan);
+            padding: 8px 12px;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .source-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin: 2px 8px;
+        }
+
+        .source-dot {
+            width: 5px;
+            height: 5px;
+            background-color: var(--accent-cyan);
+            border-radius: 50%;
+        }
+
+        .source-item span {
+            color: var(--text-main);
+            font-weight: 600;
+        }
+    </style>
 </head>
 <body>
 
-  <header class="header">
-    <h1>🛰️ Geodetic Correlation Observatory</h1>
-    <div style="font-size: 7.5px; color: #4ade80; font-weight: 800;">● PLOTTER ACTIVE</div>
-  </header>
+    <header>
+        <h1>⚡ Geodetic & Space Weather Observatory</h1>
+        <div class="status-badge" id="system-status">100% REAL OPEN DATA</div>
+    </header>
 
-  <div class="matrix-panel">
-    <div class="matrix-header-row">
-      <span class="matrix-title">Matrice di Corrispondenza Plurifattoriale</span>
-      <div id="correspondenceBadge" class="correspondence-badge match-low" onclick="openDetails()">
-        Corrispondenza: 0/4 Pattern
-      </div>
+    <div class="grid-container">
+        <!-- 1. Vento Solare & CME (NOAA) -->
+        <div class="card">
+            <h3>Vento Solare & CME (NOAA)</h3>
+            <div class="metric-value" id="solar-wind-speed">Sincronizzazione...</div>
+            <div class="metric-sub" id="solar-wind-details">NOAA SWPC Plasma Feed</div>
+        </div>
+
+        <!-- 2. Indice Kp Geomagnetico (NOAA) -->
+        <div class="card">
+            <h3>Indice Kp Geomagnetico</h3>
+            <div class="metric-value" id="kp-index-val">--</div>
+            <div class="metric-sub" id="kp-details">Stato Campo Magnetico Terrestre</div>
+        </div>
+
+        <!-- 3. Sismicità Globale (USGS) -->
+        <div class="card">
+            <h3>Sismicità Globale (USGS)</h3>
+            <div class="metric-value" id="usgs-quake-count">--</div>
+            <div class="metric-sub" id="usgs-max-mag">Eventi ultime 24h (M > 4.5)</div>
+        </div>
+
+        <!-- 4. Meccanica Celeste / Orbite Planetarie -->
+        <div class="card">
+            <h3>Orbite & Congiunzioni</h3>
+            <div class="metric-value" id="planetary-alignment">Calcolo...</div>
+            <div class="metric-sub" id="planetary-details">Posizioni Eliocentriche in Tempo Reale</div>
+        </div>
     </div>
-    <div class="indicators-grid">
-      <div class="indicator-box">
-        <div class="indicator-name">⚡ Fulmini</div>
-        <div id="indLightning" class="indicator-state" style="color: #4ade80;">Regolare</div>
-      </div>
-      <div class="indicator-box">
-        <div class="indicator-name">☀️ Space Weather</div>
-        <div id="indSpace" class="indicator-state" style="color: #4ade80;">Regolare</div>
-      </div>
-      <div class="indicator-box">
-        <div class="indicator-name">🌋 Sismicità</div>
-        <div id="indSeismic" class="indicator-state" style="color: #4ade80;">Regolare</div>
-      </div>
-      <div class="indicator-box">
-        <div class="indicator-name">🌙 Luna / Allin.</div>
-        <div id="indAstro" class="indicator-state" style="color: #4ade80;">Regolare</div>
-      </div>
+
+    <!-- Grafico Reale dei Dati NOAA -->
+    <div class="chart-container">
+        <canvas id="realTimeChart"></canvas>
     </div>
-  </div>
 
-  <div id="detailModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <span class="modal-title" id="modalDateTitle">Analisi Corrispondenza</span>
-        <button class="close-btn" onclick="closeDetails()">✕</button>
-      </div>
-      <div class="modal-body" id="modalBodyContent"></div>
-    </div>
-  </div>
+    <!-- Banner Fisso in Basso con Citazione Obbligatoria delle Fonti Reali -->
+    <footer class="sources-banner">
+        <div class="source-item"><div class="source-dot"></div><div>Vento Solare / CME / Indice Kp: <span>NOAA SWPC</span></div></div>
+        <div class="source-item"><div class="source-dot"></div><div>Sismicità Globale: <span>USGS Earthquake Hazards</span></div></div>
+        <div class="source-item"><div class="source-dot"></div><div>Meccanica Celeste: <span>Effemeridi Astronomiche (J2000)</span></div></div>
+    </footer>
 
-  <div class="controls">
-    <label for="dateSelect">Data Esame:</label>
-    <select id="dateSelect" onchange="evaluateDayMatrix()">
-      <!-- Popolato dinamicamente -->
-    </select>
-    <label for="continentSelect">Area:</label>
-    <select id="continentSelect" onchange="updateChartData()">
-      <option value="All">Globale</option>
-      <option value="Europa">Europa</option>
-      <option value="Nord America">Nord America</option>
-      <option value="Sud America">Sud America</option>
-      <option value="Asia">Asia</option>
-      <option value="Africa">Africa</option>
-      <option value="Oceania">Oceania</option>
-    </select>
-  </div>
-
-  <div class="chart-container">
-    <canvas id="correlationChart"></canvas>
-  </div>
-
-  <script>
-    const rawData = {
-      dates: ['2026-09-28', '2026-09-29', '2026-09-30', '2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04', '2026-10-05', '2026-10-06', '2026-10-07', '2026-10-08', '2026-10-09', '2026-10-10', '2026-10-11', '2026-10-12', '2026-10-13', '2026-10-14', '2026-10-15', '2026-10-16', '2026-10-17', '2026-10-18', '2026-10-19', '2026-10-20', '2026-10-21', '2026-10-22'],
-      continents: {
-        'Europa': [370000, 210000, 187000, 178000, 170000, 198000, 204000, 175000, 181000, 202000, 186000, 183000, 170000, 186000, 184000, 173000, 186000, 184000, 160000, 174000, 176000, 178000, 198000, 185000, 192000],
-        'Nord America': [45000, 30000, 25000, 22000, 20000, 28000, 31000, 24000, 26000, 30000, 27000, 26000, 23000, 27000, 26000, 24000, 27000, 26000, 22000, 25000, 26000, 27000, 30000, 27000, 29000],
-        'Sud America': [80000, 55000, 48000, 44000, 40000, 50000, 52000, 43000, 46000, 51000, 47000, 45000, 41000, 47000, 46000, 43000, 47000, 46000, 39000, 44000, 45000, 46000, 51000, 46000, 49000],
-        'Asia': [110000, 75000, 65000, 60000, 55000, 68000, 71000, 59000, 62000, 70000, 64000, 62000, 57000, 64000, 63000, 59000, 64000, 63000, 54000, 61000, 62000, 63000, 70000, 63000, 67000],
-        'Africa': [95000, 65000, 56000, 52000, 48000, 59000, 61000, 51000, 53000, 60000, 55000, 53000, 49000, 55000, 54000, 50000, 55000, 54000, 46000, 52000, 53000, 54000, 60000, 54000, 58000],
-        'Oceania': [40000, 28000, 24000, 22000, 20000, 25000, 26000, 21000, 23000, 26000, 24000, 23000, 21000, 24000, 23000, 22000, 24000, 23000, 20000, 22000, 23000, 23000, 26000, 23000, 25000]
-      },
-      kpIndex: [6.3, 4.5, 3.2, 2.8, 2.1, 4.0, 4.5, 3.0, 3.5, 4.2, 3.1, 2.9, 2.4, 3.3, 3.2, 2.7, 3.4, 3.1, 2.0, 2.8, 3.0, 3.2, 4.1, 3.3, 3.8],
-      seismicCount: [14, 8, 5, 6, 4, 9, 11, 5, 7, 10, 6, 5, 4, 7, 6, 5, 8, 6, 3, 5, 6, 7, 12, 6, 8],
-      astroFlag: [1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
-    };
-
-    let myChart;
-
-    function initPage() {
-      const dateSelect = document.getElementById('dateSelect');
-      rawData.dates.forEach((d, idx) => {
-        let opt = document.createElement('option');
-        opt.value = idx;
-        opt.textContent = d;
-        dateSelect.appendChild(opt);
-      });
-      dateSelect.value = 0;
-
-      const ctx = document.getElementById('correlationChart').getContext('2d');
-      myChart = new Chart(ctx, {
-        type: 'line', // Stile plotter continuo
-        data: {
-          labels: rawData.dates,
-          datasets: [
-            {
-              label: 'Fulmini (Globali)',
-              data: getGlobalLightning(),
-              borderColor: '#00f0ff',
-              backgroundColor: 'rgba(0, 240, 255, 0.1)',
-              borderWidth: 2,
-              pointRadius: 2,
-              fill: true,
-              tension: 0.2, // Linea leggermente curva stile plotter
-              yAxisID: 'y'
+    <script>
+        const ctx = document.getElementById('realTimeChart').getContext('2d');
+        const correlationChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Indice Kp (NOAA Reale)',
+                        data: [],
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        yAxisID: 'y',
+                        tension: 0.2
+                    }
+                ]
             },
-            {
-              label: 'Indice Kp (Space Weather)',
-              data: rawData.kpIndex,
-              borderColor: '#facc15',
-              backgroundColor: 'transparent',
-              borderWidth: 2,
-              pointRadius: 2,
-              tension: 0.2,
-              yAxisID: 'y1'
-            },
-            {
-              label: 'Eventi Sismici',
-              data: rawData.seismicCount,
-              borderColor: '#ff2a5f',
-              backgroundColor: 'transparent',
-              borderWidth: 2,
-              pointRadius: 2,
-              tension: 0.2,
-              yAxisID: 'y2'
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Indice Kp', color: '#f59e0b' } }
+                }
             }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: { mode: 'index', intersect: false },
-          plugins: { legend: { labels: { color: '#fff', font: { size: 8 } } } },
-          scales: {
-            x: { 
-              ticks: { color: '#94a3b8', font: { size: 7.5 }, maxRotation: 45 }, 
-              grid: { color: 'rgba(255,255,255,0.05)' } 
-            },
-            y: { 
-              type: 'linear', display: true, position: 'left', 
-              title: { display: true, text: 'Fulmini', color: '#00f0ff', font: { size: 8 } }, 
-              ticks: { color: '#00f0ff', font: { size: 7 } }, 
-              grid: { color: 'rgba(255,255,255,0.05)' } 
-            },
-            y1: { 
-              type: 'linear', display: true, position: 'right', 
-              title: { display: true, text: 'Kp', color: '#facc15', font: { size: 8 } }, 
-              ticks: { color: '#facc15', font: { size: 7 } }, 
-              grid: { drawOnChartArea: false } 
-            },
-            y2: { 
-              type: 'linear', display: false, position: 'right', min: 0, max: 30 
+        });
+
+        // Calcolo effemeridi reali posizioni planetarie
+        function calculatePlanetaryAlignments() {
+            const now = new Date();
+            const d = (now - Date.parse("2000-01-01T12:00:00Z")) / 86400000;
+            
+            const merc = (252.25 + 4.092338 * d) % 360;
+            const venus = (181.98 + 1.602130 * d) % 360;
+            const mars = (355.45 + 0.524039 * d) % 360;
+            const jup = (34.35 + 0.083085 * d) % 360;
+
+            let alignmentStatus = "Dispersione Standard";
+            if (Math.abs(merc - venus) < 12 || Math.abs(venus - mars) < 12 || Math.abs(merc - jup) < 15) {
+                alignmentStatus = "Congiunzione Planetaria Attiva";
             }
-          }
+
+            document.getElementById('planetary-alignment').innerText = alignmentStatus;
+            document.getElementById('planetary-details').innerText = `Mer: ${Math.round(merc)}° | Ven: ${Math.round(venus)}° | Mar: ${Math.round(mars)}° | Gio: ${Math.round(jup)}°`;
         }
-      });
 
-      evaluateDayMatrix();
-    }
+        // Fetch API Reali
+        async function fetchRealData() {
+            try {
+                // 1. NOAA Kp Index Reale
+                const kpRes = await fetch('https://services.swpc.noaa.gov/json/planetary_k_index_1h.json');
+                const kpData = await kpRes.json();
+                const latestKp = kpData[kpData.length - 1];
+                document.getElementById('kp-index-val').innerText = `Kp ${latestKp.kp}`;
+                document.getElementById('kp-details').innerText = `Aggiornato: ${latestKp.time_tag.replace('T', ' ').substring(0, 16)} UTC`;
 
-    function getGlobalLightning() {
-      return rawData.dates.map((_, i) => {
-        let sum = 0;
-        for (let c in rawData.continents) { sum += rawData.continents[c][i]; }
-        return sum;
-      });
-    }
+                // 2. NOAA Solar Wind Plasma Reale
+                const windRes = await fetch('https://services.swpc.noaa.gov/products/solar-wind/plasma-6-hour.json');
+                const windData = await windRes.json();
+                const latestWind = windData[windData.length - 1];
+                const speed = latestWind[1] ? Math.round(latestWind[1]) : '---';
+                const density = latestWind[2] ? parseFloat(latestWind[2]).toFixed(2) : '---';
+                
+                document.getElementById('solar-wind-speed').innerText = `${speed} km/s`;
+                document.getElementById('solar-wind-details').innerText = `Densità: ${density} p/cm³ (NOAA)`;
 
-    function updateChartData() {
-      const selected = document.getElementById('continentSelect').value;
-      let dataToUse = selected === 'All' ? getGlobalLightning() : rawData.continents[selected];
-      myChart.data.datasets[0].data = dataToUse;
-      myChart.data.datasets[0].label = `Fulmini (${selected})`;
-      myChart.update();
-    }
+                // 3. USGS Earthquakes Reali
+                const usgsRes = await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_day.geojson');
+                const usgsData = await usgsRes.json();
+                document.getElementById('usgs-quake-count').innerText = `${usgsData.features.length} Eventi (M > 4.5)`;
+                
+                if (usgsData.features.length > 0) {
+                    const maxMag = Math.max(...usgsData.features.map(f => f.properties.mag));
+                    document.getElementById('usgs-max-mag').innerText = `Max Magnitudo: M ${maxMag}`;
+                }
 
-    function evaluateDayMatrix() {
-      const idx = parseInt(document.getElementById('dateSelect').value);
-      
-      const lightningVal = getGlobalLightning()[idx];
-      const kpVal = rawData.kpIndex[idx];
-      const seismicVal = rawData.seismicCount[idx];
-      const astroVal = rawData.astroFlag[idx];
+                // Aggiornamento grafico con serie temporale Kp reale
+                const labels = kpData.slice(-12).map(item => item.time_tag.substring(11,16));
+                const kpValues = kpData.slice(-12).map(item => item.kp);
+                
+                correlationChart.data.labels = labels;
+                correlationChart.data.datasets[0].data = kpValues;
+                correlationChart.update();
 
-      const isLightningAnomaly = lightningVal > 700000;
-      const isSpaceAnomaly = kpVal >= 5.0;
-      const isSeismicAnomaly = seismicVal >= 10;
-      const isAstroAnomaly = astroVal === 1;
+                calculatePlanetaryAlignments();
 
-      setIndicator('indLightning', isLightningAnomaly, 'Picco Attivo', 'Regolare');
-      setIndicator('indSpace', isSpaceAnomaly, `Kp ${kpVal} (Alto)`, 'Regolare');
-      setIndicator('indSeismic', isSeismicAnomaly, `${seismicVal} Eventi`, 'Regolare');
-      setIndicator('indAstro', isAstroAnomaly, 'Risonanza / Luna', 'Regolare');
+            } catch (err) {
+                console.error("Errore di rete:", err);
+                document.getElementById('system-status').innerText = "ERRORE CONNESSIONE API";
+                document.getElementById('system-status').style.color = "#ec4899";
+                document.getElementById('system-status').style.borderColor = "#ec4899";
+            }
+        }
 
-      let score = (isLightningAnomaly ? 1 : 0) + (isSpaceAnomaly ? 1 : 0) + (isSeismicAnomaly ? 1 : 0) + (isAstroAnomaly ? 1 : 0);
-      
-      const badge = document.getElementById('correspondenceBadge');
-      
-      if (score <= 1) {
-        badge.className = 'correspondence-badge match-low';
-        badge.textContent = `Corrispondenza: ${score}/4 Pattern`;
-      } else if (score === 2) {
-        badge.className = 'correspondence-badge match-mid';
-        badge.textContent = `Corrispondenza: ${score}/4 Pattern (Media)`;
-      } else if (score === 3) {
-        badge.className = 'correspondence-badge match-high';
-        badge.textContent = `Corrispondenza: ${score}/4 Pattern (Alta)`;
-      } else {
-        badge.className = 'correspondence-badge match-total';
-        badge.textContent = `Sincronia Totale: 4/4 Pattern!`;
-      }
-    }
-
-    function setIndicator(elementId, isAnomaly, matchText, normalText) {
-      const el = document.getElementById(elementId);
-      if (isAnomaly) {
-        el.textContent = matchText;
-        el.style.color = '#00f0ff';
-      } else {
-        el.textContent = normalText;
-        el.style.color = '#4ade80';
-      }
-    }
-
-    function openDetails() {
-      const idx = parseInt(document.getElementById('dateSelect').value);
-      const dateStr = rawData.dates[idx];
-      
-      document.getElementById('modalDateTitle').textContent = `Analisi Corrispondenza — ${dateStr}`;
-      
-      const lightningVal = getGlobalLightning()[idx].toLocaleString();
-      const kpVal = rawData.kpIndex[idx];
-      const seismicVal = rawData.seismicCount[idx];
-      const astroVal = rawData.astroFlag[idx] === 1 ? 'Attiva (Luna Piena/Nuova o Configurazione)' : 'Nessuna configurazione rilevante';
-
-      const content = document.getElementById('modalBodyContent');
-      content.innerHTML = `
-        <div class="detail-row"><span>Data Selezionata:</span><strong>${dateStr}</strong></div>
-        <div class="detail-row"><span>Fulmini Globali:</span><strong style="color: #00f0ff;">${lightningVal}</strong></div>
-        <div class="detail-row"><span>Space Weather (Kp):</span><strong style="color: #facc15;">${kpVal}</strong></div>
-        <div class="detail-row"><span>Attività Sismica:</span><strong style="color: #ff2a5f;">${seismicVal} eventi rilevanti</strong></div>
-        <div class="detail-row"><span>Fase / Allineamento:</span><strong>${astroVal}</strong></div>
-        <div style="margin-top: 4px; font-size: 7.5px; color: #94a3b8; text-align: center;">* Clicca sulla X in alto per chiudere e tornare al quadro generale.</div>
-      `;
-
-      document.getElementById('detailModal').style.display = 'flex';
-    }
-
-    function closeDetails() {
-      document.getElementById('detailModal').style.display = 'none';
-    }
-
-    window.onload = initPage;
-  </script>
-
+        fetchRealData();
+        setInterval(fetchRealData, 600000);
+    </script>
 </body>
 </html>
