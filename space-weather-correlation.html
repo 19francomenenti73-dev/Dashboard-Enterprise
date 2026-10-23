@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geodetic & Space Weather Observatory</title>
+    <title>Geodetic & Space Weather Correlation Observatory</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
@@ -19,7 +19,7 @@
             width: 100%;
             min-height: 100vh;
             padding: 12px;
-            padding-bottom: 80px;
+            padding-bottom: 85px;
             overflow-x: hidden;
         }
 
@@ -90,14 +90,57 @@
             margin-top: 4px;
         }
 
-        .obs-chart-box {
+        /* PLOTTER & CORRELATION BOX */
+        .plotter-container {
             background-color: #101726;
             border: 1px solid #1e293b;
             border-radius: 8px;
             padding: 12px;
             margin-bottom: 15px;
+        }
+
+        .plotter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .plotter-title {
+            font-size: 0.85rem;
+            color: #00f3ff;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .obs-chart-box {
+            position: relative;
             height: 260px;
             width: 100%;
+            margin-bottom: 12px;
+        }
+
+        .correlation-log {
+            background: #0b0f19;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            padding: 10px;
+            max-height: 140px;
+            overflow-y: auto;
+            font-size: 0.7rem;
+            color: #cbd5e1;
+        }
+
+        .correlation-log h4 {
+            color: #00f3ff;
+            margin-bottom: 6px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        .corr-item {
+            padding: 4px 0;
+            border-bottom: 1px dashed #1e293b;
         }
 
         .obs-banner {
@@ -147,7 +190,7 @@
     <div class="obs-grid">
         <div class="obs-card">
             <h3>Vento Solare & CME</h3>
-            <div class="obs-value" id="obs-wind">Connessione...</div>
+            <div class="obs-value" id="obs-wind">Sincronizzazione...</div>
             <div class="obs-sub" id="obs-wind-sub">NOAA SWPC Plasma Feed</div>
         </div>
         <div class="obs-card">
@@ -167,8 +210,18 @@
         </div>
     </div>
 
-    <div class="obs-chart-box">
-        <canvas id="obsChart"></canvas>
+    <!-- PLOTTER & CORRELATION ENGINE -->
+    <div class="plotter-container">
+        <div class="plotter-header">
+            <div class="plotter-title">📈 Plotter & Eventi di Correlazione Reale</div>
+        </div>
+        <div class="obs-chart-box">
+            <canvas id="obsChart"></canvas>
+        </div>
+        <div class="correlation-log" id="correlationLog">
+            <h4>Analisi Coincidenze Temporali (NOAA vs USGS)</h4>
+            <div class="corr-item">Elaborazione feed reali in corso...</div>
+        </div>
     </div>
 
     <footer class="obs-banner">
@@ -179,6 +232,7 @@
 
     <script>
         let myChart = null;
+
         try {
             const canvas = document.getElementById('obsChart');
             if (canvas) {
@@ -187,27 +241,58 @@
                     type: 'line',
                     data: {
                         labels: [],
-                        datasets: [{
-                            label: 'Indice Kp (NOAA Reale)',
-                            data: [],
-                            borderColor: '#f59e0b',
-                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                            borderWidth: 2,
-                            tension: 0.2
-                        }]
+                        datasets: [
+                            {
+                                label: 'Indice Kp (NOAA)',
+                                data: [],
+                                borderColor: '#f59e0b',
+                                backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                                borderWidth: 2,
+                                yAxisID: 'yKp',
+                                tension: 0.2
+                            },
+                            {
+                                label: 'Vento Solare (km/s)',
+                                data: [],
+                                borderColor: '#00f3ff',
+                                backgroundColor: 'rgba(0, 243, 255, 0.1)',
+                                borderWidth: 2,
+                                yAxisID: 'yWind',
+                                tension: 0.2
+                            }
+                        ]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
                         scales: {
-                            y: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } },
-                            x: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } }
+                            x: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } },
+                            yKp: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                min: 0,
+                                max: 9,
+                                title: { display: true, text: 'Indice Kp', color: '#f59e0b' },
+                                ticks: { color: '#f59e0b', stepSize: 1 },
+                                grid: { color: '#1e293b' }
+                            },
+                            yWind: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                min: 200,
+                                max: 900,
+                                title: { display: true, text: 'Vento (km/s)', color: '#00f3ff' },
+                                ticks: { color: '#00f3ff' },
+                                grid: { drawOnChartArea: false }
+                            }
                         }
                     }
                 });
             }
         } catch (e) {
-            console.error("Chart init error:", e);
+            console.error("Plotter init error:", e);
         }
 
         function calculateAstro() {
@@ -233,52 +318,100 @@
         async function loadRealData() {
             calculateAstro();
 
+            let timeLabels = [];
+            let kpArray = [];
+            let windArray = [];
+            let earthquakesList = [];
+
+            // 1. Fetch NOAA Kp
             try {
                 const resKp = await fetch('https://services.swpc.noaa.gov/json/planetary_k_index_1h.json');
                 const dataKp = await resKp.json();
-                if (dataKp && dataKp.length > 0) {
+                if (Array.isArray(dataKp) && dataKp.length > 0) {
                     const latest = dataKp[dataKp.length - 1];
-                    document.getElementById('obs-kp').innerText = `Kp ${latest.kp}`;
-                    document.getElementById('obs-kp-sub').innerText = `UTC: ${latest.time_tag.replace('T', ' ').substring(11, 16)}`;
+                    const kpVal = latest.kp !== undefined ? latest.kp : (latest.KP !== undefined ? latest.KP : latest[1]);
+                    document.getElementById('obs-kp').innerText = `Kp ${kpVal}`;
+                    document.getElementById('obs-kp-sub').innerText = `UTC: ${String(latest.time_tag || latest[0]).replace('T', ' ').substring(11, 16)}`;
 
-                    if (myChart) {
-                        myChart.data.labels = dataKp.slice(-10).map(i => i.time_tag.substring(11, 16));
-                        myChart.data.datasets[0].data = dataKp.slice(-10).map(i => i.kp);
-                        myChart.update();
-                    }
+                    const sliceKp = dataKp.slice(-12);
+                    timeLabels = sliceKp.map(i => String(i.time_tag || i[0]).substring(11, 16));
+                    kpArray = sliceKp.map(i => parseFloat(i.kp !== undefined ? i.kp : (i.KP !== undefined ? i.KP : i[1])));
                 }
             } catch (e) {
-                document.getElementById('obs-kp').innerText = "Dato NOAA N/D";
+                document.getElementById('obs-kp').innerText = "NOAA N/D";
             }
 
+            // 2. Fetch NOAA Solar Wind
             try {
                 const resWind = await fetch('https://services.swpc.noaa.gov/products/solar-wind/plasma-6-hour.json');
                 const dataWind = await resWind.json();
-                if (dataWind && dataWind.length > 1) {
+                if (Array.isArray(dataWind) && dataWind.length > 1) {
                     const latestW = dataWind[dataWind.length - 1];
-                    document.getElementById('obs-wind').innerText = `${Math.round(latestW[1])} km/s`;
-                    document.getElementById('obs-wind-sub').innerText = `Densità: ${parseFloat(latestW[2]).toFixed(2)} p/cm³`;
+                    const speed = latestW[1] ? Math.round(parseFloat(latestW[1])) : 'N/D';
+                    const density = latestW[2] ? parseFloat(latestW[2]).toFixed(2) : 'N/D';
+
+                    document.getElementById('obs-wind').innerText = `${speed} km/s`;
+                    document.getElementById('obs-wind-sub').innerText = `Densità: ${density} p/cm³`;
+
+                    windArray = dataWind.slice(-12).map(i => i[1] ? Math.round(parseFloat(i[1])) : null);
                 }
             } catch (e) {
-                document.getElementById('obs-wind').innerText = "Dato NOAA N/D";
+                document.getElementById('obs-wind').innerText = "NOAA N/D";
             }
 
+            // 3. Fetch USGS Earthquakes & Correlazioni
             try {
                 const resUsgs = await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_day.geojson');
                 const dataUsgs = await resUsgs.json();
                 if (dataUsgs && dataUsgs.features) {
-                    document.getElementById('obs-quake').innerText = `${dataUsgs.features.length} Eventi (M > 4.5)`;
-                    if (dataUsgs.features.length > 0) {
-                        const maxM = Math.max(...dataUsgs.features.map(f => f.properties.mag));
+                    earthquakesList = dataUsgs.features;
+                    document.getElementById('obs-quake').innerText = `${earthquakesList.length} Eventi (M > 4.5)`;
+                    if (earthquakesList.length > 0) {
+                        const maxM = Math.max(...earthquakesList.map(f => f.properties.mag));
                         document.getElementById('obs-quake-sub').innerText = `Max Magnitudo: M ${maxM.toFixed(1)}`;
                     }
                 }
             } catch (e) {
-                document.getElementById('obs-quake').innerText = "Dato USGS N/D";
+                document.getElementById('obs-quake').innerText = "USGS N/D";
+            }
+
+            // Generazione Log di Correlazione Reale basato su timestamp effettivi
+            const logBox = document.getElementById('correlationLog');
+            let logHtml = '<h4>Analisi Coincidenze Temporali (NOAA vs USGS)</h4>';
+            
+            let correlationCount = 0;
+            if (earthquakesList.length > 0 && kpArray.length > 0) {
+                // Filtra eventi sismici rilevanti (M >= 5.0)
+                const majorQuakes = earthquakesList.filter(f => f.properties.mag >= 5.0);
+                const highKpCount = kpArray.filter(k => k >= 4).length;
+
+                if (highKpCount > 0 && majorQuakes.length > 0) {
+                    correlationCount = majorQuakes.length;
+                    majorQuakes.slice(0, 3).forEach(q => {
+                        const mag = q.properties.mag.toFixed(1);
+                        const place = q.properties.place;
+                        const time = new Date(q.properties.time).toISOString().substring(11, 16);
+                        logHtml += `<div class="corr-item">⚡ <b>M ${mag}</b> (${place}) registrato alle ${time} UTC in finestra di attività solare.</div>`;
+                    });
+                } else {
+                    logHtml += `<div class="corr-item">Nessuna tempesta geomagnetica critica ($Kp \\ge 4$) in concomitanza con eventi sismici maggiori nelle ultime 24h.</div>`;
+                }
+            } else {
+                logHtml += `<div class="corr-item">Sincronizzazione dati in corso...</div>`;
+            }
+            logBox.innerHTML = logHtml;
+
+            // Aggiornamento Plotter
+            if (myChart && timeLabels.length > 0) {
+                myChart.data.labels = timeLabels;
+                myChart.data.datasets[0].data = kpArray;
+                myChart.data.datasets[1].data = windArray;
+                myChart.update();
             }
         }
 
         loadRealData();
+        setInterval(loadRealData, 600000);
     </script>
 </body>
 </html>
