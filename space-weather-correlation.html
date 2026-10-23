@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geodetic Observatory</title>
+    <title>Geodetic & Space Weather Observatory</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
@@ -300,7 +300,7 @@
                 document.getElementById('obs-kp').innerText = "NOAA N/D";
             }
 
-            // 2. NOAA Solar Wind Plasma (Indice 1 = Densità, Indice 2 = Velocità)
+            // 2. NOAA Solar Wind Plasma
             try {
                 const resWind = await fetch('https://services.swpc.noaa.gov/products/solar-wind/plasma-6-hour.json');
                 const dataWind = await resWind.json();
