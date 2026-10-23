@@ -280,9 +280,10 @@
             let kpArray = [];
             let windArray = [];
 
-            // 1. NOAA Kp Parser Definitivo
+            // 1. NOAA Kp tramite Proxy CORS AllOrigins
             try {
-                const resKp = await fetch('https://services.swpc.noaa.gov/json/planetary_k_index_1h.json');
+                const targetKp = 'https://services.swpc.noaa.gov/json/planetary_k_index_1h.json';
+                const resKp = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetKp)}`);
                 const dataKp = await resKp.json();
                 if (Array.isArray(dataKp) && dataKp.length > 0) {
                     const latest = dataKp[dataKp.length - 1];
@@ -297,15 +298,15 @@
                     kpArray = sliceKp.map(i => parseFloat(i.kp !== undefined ? i.kp : i[1]));
                 }
             } catch (e) {
-                document.getElementById('obs-kp').innerText = "Aggiornamento NOAA...";
+                document.getElementById('obs-kp').innerText = "NOAA N/D";
             }
 
-            // 2. NOAA Solar Wind Parser Definitivo
+            // 2. NOAA Solar Wind tramite Proxy CORS AllOrigins
             try {
-                const resWind = await fetch('https://services.swpc.noaa.gov/products/solar-wind/plasma-6-hour.json');
+                const targetWind = 'https://services.swpc.noaa.gov/products/solar-wind/plasma-6-hour.json';
+                const resWind = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetWind)}`);
                 const dataWind = await resWind.json();
                 if (Array.isArray(dataWind) && dataWind.length > 1) {
-                    // Salta l'intestazione se presente
                     const validRows = dataWind.filter(row => !isNaN(parseFloat(row[1])));
                     if (validRows.length > 0) {
                         const latestW = validRows[validRows.length - 1];
@@ -320,10 +321,10 @@
                     }
                 }
             } catch (e) {
-                document.getElementById('obs-wind').innerText = "Aggiornamento NOAA...";
+                document.getElementById('obs-wind').innerText = "NOAA N/D";
             }
 
-            // 3. USGS Earthquakes (Già funzionante)
+            // 3. USGS Earthquakes
             try {
                 const resUsgs = await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_day.geojson');
                 const dataUsgs = await resUsgs.json();
