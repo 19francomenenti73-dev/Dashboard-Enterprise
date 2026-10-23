@@ -1,195 +1,3 @@
-<!DOCTYPE html>
-<html lang="it">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geodetic & Space Weather Observatory</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        html, body {
-            background-color: #0b0f19 !important;
-            color: #f8fafc !important;
-            width: 100%;
-            min-height: 100vh;
-            padding: 10px;
-            padding-bottom: 75px;
-            overflow-x: hidden;
-        }
-
-        .obs-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #00f3ff;
-            padding-bottom: 8px;
-            margin-bottom: 12px;
-            background-color: #0b0f19;
-        }
-
-        .obs-title {
-            font-size: 0.9rem;
-            color: #00f3ff;
-            text-transform: uppercase;
-            font-weight: bold;
-        }
-
-        .obs-badge {
-            background: #0f172a;
-            border: 1px solid #00f3ff;
-            color: #00f3ff;
-            padding: 3px 6px;
-            border-radius: 4px;
-            font-size: 0.6rem;
-            font-weight: bold;
-        }
-
-        .obs-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 10px;
-            margin-bottom: 12px;
-        }
-
-        @media(min-width: 480px) {
-            .obs-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        .obs-card {
-            background-color: #101726;
-            border: 1px solid #1e293b;
-            border-radius: 6px;
-            padding: 10px;
-        }
-
-        .obs-card h3 {
-            font-size: 0.75rem;
-            color: #f59e0b;
-            margin-bottom: 4px;
-            text-transform: uppercase;
-        }
-
-        .obs-value {
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: #f8fafc;
-        }
-
-        .obs-sub {
-            font-size: 0.6rem;
-            color: #94a3b8;
-            margin-top: 3px;
-        }
-
-        .plotter-container {
-            background-color: #101726;
-            border: 1px solid #1e293b;
-            border-radius: 6px;
-            padding: 10px;
-            margin-bottom: 12px;
-        }
-
-        .plotter-title {
-            font-size: 0.8rem;
-            color: #00f3ff;
-            text-transform: uppercase;
-            font-weight: bold;
-            margin-bottom: 8px;
-        }
-
-        .obs-chart-box {
-            position: relative;
-            height: 240px;
-            width: 100%;
-        }
-
-        .obs-banner {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background-color: #0b0f19;
-            border-top: 1px solid #00f3ff;
-            padding: 6px 8px;
-            font-size: 0.55rem;
-            color: #94a3b8;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-around;
-            align-items: center;
-            z-index: 99999;
-        }
-
-        .obs-source-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .obs-dot {
-            width: 3px;
-            height: 3px;
-            background-color: #00f3ff;
-            border-radius: 50%;
-        }
-
-        .obs-source-item span {
-            color: #f8fafc;
-            font-weight: 600;
-        }
-    </style>
-</head>
-<body>
-
-    <div class="obs-header">
-        <h1 class="obs-title">⚡ Geodetic Observatory</h1>
-        <div class="obs-badge">100% REAL OPEN DATA</div>
-    </div>
-
-    <div class="obs-grid">
-        <div class="obs-card">
-            <h3>Vento Solare & CME</h3>
-            <div class="obs-value" id="obs-wind">Sincronizzazione...</div>
-            <div class="obs-sub" id="obs-wind-sub">NOAA SWPC Plasma Feed</div>
-        </div>
-        <div class="obs-card">
-            <h3>Indice Kp Geomagnetico</h3>
-            <div class="obs-value" id="obs-kp">--</div>
-            <div class="obs-sub" id="obs-kp-sub">NOAA Magnetometro</div>
-        </div>
-        <div class="obs-card">
-            <h3>Sismicità Globale</h3>
-            <div class="obs-value" id="obs-quake">--</div>
-            <div class="obs-sub" id="obs-quake-sub">USGS Ultime 24h (M > 4.5)</div>
-        </div>
-        <div class="obs-card">
-            <h3>Orbite & Congiunzioni</h3>
-            <div class="obs-value" id="obs-astro">Calcolo...</div>
-            <div class="obs-sub" id="obs-astro-sub">Effemeridi J2000</div>
-        </div>
-    </div>
-
-    <div class="plotter-container">
-        <div class="plotter-title">📈 Plotter & Correlazione Reale</div>
-        <div class="obs-chart-box">
-            <canvas id="obsChart"></canvas>
-        </div>
-    </div>
-
-    <footer class="obs-banner">
-        <div class="obs-source-item"><div class="obs-dot"></div><div>Vento/Kp: <span>NOAA SWPC</span></div></div>
-        <div class="obs-source-item"><div class="obs-dot"></div><div>Sismicità: <span>USGS</span></div></div>
-        <div class="obs-source-item"><div class="obs-dot"></div><div>Celeste: <span>J2000</span></div></div>
-    </footer>
-
     <script>
         let myChart = null;
 
@@ -280,10 +88,11 @@
             let kpArray = [];
             let windArray = [];
 
-            // 1. NOAA Kp Index
+            // 1. NOAA Kp Index tramite Proxy CORS
             try {
-                const resKp = await fetch('https://services.swpc.noaa.gov/json/planetary_k_index_1h.json');
-                const dataKp = await resKp.json();
+                const targetKp = 'https://services.swpc.noaa.gov/json/planetary_k_index_1h.json';
+                const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetKp)}`);
+                const dataKp = await res.json();
                 if (Array.isArray(dataKp) && dataKp.length > 0) {
                     const latest = dataKp[dataKp.length - 1];
                     const kpVal = latest.kp !== undefined ? latest.kp : '--';
@@ -297,13 +106,15 @@
                     kpArray = sliceKp.map(i => parseFloat(i.kp));
                 }
             } catch (e) {
-                document.getElementById('obs-kp').innerText = "NOAA N/D";
+                document.getElementById('obs-kp').innerText = "Errore NOAA Kp";
+                console.error("Kp error:", e);
             }
 
-            // 2. NOAA Solar Wind Plasma
+            // 2. NOAA Solar Wind Plasma tramite Proxy CORS
             try {
-                const resWind = await fetch('https://services.swpc.noaa.gov/products/solar-wind/plasma-6-hour.json');
-                const dataWind = await resWind.json();
+                const targetWind = 'https://services.swpc.noaa.gov/products/solar-wind/plasma-6-hour.json';
+                const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetWind)}`);
+                const dataWind = await res.json();
                 if (Array.isArray(dataWind) && dataWind.length > 1) {
                     const validRows = dataWind.filter(row => row && !isNaN(parseFloat(row[2])));
                     if (validRows.length > 0) {
@@ -319,7 +130,8 @@
                     }
                 }
             } catch (e) {
-                document.getElementById('obs-wind').innerText = "NOAA N/D";
+                document.getElementById('obs-wind').innerText = "Errore NOAA Wind";
+                console.error("Wind error:", e);
             }
 
             // 3. USGS Earthquakes
@@ -349,5 +161,4 @@
         loadRealData();
         setInterval(loadRealData, 600000);
     </script>
-</body>
-</html>
+    
