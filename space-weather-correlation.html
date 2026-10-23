@@ -280,44 +280,42 @@
             let kpArray = [];
             let windArray = [];
 
-            // 1. NOAA Kp tramite Proxy CORS AllOrigins
+            // 1. NOAA Kp Index
             try {
-                const targetKp = 'https://services.swpc.noaa.gov/json/planetary_k_index_1h.json';
-                const resKp = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetKp)}`);
+                const resKp = await fetch('https://services.swpc.noaa.gov/json/planetary_k_index_1h.json');
                 const dataKp = await resKp.json();
                 if (Array.isArray(dataKp) && dataKp.length > 0) {
                     const latest = dataKp[dataKp.length - 1];
-                    const kpVal = latest.kp !== undefined ? latest.kp : (latest[1] !== undefined ? latest[1] : '--');
-                    const timeTag = latest.time_tag || latest[0] || '';
+                    const kpVal = latest.kp !== undefined ? latest.kp : '--';
+                    const timeTag = latest.time_tag || '';
 
                     document.getElementById('obs-kp').innerText = `Kp ${kpVal}`;
                     document.getElementById('obs-kp-sub').innerText = `UTC: ${String(timeTag).replace('T', ' ').substring(11, 16)}`;
 
                     const sliceKp = dataKp.slice(-10);
-                    timeLabels = sliceKp.map(i => String(i.time_tag || i[0] || '').substring(11, 16));
-                    kpArray = sliceKp.map(i => parseFloat(i.kp !== undefined ? i.kp : i[1]));
+                    timeLabels = sliceKp.map(i => String(i.time_tag || '').substring(11, 16));
+                    kpArray = sliceKp.map(i => parseFloat(i.kp));
                 }
             } catch (e) {
                 document.getElementById('obs-kp').innerText = "NOAA N/D";
             }
 
-            // 2. NOAA Solar Wind tramite Proxy CORS AllOrigins
+            // 2. NOAA Solar Wind Plasma (Indice 1 = Densità, Indice 2 = Velocità)
             try {
-                const targetWind = 'https://services.swpc.noaa.gov/products/solar-wind/plasma-6-hour.json';
-                const resWind = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetWind)}`);
+                const resWind = await fetch('https://services.swpc.noaa.gov/products/solar-wind/plasma-6-hour.json');
                 const dataWind = await resWind.json();
                 if (Array.isArray(dataWind) && dataWind.length > 1) {
-                    const validRows = dataWind.filter(row => !isNaN(parseFloat(row[1])));
+                    const validRows = dataWind.filter(row => row && !isNaN(parseFloat(row[2])));
                     if (validRows.length > 0) {
                         const latestW = validRows[validRows.length - 1];
-                        const speed = Math.round(parseFloat(latestW[1]));
-                        const density = parseFloat(latestW[2]).toFixed(2);
+                        const density = parseFloat(latestW[1]).toFixed(2);
+                        const speed = Math.round(parseFloat(latestW[2]));
 
                         document.getElementById('obs-wind').innerText = `${speed} km/s`;
                         document.getElementById('obs-wind-sub').innerText = `Densità: ${density} p/cm³`;
 
                         const sliceWind = validRows.slice(-10);
-                        windArray = sliceWind.map(i => Math.round(parseFloat(i[1])));
+                        windArray = sliceWind.map(i => Math.round(parseFloat(i[2])));
                     }
                 }
             } catch (e) {
