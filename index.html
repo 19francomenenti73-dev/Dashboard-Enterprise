@@ -126,6 +126,35 @@
     .tactical-btn.alert { border-color: #ff2a5f; color: #ff2a5f; }
     .tactical-btn.alert.active { background: #ff2a5f; color: #fff; }
 
+    /* Pulsante Arcobaleno Pulsante Dedicato */
+    .tactical-btn.rainbow-pulse {
+      background: linear-gradient(90deg, #ff2a5f, #facc15, #4ade80, #00f0ff, #a855f7);
+      background-size: 300% 300%;
+      color: #030712;
+      border: 1px solid #fff;
+      font-weight: 900;
+      animation: rainbow-animation 4s ease infinite, btn-glow-pulse 2s infinite ease-in-out;
+    }
+
+    .tactical-btn.rainbow-pulse.active {
+      background: #fff;
+      color: #030712;
+      border-color: #00f0ff;
+      box-shadow: 0 0 10px #00f0ff;
+    }
+
+    @keyframes rainbow-animation {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes btn-glow-pulse {
+      0% { box-shadow: 0 0 4px rgba(255,42,95,0.6); }
+      50% { box-shadow: 0 0 10px rgba(0,240,255,0.9); }
+      100% { box-shadow: 0 0 4px rgba(255,42,95,0.6); }
+    }
+
     /* Contenitore Mappa flessibile al 100% */
     .viewscreen-container {
       width: 100%;
@@ -166,6 +195,8 @@
     <button class="tactical-btn alert" onclick="switchTracker('https://19francomenenti73-dev.github.io/earthquake-tracker-/', this)">🌋 Earthquake Tracker</button>
     <button class="tactical-btn" onclick="switchTracker('https://19francomenenti73-dev.github.io/Dashboard-Enterprise/world-tracker.html', this)">🌍 World Storm Tracker</button>
     <button class="tactical-btn alert" onclick="switchTracker('https://19francomenenti73-dev.github.io/archivio-eventi/', this)">📍 Archivio Eventi</button>
+    <!-- Nuovo Pulsante Satellite & Radar Arcobaleno Pulsante in fondo alla barra -->
+    <button class="tactical-btn rainbow-pulse" onclick="switchTracker('satellite-radar.html', this)">🛰️ SATELLITE & RADAR</button>
   </nav>
 
   <div class="viewscreen-container">
