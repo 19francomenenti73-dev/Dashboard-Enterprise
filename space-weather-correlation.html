@@ -1,66 +1,307 @@
-// Calcolo effemeridi reali IMMEDIATO (senza attendere la rete)
-function calculatePlanetaryAlignments() {
-    const now = new Date();
-    const d = (now - Date.parse("2000-01-01T12:00:00Z")) / 86400000;
-    
-    const merc = (252.25 + 4.092338 * d) % 360;
-    const venus = (181.98 + 1.602130 * d) % 360;
-    const mars = (355.45 + 0.524039 * d) % 360;
-    const jup = (34.35 + 0.083085 * d) % 360;
-
-    let alignmentStatus = "Dispersione Standard";
-    if (Math.abs(merc - venus) < 12 || Math.abs(venus - mars) < 12 || Math.abs(merc - jup) < 15) {
-        alignmentStatus = "Congiunzione Planetaria Attiva";
-    }
-
-    document.getElementById('planetary-alignment').innerText = alignmentStatus;
-    document.getElementById('planetary-details').innerText = `Mer: ${Math.round(merc)}° | Ven: ${Math.round(venus)}° | Mar: ${Math.round(mars)}° | Gio: ${Math.round(jup)}°`;
-}
-
-// Fetch con gestione di fallback per le API Reali
-async function fetchRealData() {
-    // Esegue subito il calcolo astronomico
-    calculatePlanetaryAlignments();
-
-    // 1. Indice Kp NOAA Reale
-    try {
-        const kpRes = await fetch('https://services.swpc.noaa.gov/json/planetary_k_index_1h.json');
-        const kpData = await kpRes.json();
-        const latestKp = kpData[kpData.length - 1];
-        document.getElementById('kp-index-val').innerText = `Kp ${latestKp.kp}`;
-        document.getElementById('kp-details').innerText = `NOAA UTC: ${latestKp.time_tag.replace('T', ' ').substring(11, 16)}`;
-    } catch (e) {
-        document.getElementById('kp-index-val').innerText = "Errore Rete NOAA";
-    }
-
-    // 2. Vento Solare NOAA Reale
-    try {
-        const windRes = await fetch('https://services.swpc.noaa.gov/products/solar-wind/plasma-6-hour.json');
-        const windData = await windRes.json();
-        const latestWind = windData[windData.length - 1];
-        const speed = latestWind[1] ? Math.round(latestWind[1]) : 'N/D';
-        const density = latestWind[2] ? parseFloat(latestWind[2]).toFixed(2) : 'N/D';
-        
-        document.getElementById('solar-wind-speed').innerText = `${speed} km/s`;
-        document.getElementById('solar-wind-details').innerText = `Densità: ${density} p/cm³ (NOAA SWPC)`;
-    } catch (e) {
-        document.getElementById('solar-wind-speed').innerText = "Errore Rete NOAA";
-    }
-
-    // 3. Terremoti USGS Reali (M > 4.5)
-    try {
-        const usgsRes = await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_day.geojson');
-        const usgsData = await usgsRes.json();
-        document.getElementById('usgs-quake-count').innerText = `${usgsData.features.length} Eventi (M > 4.5)`;
-        if (usgsData.features.length > 0) {
-            const maxMag = Math.max(...usgsData.features.map(f => f.properties.mag));
-            document.getElementById('usgs-max-mag').innerText = `Max Magnitudo: M ${maxMag.toFixed(1)}`;
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geodetic & Space Weather Correlation Observatory</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --panel-bg: rgba(16, 23, 38, 0.95);
+            --border-color: #1e293b;
+            --accent-cyan: #00f3ff;
+            --accent-amber: #f59e0b;
+            --accent-pink: #ec4899;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
         }
-    } catch (e) {
-        document.getElementById('usgs-quake-count').innerText = "Errore Rete USGS";
-    }
-}
 
-// Avvio immediato al caricamento
-document.addEventListener("DOMContentLoaded", fetchRealData);
-        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 15px;
+            padding-bottom: 85px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--accent-cyan);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            font-size: 1rem;
+            letter-spacing: 1px;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+        }
+
+        .status-badge {
+            background: rgba(0, 243, 255, 0.1);
+            border: 1px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .card {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .card h3 {
+            font-size: 0.85rem;
+            color: var(--accent-amber);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .metric-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        .metric-sub {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .chart-container {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            position: relative;
+            height: 280px;
+        }
+
+        .sources-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(11, 15, 25, 0.98);
+            border-top: 1px solid var(--accent-cyan);
+            padding: 8px 10px;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .source-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin: 2px 5px;
+        }
+
+        .source-dot {
+            width: 4px;
+            height: 4px;
+            background-color: var(--accent-cyan);
+            border-radius: 50%;
+        }
+
+        .source-item span {
+            color: var(--text-main);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>⚡ Geodetic Observatory</h1>
+        <div class="status-badge" id="system-status">100% REAL OPEN DATA</div>
+    </header>
+
+    <div class="grid-container">
+        <!-- 1. Vento Solare & CME (NOAA) -->
+        <div class="card">
+            <h3>Vento Solare & CME (NOAA)</h3>
+            <div class="metric-value" id="solar-wind-speed">Sincronizzazione...</div>
+            <div class="metric-sub" id="solar-wind-details">NOAA SWPC Plasma Feed</div>
+        </div>
+
+        <!-- 2. Indice Kp Geomagnetico (NOAA) -->
+        <div class="card">
+            <h3>Indice Kp Geomagnetico</h3>
+            <div class="metric-value" id="kp-index-val">--</div>
+            <div class="metric-sub" id="kp-details">Stato Campo Magnetico Terrestre</div>
+        </div>
+
+        <!-- 3. Sismicità Globale (USGS) -->
+        <div class="card">
+            <h3>Sismicità Globale (USGS)</h3>
+            <div class="metric-value" id="usgs-quake-count">--</div>
+            <div class="metric-sub" id="usgs-max-mag">Eventi ultime 24h (M > 4.5)</div>
+        </div>
+
+        <!-- 4. Meccanica Celeste -->
+        <div class="card">
+            <h3>Orbite & Congiunzioni</h3>
+            <div class="metric-value" id="planetary-alignment">Calcolo...</div>
+            <div class="metric-sub" id="planetary-details">Effemeridi J2000</div>
+        </div>
+    </div>
+
+    <!-- Grafico -->
+    <div class="chart-container">
+        <canvas id="realTimeChart"></canvas>
+    </div>
+
+    <!-- Banner Fonti Ufficiali -->
+    <footer class="sources-banner">
+        <div class="source-item"><div class="source-dot"></div><div>Vento/Kp: <span>NOAA SWPC</span></div></div>
+        <div class="source-item"><div class="source-dot"></div><div>Sismicità: <span>USGS</span></div></div>
+        <div class="source-item"><div class="source-dot"></div><div>Celeste: <span>J2000</span></div></div>
+    </footer>
+
+    <script>
+        let correlationChart = null;
+        try {
+            const canvasEl = document.getElementById('realTimeChart');
+            if (canvasEl) {
+                const ctx = canvasEl.getContext('2d');
+                correlationChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: 'Indice Kp (NOAA Reale)',
+                            data: [],
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            tension: 0.2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Kp', color: '#f59e0b' } }
+                        }
+                    }
+                });
+            }
+        } catch (err) {
+            console.error("Errore inizializzazione grafico:", err);
+        }
+
+        // Calcolo effemeridi reali
+        function calculatePlanetaryAlignments() {
+            try {
+                const now = new Date();
+                const d = (now - Date.parse("2000-01-01T12:00:00Z")) / 86400000;
+                
+                const merc = (252.25 + 4.092338 * d) % 360;
+                const venus = (181.98 + 1.602130 * d) % 360;
+                const mars = (355.45 + 0.524039 * d) % 360;
+                const jup = (34.35 + 0.083085 * d) % 360;
+
+                let alignmentStatus = "Dispersione Standard";
+                if (Math.abs(merc - venus) < 12 || Math.abs(venus - mars) < 12 || Math.abs(merc - jup) < 15) {
+                    alignmentStatus = "Congiunzione Attiva";
+                }
+
+                document.getElementById('planetary-alignment').innerText = alignmentStatus;
+                document.getElementById('planetary-details').innerText = `Mer: ${Math.round(merc)}° | Ven: ${Math.round(venus)}° | Mar: ${Math.round(mars)}° | Gio: ${Math.round(jup)}°`;
+            } catch (e) {
+                console.error("Errore effemeridi:", e);
+            }
+        }
+
+        // Fetch dati reali NOAA e USGS protetto
+        async function fetchRealData() {
+            calculatePlanetaryAlignments();
+
+            try {
+                const kpRes = await fetch('https://services.swpc.noaa.gov/json/planetary_k_index_1h.json');
+                const kpData = await kpRes.json();
+                if (kpData && kpData.length > 0) {
+                    const latestKp = kpData[kpData.length - 1];
+                    document.getElementById('kp-index-val').innerText = `Kp ${latestKp.kp}`;
+                    document.getElementById('kp-details').innerText = `UTC: ${latestKp.time_tag.replace('T', ' ').substring(11, 16)}`;
+
+                    if (correlationChart) {
+                        const labels = kpData.slice(-12).map(item => item.time_tag.substring(11, 16));
+                        const kpValues = kpData.slice(-12).map(item => item.kp);
+                        correlationChart.data.labels = labels;
+                        correlationChart.data.datasets[0].data = kpValues;
+                        correlationChart.update();
+                    }
+                }
+            } catch (err) {
+                document.getElementById('kp-index-val').innerText = "NOAA N/D";
+            }
+
+            try {
+                const windRes = await fetch('https://services.swpc.noaa.gov/products/solar-wind/plasma-6-hour.json');
+                const windData = await windRes.json();
+                if (windData && windData.length > 1) {
+                    const latestWind = windData[windData.length - 1];
+                    const speed = latestWind[1] ? Math.round(latestWind[1]) : 'N/D';
+                    const density = latestWind[2] ? parseFloat(latestWind[2]).toFixed(2) : 'N/D';
+                    document.getElementById('solar-wind-speed').innerText = `${speed} km/s`;
+                    document.getElementById('solar-wind-details').innerText = `Densità: ${density} p/cm³`;
+                }
+            } catch (err) {
+                document.getElementById('solar-wind-speed').innerText = "NOAA N/D";
+            }
+
+            try {
+                const usgsRes = await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_day.geojson');
+                const usgsData = await usgsRes.json();
+                if (usgsData && usgsData.features) {
+                    document.getElementById('usgs-quake-count').innerText = `${usgsData.features.length} Eventi (M > 4.5)`;
+                    if (usgsData.features.length > 0) {
+                        const maxMag = Math.max(...usgsData.features.map(f => f.properties.mag));
+                        document.getElementById('usgs-max-mag').innerText = `Max Magnitudo: M ${maxMag.toFixed(1)}`;
+                    }
+                }
+            } catch (err) {
+                document.getElementById('usgs-quake-count').innerText = "USGS N/D";
+            }
+        }
+
+        // Avvio immediato sicuro
+        try {
+            fetchRealData();
+            setInterval(fetchRealData, 600000);
+        } catch (e) {
+            console.error("Errore esecuzione script:", e);
+        }
+    </script>
+</body>
+</html>
