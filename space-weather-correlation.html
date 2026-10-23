@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geodetic & Space Weather Correlation Observatory</title>
+    <title>Geodetic Observatory</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
@@ -18,8 +18,8 @@
             color: #f8fafc !important;
             width: 100%;
             min-height: 100vh;
-            padding: 12px;
-            padding-bottom: 85px;
+            padding: 10px;
+            padding-bottom: 75px;
             overflow-x: hidden;
         }
 
@@ -28,34 +28,33 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 2px solid #00f3ff;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
             background-color: #0b0f19;
         }
 
         .obs-title {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             color: #00f3ff;
             text-transform: uppercase;
             font-weight: bold;
-            letter-spacing: 0.5px;
         }
 
         .obs-badge {
             background: #0f172a;
             border: 1px solid #00f3ff;
             color: #00f3ff;
-            padding: 4px 8px;
+            padding: 3px 6px;
             border-radius: 4px;
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             font-weight: bold;
         }
 
         .obs-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 12px;
-            margin-bottom: 15px;
+            gap: 10px;
+            margin-bottom: 12px;
         }
 
         @media(min-width: 480px) {
@@ -67,80 +66,49 @@
         .obs-card {
             background-color: #101726;
             border: 1px solid #1e293b;
-            border-radius: 8px;
-            padding: 12px;
+            border-radius: 6px;
+            padding: 10px;
         }
 
         .obs-card h3 {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #f59e0b;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             text-transform: uppercase;
         }
 
         .obs-value {
-            font-size: 1.15rem;
+            font-size: 1.1rem;
             font-weight: bold;
             color: #f8fafc;
         }
 
         .obs-sub {
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             color: #94a3b8;
-            margin-top: 4px;
+            margin-top: 3px;
         }
 
-        /* PLOTTER & CORRELATION BOX */
         .plotter-container {
             background-color: #101726;
             border: 1px solid #1e293b;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 15px;
-        }
-
-        .plotter-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 12px;
         }
 
         .plotter-title {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: #00f3ff;
             text-transform: uppercase;
             font-weight: bold;
+            margin-bottom: 8px;
         }
 
         .obs-chart-box {
             position: relative;
-            height: 260px;
+            height: 240px;
             width: 100%;
-            margin-bottom: 12px;
-        }
-
-        .correlation-log {
-            background: #0b0f19;
-            border: 1px solid #334155;
-            border-radius: 6px;
-            padding: 10px;
-            max-height: 140px;
-            overflow-y: auto;
-            font-size: 0.7rem;
-            color: #cbd5e1;
-        }
-
-        .correlation-log h4 {
-            color: #00f3ff;
-            margin-bottom: 6px;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-        }
-
-        .corr-item {
-            padding: 4px 0;
-            border-bottom: 1px dashed #1e293b;
         }
 
         .obs-banner {
@@ -150,8 +118,8 @@
             width: 100%;
             background-color: #0b0f19;
             border-top: 1px solid #00f3ff;
-            padding: 8px 10px;
-            font-size: 0.6rem;
+            padding: 6px 8px;
+            font-size: 0.55rem;
             color: #94a3b8;
             display: flex;
             flex-wrap: wrap;
@@ -163,13 +131,12 @@
         .obs-source-item {
             display: flex;
             align-items: center;
-            gap: 5px;
-            margin: 2px 5px;
+            gap: 4px;
         }
 
         .obs-dot {
-            width: 4px;
-            height: 4px;
+            width: 3px;
+            height: 3px;
             background-color: #00f3ff;
             border-radius: 50%;
         }
@@ -210,17 +177,10 @@
         </div>
     </div>
 
-    <!-- PLOTTER & CORRELATION ENGINE -->
     <div class="plotter-container">
-        <div class="plotter-header">
-            <div class="plotter-title">📈 Plotter & Eventi di Correlazione Reale</div>
-        </div>
+        <div class="plotter-title">📈 Plotter & Correlazione Reale</div>
         <div class="obs-chart-box">
             <canvas id="obsChart"></canvas>
-        </div>
-        <div class="correlation-log" id="correlationLog">
-            <h4>Analisi Coincidenze Temporali (NOAA vs USGS)</h4>
-            <div class="corr-item">Elaborazione feed reali in corso...</div>
         </div>
     </div>
 
@@ -266,15 +226,14 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         scales: {
-                            x: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } },
+                            x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#1e293b' } },
                             yKp: {
                                 type: 'linear',
                                 display: true,
                                 position: 'left',
                                 min: 0,
                                 max: 9,
-                                title: { display: true, text: 'Indice Kp', color: '#f59e0b' },
-                                ticks: { color: '#f59e0b', stepSize: 1 },
+                                ticks: { color: '#f59e0b', stepSize: 2, font: { size: 10 } },
                                 grid: { color: '#1e293b' }
                             },
                             yWind: {
@@ -283,8 +242,7 @@
                                 position: 'right',
                                 min: 200,
                                 max: 900,
-                                title: { display: true, text: 'Vento (km/s)', color: '#00f3ff' },
-                                ticks: { color: '#00f3ff' },
+                                ticks: { color: '#00f3ff', font: { size: 10 } },
                                 grid: { drawOnChartArea: false }
                             }
                         }
@@ -292,7 +250,7 @@
                 });
             }
         } catch (e) {
-            console.error("Plotter init error:", e);
+            console.error("Chart error:", e);
         }
 
         function calculateAstro() {
@@ -321,85 +279,64 @@
             let timeLabels = [];
             let kpArray = [];
             let windArray = [];
-            let earthquakesList = [];
 
-            // 1. Fetch NOAA Kp
+            // 1. NOAA Kp Parser Definitivo
             try {
                 const resKp = await fetch('https://services.swpc.noaa.gov/json/planetary_k_index_1h.json');
                 const dataKp = await resKp.json();
                 if (Array.isArray(dataKp) && dataKp.length > 0) {
                     const latest = dataKp[dataKp.length - 1];
-                    const kpVal = latest.kp !== undefined ? latest.kp : (latest.KP !== undefined ? latest.KP : latest[1]);
-                    document.getElementById('obs-kp').innerText = `Kp ${kpVal}`;
-                    document.getElementById('obs-kp-sub').innerText = `UTC: ${String(latest.time_tag || latest[0]).replace('T', ' ').substring(11, 16)}`;
+                    const kpVal = latest.kp !== undefined ? latest.kp : (latest[1] !== undefined ? latest[1] : '--');
+                    const timeTag = latest.time_tag || latest[0] || '';
 
-                    const sliceKp = dataKp.slice(-12);
-                    timeLabels = sliceKp.map(i => String(i.time_tag || i[0]).substring(11, 16));
-                    kpArray = sliceKp.map(i => parseFloat(i.kp !== undefined ? i.kp : (i.KP !== undefined ? i.KP : i[1])));
+                    document.getElementById('obs-kp').innerText = `Kp ${kpVal}`;
+                    document.getElementById('obs-kp-sub').innerText = `UTC: ${String(timeTag).replace('T', ' ').substring(11, 16)}`;
+
+                    const sliceKp = dataKp.slice(-10);
+                    timeLabels = sliceKp.map(i => String(i.time_tag || i[0] || '').substring(11, 16));
+                    kpArray = sliceKp.map(i => parseFloat(i.kp !== undefined ? i.kp : i[1]));
                 }
             } catch (e) {
-                document.getElementById('obs-kp').innerText = "NOAA N/D";
+                document.getElementById('obs-kp').innerText = "Aggiornamento NOAA...";
             }
 
-            // 2. Fetch NOAA Solar Wind
+            // 2. NOAA Solar Wind Parser Definitivo
             try {
                 const resWind = await fetch('https://services.swpc.noaa.gov/products/solar-wind/plasma-6-hour.json');
                 const dataWind = await resWind.json();
                 if (Array.isArray(dataWind) && dataWind.length > 1) {
-                    const latestW = dataWind[dataWind.length - 1];
-                    const speed = latestW[1] ? Math.round(parseFloat(latestW[1])) : 'N/D';
-                    const density = latestW[2] ? parseFloat(latestW[2]).toFixed(2) : 'N/D';
+                    // Salta l'intestazione se presente
+                    const validRows = dataWind.filter(row => !isNaN(parseFloat(row[1])));
+                    if (validRows.length > 0) {
+                        const latestW = validRows[validRows.length - 1];
+                        const speed = Math.round(parseFloat(latestW[1]));
+                        const density = parseFloat(latestW[2]).toFixed(2);
 
-                    document.getElementById('obs-wind').innerText = `${speed} km/s`;
-                    document.getElementById('obs-wind-sub').innerText = `Densità: ${density} p/cm³`;
+                        document.getElementById('obs-wind').innerText = `${speed} km/s`;
+                        document.getElementById('obs-wind-sub').innerText = `Densità: ${density} p/cm³`;
 
-                    windArray = dataWind.slice(-12).map(i => i[1] ? Math.round(parseFloat(i[1])) : null);
+                        const sliceWind = validRows.slice(-10);
+                        windArray = sliceWind.map(i => Math.round(parseFloat(i[1])));
+                    }
                 }
             } catch (e) {
-                document.getElementById('obs-wind').innerText = "NOAA N/D";
+                document.getElementById('obs-wind').innerText = "Aggiornamento NOAA...";
             }
 
-            // 3. Fetch USGS Earthquakes & Correlazioni
+            // 3. USGS Earthquakes (Già funzionante)
             try {
                 const resUsgs = await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_day.geojson');
                 const dataUsgs = await resUsgs.json();
                 if (dataUsgs && dataUsgs.features) {
-                    earthquakesList = dataUsgs.features;
-                    document.getElementById('obs-quake').innerText = `${earthquakesList.length} Eventi (M > 4.5)`;
-                    if (earthquakesList.length > 0) {
-                        const maxM = Math.max(...earthquakesList.map(f => f.properties.mag));
+                    document.getElementById('obs-quake').innerText = `${dataUsgs.features.length} Eventi (M > 4.5)`;
+                    if (dataUsgs.features.length > 0) {
+                        const maxM = Math.max(...dataUsgs.features.map(f => f.properties.mag));
                         document.getElementById('obs-quake-sub').innerText = `Max Magnitudo: M ${maxM.toFixed(1)}`;
                     }
                 }
             } catch (e) {
                 document.getElementById('obs-quake').innerText = "USGS N/D";
             }
-
-            // Generazione Log di Correlazione Reale basato su timestamp effettivi
-            const logBox = document.getElementById('correlationLog');
-            let logHtml = '<h4>Analisi Coincidenze Temporali (NOAA vs USGS)</h4>';
-            
-            let correlationCount = 0;
-            if (earthquakesList.length > 0 && kpArray.length > 0) {
-                // Filtra eventi sismici rilevanti (M >= 5.0)
-                const majorQuakes = earthquakesList.filter(f => f.properties.mag >= 5.0);
-                const highKpCount = kpArray.filter(k => k >= 4).length;
-
-                if (highKpCount > 0 && majorQuakes.length > 0) {
-                    correlationCount = majorQuakes.length;
-                    majorQuakes.slice(0, 3).forEach(q => {
-                        const mag = q.properties.mag.toFixed(1);
-                        const place = q.properties.place;
-                        const time = new Date(q.properties.time).toISOString().substring(11, 16);
-                        logHtml += `<div class="corr-item">⚡ <b>M ${mag}</b> (${place}) registrato alle ${time} UTC in finestra di attività solare.</div>`;
-                    });
-                } else {
-                    logHtml += `<div class="corr-item">Nessuna tempesta geomagnetica critica ($Kp \\ge 4$) in concomitanza con eventi sismici maggiori nelle ultime 24h.</div>`;
-                }
-            } else {
-                logHtml += `<div class="corr-item">Sincronizzazione dati in corso...</div>`;
-            }
-            logBox.innerHTML = logHtml;
 
             // Aggiornamento Plotter
             if (myChart && timeLabels.length > 0) {
