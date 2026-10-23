@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nowcasting - Satellite & Radar</title>
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    body { margin: 0; padding: 0; background: #0b0f19; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #fff; overflow: hidden; }
+    
+    /* Barra di navigazione superiore */
+    .top-nav { background: #0f172a; padding: 6px; display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid #334155; white-space: nowrap; }
+    .nav-btn { background: #1e293b; color: #38bdf8; border: 1px solid #334155; padding: 6px 10px; font-size: 11px; font-weight: bold; border-radius: 4px; text-decoration: none; display: inline-block; text-align: center; flex: 1; }
+    .nav-btn.active { background: #f59e0b; color: #000; border-color: #f59e0b; }
+
+    #status-bar { padding: 8px 12px; background: #1e293b; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+    #mode-label { color: #f59e0b; font-weight: bold; }
+    #time-label { color: #38bdf8; font-weight: bold; }
+    
+    #map { width: 100vw; height: calc(100vh - 142px); background: #1e293b; }
+    
+    #controls { padding: 8px; background: #1e293b; display: flex; justify-content: center; align-items: center; gap: 6px; border-top: 1px solid #334155; position: fixed; bottom: 0; width: 100%; box-sizing: border-box; z-index: 1000; }
+    .btn { background: #334155; color: #f8fafc; border: 1px solid #475569; padding: 10px 14px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 12px; flex: 1; text-align: center; max-width: 140px; }
+    .btn-active { background: #f59e0b; color: #000; border-color: #f59e0b; }
+  </style>
+</head>
+<body>
+
+  <!-- Barra di navigazione superiore -->
+  <div class="top-nav">
+    <a href="index.html" class="nav-btn">MATS 3D</a>
+    <a href="regional-cells.html" class="nav-btn">M.A.T.S. REGIONALE</a>
+    <a href="satellite-radar.html" class="nav-btn active">SATELLITE & RADAR</a>
+    <a href="3d-mesoscale.html" class="nav-btn">3D MESOSCALA</a>
+    <a href="world-tracker.html" class="nav-btn">STORM TRACKER</a>
+  </div>
+
+  <div id="status-bar">
+    <span id="mode-label">RADAR PIOGGIA</span>
+    <span id="time-label">Connessione...</span>
+  </div>
+  
+  <div id="map"></div>
+
+  <div id="controls">
+    <button class="btn" id="btn-sat" onclick="setMode('satellite')">Satellite NASA</button>
+    <button class="btn btn-active" id="btn-radar" onclick="setMode('radar')">Radar Pioggia</button>
+    <button class="btn" id="btn-play" onclick="togglePlay()">Pausa</button>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    let map = L.map('map', { zoomControl: false }).setView([42.5, 12.5], 6);
+    L.control.zoom({ position: 'topright' }).addTo(map);
+
+    // Mappa base OpenStreetMap 100% libera e senza chiavi API
+    let osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Fix anti-schermo nero
+    setTimeout(() => { map.invalidateSize(); }, 250);
+
+    let radarFrames = [];
+    let radarLayers = [];
+    let satLayer = null;
+    let currentIndex = 0;
+    let timer = null;
+    let isPlaying = true;
+    let currentMode = 'radar';
+
+    let d = new Date();
+    d.setDate(d.getDate() - 1);
+    let nasaDate = d.toISOString().split('T')[0];
+
+    async function initWeather() {
+      try {
+        let res = await fetch('https://api.rainviewer.com/public/weather-maps.json');
+        let data = await res.json();
+        
+        if (data.radar && data.radar.past) {
+          radarFrames = data.radar.past;
+          buildRadarLayers();
+          setMode('radar');
+        } else {
+          document.getElementById('time-label').textContent = "Dati non disponibili";
+        }
+      } catch (e) {
+        document.getElementById('time-label').textContent = "Errore di rete";
+      }
+    }
+
+    function buildRadarLayers() {
+      radarLayers.forEach(l => map.removeLayer(l.layer));
+      radarLayers = [];
+
+      radarFrames.forEach((item, idx) => {
+        let url = `https://tilecache.rainviewer.com${item.path}/256/{z}/{x}/{y}/2/1_1.png`;
+        let layer = L.tileLayer(url, {
+          tileSize: 256,
+          opacity: 0,
+          transparent: true,
+          zIndex: 100 + idx
+        }).addTo(map);
+        radarLayers.push({ layer: layer, time: item.time });
+      });
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      if (timer) clearInterval(timer);
+
+      document.getElementById('btn-sat').className = mode === 'satellite' ? 'btn btn-active' : 'btn';
+      document.getElementById('btn-radar').className = mode === 'radar' ? 'btn btn-active' : 'btn';
+
+      if (satLayer) {
+        map.removeLayer(satLayer);
+        satLayer = null;
+      }
+
+      if (mode === 'satellite') {
+        radarLayers.forEach(l => l.layer.setOpacity(0));
+        
+        satLayer = L.tileLayer(`https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_SNPP_CorrectedReflectance_TrueColor/default/${nasaDate}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`, {
+          tileSize: 256,
+          maxZoom: 9,
+          opacity: 0.9,
+          zIndex: 50,
+          attribution: 'NASA GIBS'
+        }).addTo(map);
+
+        document.getElementById('mode-label').textContent = "SATELLITE NASA";
+        document.getElementById('time-label').textContent = `Data: ${nasaDate}`;
+        document.getElementById('btn-play').style.display = 'none';
+      } else {
+        document.getElementById('mode-label').textContent = "RADAR PIOGGIA";
+        document.getElementById('btn-play').style.display = 'block';
+        
+        if (radarLayers.length > 0) {
+          currentIndex = radarLayers.length - 1;
+          showFrame(currentIndex);
+          startLoop();
+        }
+      }
+      setTimeout(() => map.invalidateSize(), 50);
+    }
+
+    function showFrame(index) {
+      if (radarLayers.length === 0 || currentMode !== 'radar') return;
+
+      radarLayers.forEach((item, idx) => {
+        item.layer.setOpacity(idx === index ? 0.9 : 0);
+      });
+
+      let timeStr = new Date(radarLayers[index].time * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      document.getElementById('time-label').textContent = `${timeStr} (${index + 1}/${radarLayers.length})`;
+    }
+
+    function startLoop() {
+      if (timer) clearInterval(timer);
+      timer = setInterval(() => {
+        if (!isPlaying || currentMode !== 'radar' || radarLayers.length === 0) return;
+        currentIndex = (currentIndex + 1) % radarLayers.length;
+        showFrame(currentIndex);
+      }, 700);
+    }
+
+    function togglePlay() {
+      isPlaying = !isPlaying;
+      document.getElementById('btn-play').textContent = isPlaying ? "Pausa" : "Play";
+    }
+
+    initWeather();
+  </script>
+
+</body>
+</html>
