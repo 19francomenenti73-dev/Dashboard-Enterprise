@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Nowcasting Italia — Dashboard</title>
+  <title>Nowcasting Italia — Dashboard Enterprise</title>
   
   <style>
     * { 
@@ -83,7 +83,7 @@
       color: #ff2a5f;
     }
 
-    /* Barra Navigazione Compatta CORRETTA */
+    /* Barra Navigazione Compatta */
     .tactical-nav {
       width: 100%;
       height: 32px;
@@ -169,7 +169,107 @@
       }
     }
 
-    /* Pulsante Arcobaleno Pulsante Dedicato con Fix di Resizing */
+    /* Pulsante Arcobaleno Sat-Radar */
     .tactical-btn.rainbow-pulse {
-      background: linear-gradient(90deg, #ff
-                                  
+      background: linear-gradient(90deg, #ff2a5f, #facc15, #4ade80, #00f0ff, #a855f7);
+      background-size: 300% 300%;
+      color: #030712;
+      border: 1px solid #fff;
+      font-weight: 900;
+      flex-shrink: 0 !important;
+      animation: rainbow-animation 4s ease infinite, btn-glow-pulse 2s infinite ease-in-out;
+    }
+
+    .tactical-btn.rainbow-pulse.active {
+      background: #fff;
+      color: #030712;
+      border-color: #00f0ff;
+      box-shadow: 0 0 10px #00f0ff;
+    }
+
+    @keyframes rainbow-animation {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes btn-glow-pulse {
+      0% { box-shadow: 0 0 4px rgba(255,42,95,0.6); }
+      50% { box-shadow: 0 0 10px rgba(0,240,255,0.9); }
+      100% { box-shadow: 0 0 4px rgba(255,42,95,0.6); }
+    }
+
+    /* Contenitore Iframe */
+    .viewscreen-container {
+      width: 100%;
+      flex: 1;
+      background: #000;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #viewscreen-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="bridge-header">
+    <div class="pulsing-title">Nowcasting Italia Dashboard</div>
+    <div class="header-right-group">
+      <button id="audio-btn" class="audio-tactical-btn" onclick="toggleMusic()" title="Colonna Sonora">🔊</button>
+      <div class="status-ok">● OK</div>
+    </div>
+  </header>
+
+  <audio id="tactical-audio" src="https://files.catbox.moe/ltr70o.mp3" loop preload="auto"></audio>
+
+  <nav class="tactical-nav">
+    <button class="tactical-btn alert active" onclick="switchTracker('https://19francomenenti73-dev.github.io/M.A.T.S./', this)">⚡ MATS 3D</button>
+    <button class="tactical-btn amber" onclick="switchTracker('https://19francomenenti73-dev.github.io/M.A.T.S.-REGIONALE/', this)">⚡ M.A.T.S. Regionale</button>
+    <button class="tactical-btn" onclick="switchTracker('https://19francomenenti73-dev.github.io/Dashboard-Enterprise/3d-mesoscale.html', this)">⚡ 3D Mesoscala</button>
+    <button class="tactical-btn amber" onclick="switchTracker('https://19francomenenti73-dev.github.io/3D-Nowcasting-Italia-Storm-Tracker/', this)">🛰️ Storm Tracker</button>
+    <button class="tactical-btn amber" onclick="switchTracker('https://19francomenenti73-dev.github.io/Snow-tracker/', this)">❄️ Snow Tracker</button>
+    <button class="tactical-btn alert" onclick="switchTracker('https://19francomenenti73-dev.github.io/NOWCASTING-ITALIA-TITAN-CONVECTIVE-TRACKER/', this)">🌐 Mesoscale TITAN</button>
+    <button class="tactical-btn alert" onclick="switchTracker('https://19francomenenti73-dev.github.io/hurricane-tracker/', this)">🌀 Hurricane Tracker</button>
+    <button class="tactical-btn alert" onclick="switchTracker('https://19francomenenti73-dev.github.io/earthquake-tracker-/', this)">🌋 Earthquake Tracker</button>
+    <button class="tactical-btn" onclick="switchTracker('https://19francomenenti73-dev.github.io/Dashboard-Enterprise/world-tracker.html', this)">🌍 World Storm Tracker</button>
+    <button class="tactical-btn alert" onclick="switchTracker('https://19francomenenti73-dev.github.io/archivio-eventi/', this)">📍 Archivio Eventi</button>
+    <button class="tactical-btn lab-exp-btn" onclick="switchTracker('https://19francomenenti73-dev.github.io/Dashboard-Enterprise/space-weather-correlation.html', this)"><span class="lightning-pulse">⚡</span> LABORATORY EXP</button>
+    <button class="tactical-btn rainbow-pulse" onclick="switchTracker('https://19francomenenti73-dev.github.io/Dashboard-Enterprise/satellite-radar.html', this)">🛰️ SATELLITE & RADAR</button>
+  </nav>
+
+  <div class="viewscreen-container">
+    <iframe id="viewscreen-iframe" src="https://19francomenenti73-dev.github.io/M.A.T.S./" allowfullscreen></iframe>
+  </div>
+
+  <script>
+    function switchTracker(url, btnElement) {
+      document.getElementById('viewscreen-iframe').src = url;
+      document.querySelectorAll('.tactical-btn').forEach(b => b.classList.remove('active'));
+      btnElement.classList.add('active');
+    }
+
+    function toggleMusic() {
+      const audio = document.getElementById('tactical-audio');
+      const btn = document.getElementById('audio-btn');
+
+      if (audio.paused) {
+        audio.play().then(() => {
+          btn.classList.add('playing');
+          btn.innerText = '🎶';
+        }).catch(err => console.log(err));
+      } else {
+        audio.pause();
+        btn.classList.remove('playing');
+        btn.innerText = '🔊';
+      }
+    }
+  </script>
+
+</body>
+</html>
