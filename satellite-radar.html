@@ -115,17 +115,25 @@
       if (mode === 'satellite') {
         radarLayers.forEach(l => l.layer.setOpacity(0));
 
-        satLayer = L.tileLayer(`https://gibs-a.earthdata.nasa.gov/wmts/epsg3857/all/VIIRS_SNPP_CorrectedReflectance_TrueColor/default/${nasaDate}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`, {
-          tileSize: 256,
-          maxZoom: 9,
-          opacity: 0.9,
-          zIndex: 50,
-          attribution: 'NASA GIBS'
-        }).addTo(map);
+        satLayer = L.tileLayer.wms(
+          'https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi',
+          {
+            layers: 'VIIRS_SNPP_CorrectedReflectance_TrueColor',
+            styles: '',
+            format: 'image/jpeg',
+            transparent: false,
+            version: '1.1.1',
+            srs: 'EPSG:3857',
+            TIME: nasaDate,
+            opacity: 0.9,
+            attribution: 'NASA GIBS'
+          }
+        ).addTo(map);
 
         document.getElementById('mode-label').textContent = "SATELLITE NASA";
         document.getElementById('time-label').textContent = `Data: ${nasaDate}`;
         document.getElementById('btn-play').style.display = 'none';
+
       } else {
         document.getElementById('mode-label').textContent = "RADAR PIOGGIA";
         document.getElementById('btn-play').style.display = 'block';
