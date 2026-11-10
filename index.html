@@ -1,266 +1,434 @@
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Nowcasting Italia — Dashboard</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Nowcasting Italia — Dashboard</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+html, body {
+  width: 100%;
+  height: 100%;
+  background: #030712;
+  font-family: system-ui, -apple-system, sans-serif;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.bridge-header {
+  width: 100%;
+  height: 32px;
+  min-height: 32px;
+  background: #080e1c;
+  border-bottom: 2px solid #00f0ff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 8px;
+  flex-shrink: 0;
+  z-index: 10;
+}
+.pulsing-title {
+  font-size: 9px;
+  font-weight: 900;
+  color: #00f0ff;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  animation: blue-pulse 2s infinite ease-in-out;
+}
+@keyframes blue-pulse {
+  0%, 100% {
+    opacity: .6;
+    text-shadow: 0 0 4px rgba(0,240,255,.4);
+  }
+  50% {
+    opacity: 1;
+    text-shadow: 0 0 12px rgba(0,240,255,.9);
+  }
+}
+.header-right-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.status-ok {
+  font-size: 8px;
+  color: #4ade80;
+  font-weight: 800;
+}
+.audio-tactical-btn {
+  background: rgba(8,14,28,.9);
+  border: 1px solid #4ade80;
+  color: #4ade80;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  font-size: 10px;
+}
+.audio-tactical-btn.playing {
+  border-color: #ff2a5f;
+  color: #ff2a5f;
+}
+.tactical-nav {
+  width: 100%;
+  height: 32px;
+  min-height: 32px;
+  background: #0d1527;
+  border-bottom: 1px solid rgba(0,240,255,.3);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  flex-shrink: 0;
+  z-index: 10;
+}
+.tactical-btn {
+  background: rgba(13,25,48,.9);
+  color: #00f0ff;
+  border: 1px solid rgba(0,240,255,.4);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 7.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  cursor: pointer;
+  flex-shrink: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.tactical-btn.active {
+  background: #00f0ff;
+  color: #030712;
+  font-weight: 900;
+}
+.tactical-btn.amber {
+  border-color: #facc15;
+  color: #facc15;
+}
+.tactical-btn.amber.active {
+  background: #facc15;
+  color: #030712;
+}
+.tactical-btn.alert {
+  border-color: #ff2a5f;
+  color: #ff2a5f;
+}
+.tactical-btn.alert.active {
+  background: #ff2a5f;
+  color: #fff;
+}
+.tactical-btn.lab-exp-btn {
+  background: rgba(13,25,48,.9);
+  border: 2px solid #facc15;
+  color: #facc15;
+  font-weight: 900;
+  flex-shrink: 0 !important;
+  box-shadow: 0 0 8px rgba(250,204,21,.3);
+  transition: all .3s ease;
+}
+.tactical-btn.lab-exp-btn:hover,
+.tactical-btn.lab-exp-btn.active {
+  background: #facc15;
+  color: #030712;
+  box-shadow: 0 0 14px rgba(250,204,21,.8);
+}
+.lightning-pulse {
+  color: #00f0ff;
+  display: inline-block;
+  margin-right: 3px;
+  animation: blueLightningPulse 1.2s infinite alternate;
+}
+@keyframes blueLightningPulse {
+  0% {
+    text-shadow: 0 0 4px #00f0ff;
+    transform: scale(1);
+  }
+  100% {
+    text-shadow: 0 0 12px #00f0ff;
+    transform: scale(1.25);
+  }
+}
+.tactical-btn.rainbow-pulse {
+  background: linear-gradient(
+    90deg,#ff2a5f,#facc15,#4ade80,#00f0ff,#a855f7
+  );
+  background-size: 300% 300%;
+  color: #030712;
+  border: 1px solid #fff;
+  font-weight: 900;
+  flex-shrink: 0 !important;
+  animation: rainbow-animation 4s ease infinite,
+             btn-glow-pulse 2s infinite ease-in-out;
+}
+.tactical-btn.rainbow-pulse.active {
+  background: #fff;
+  color: #030712;
+  border-color: #00f0ff;
+  box-shadow: 0 0 10px #00f0ff;
+}
+@keyframes rainbow-animation {
+  0%,100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@keyframes btn-glow-pulse {
+  0%,100% { box-shadow: 0 0 4px rgba(255,42,95,.6); }
+  50% { box-shadow: 0 0 10px rgba(0,240,255,.9); }
+}
+/* I.R.I.D.E. — Occhio felino */
+.tactical-btn.iride-btn {
+  position: relative;
+  height: 27px;
+  gap: 5px;
+  padding: 2px 9px 2px 5px;
+  overflow: hidden;
+  border: 1px solid #51baff;
+  border-radius: 6px;
+  background: linear-gradient(110deg,#08172d,#103d68,#08172d);
+  color: #a9e8ff;
+  box-shadow: inset 0 0 8px #278cff44,
+              0 0 7px #278cff44;
+  animation: iride-border 4s ease-in-out infinite;
+}
+.iride-eye {
+  position: relative;
+  width: 28px;
+  height: 19px;
+  flex: 0 0 28px;
+  display: grid;
+  place-items: center;
+}
+.iride-eye-outline {
+  position: absolute;
+  width: 25px;
+  height: 15px;
+  border: 1.5px solid #8cdbff;
+  border-radius: 75% 12%;
+  transform: rotate(45deg);
+  box-shadow: 0 0 5px #42b8ff;
+}
+.iride-iris {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 1px solid #a4edff;
+  background: conic-gradient(
+    #12509a,#3bd7f0,#7b63ff,#39cfff,#12509a
+  );
+  box-shadow: 0 0 7px #3bbdff;
+  display: grid;
+  place-items: center;
+  animation: cat-look 5.5s ease-in-out infinite,
+             cat-colors 8s linear infinite;
+}
+.iride-pupil {
+  width: 3px;
+  height: 11px;
+  border-radius: 50%;
+  background: #020917;
+  box-shadow: 1px 0 2px #c2faff;
+  animation: cat-pupil 5.5s ease-in-out infinite;
+}
+.iride-name {
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: 1.3px;
+  animation: iride-text 2.4s ease-in-out infinite;
+}
+@keyframes cat-look {
+  0%,100% { transform: translateX(-3px); }
+  25% { transform: translateX(3px); }
+  50% { transform: translateX(2px); }
+  75% { transform: translateX(-2px); }
+}
+@keyframes cat-colors {
+  0%,100% { filter: hue-rotate(0deg); }
+  50% { filter: hue-rotate(65deg); }
+}
+@keyframes cat-pupil {
+  0%,100% { transform: scaleX(.75); }
+  25% { transform: scaleX(1.5); }
+  50% { transform: scaleX(.55); }
+  75% { transform: scaleX(1.25); }
+}
+@keyframes iride-text {
+  0%,100% { text-shadow: 0 0 3px #1f85ff; }
+  50% { text-shadow: 0 0 10px #6de6ff; }
+}
+@keyframes iride-border {
+  0%,100% { border-color: #267bd3; }
+  50% { border-color: #83e4ff; }
+}
+.tactical-btn.iride-btn.active {
+  color: #d6f6ff;
+  background: linear-gradient(110deg,#0a2442,#14518b,#0a2442);
+  box-shadow: 0 0 10px #3aafff88;
+}
   
-  <style>
-    * { 
-      margin: 0; 
-      padding: 0; 
-      box-sizing: border-box; 
-    }
-
-    html, body {
-      width: 100%;
-      height: 100%;
-      background: #030712;
-      font-family: system-ui, -apple-system, sans-serif;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    /* Header Compatto Ridotto */
-    .bridge-header {
-      width: 100%;
-      height: 32px;
-      min-height: 32px;
-      background: #080e1c;
-      border-bottom: 2px solid #00f0ff;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0 8px;
-      flex-shrink: 0;
-      z-index: 10;
-    }
-
-    .pulsing-title {
-      font-size: 9px;
-      font-weight: 900;
-      color: #00f0ff;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      animation: blue-pulse 2s infinite ease-in-out;
-    }
-
-    @keyframes blue-pulse {
-      0% { opacity: 0.6; text-shadow: 0 0 4px rgba(0,240,255,0.4); }
-      50% { opacity: 1; text-shadow: 0 0 12px rgba(0,240,255,0.9); }
-      100% { opacity: 0.6; text-shadow: 0 0 4px rgba(0,240,255,0.4); }
-    }
-
-    .header-right-group {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .status-ok {
-      font-size: 8px;
-      color: #4ade80;
-      font-weight: 800;
-    }
-
-    .audio-tactical-btn {
-      background: rgba(8, 14, 28, 0.9);
-      border: 1px solid #4ade80;
-      color: #4ade80;
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      font-size: 10px;
-    }
-
-    .audio-tactical-btn.playing {
-      border-color: #ff2a5f;
-      color: #ff2a5f;
-    }
-
-    /* Barra Navigazione Compatta */
-    .tactical-nav {
-      width: 100%;
-      height: 32px;
-      min-height: 32px;
-      background: #0d1527;
-      border-bottom: 1px solid rgba(0, 240, 255, 0.3);
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      padding: 0 8px;
-      overflow-x: auto;
-      overflow-y: hidden;
-      white-space: nowrap;
-      -webkit-overflow-scrolling: touch;
-      flex-shrink: 0;
-      z-index: 10;
-    }
-
-    .tactical-btn {
-      background: rgba(13, 25, 48, 0.9);
-      color: #00f0ff;
-      border: 1px solid rgba(0, 240, 255, 0.4);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 7.5px;
-      font-weight: 800;
-      text-transform: uppercase;
-      cursor: pointer;
-      flex-shrink: 0 !important;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .tactical-btn.active {
-      background: #00f0ff;
-      color: #030712;
-      font-weight: 900;
-    }
-
-    .tactical-btn.amber { border-color: #facc15; color: #facc15; }
-    .tactical-btn.amber.active { background: #facc15; color: #030712; }
-
-    .tactical-btn.alert { border-color: #ff2a5f; color: #ff2a5f; }
-    .tactical-btn.alert.active { background: #ff2a5f; color: #fff; }
-
-    /* Pulsante Laboratory EXP */
-    .tactical-btn.lab-exp-btn {
-      background: rgba(13, 25, 48, 0.9);
-      border: 2px solid #facc15;
-      color: #facc15;
-      font-weight: 900;
-      flex-shrink: 0 !important;
-      box-shadow: 0 0 8px rgba(250, 204, 21, 0.3);
-      transition: all 0.3s ease;
-    }
-
-    .tactical-btn.lab-exp-btn:hover,
-    .tactical-btn.lab-exp-btn.active {
-      background: #facc15;
-      color: #030712;
-      box-shadow: 0 0 14px rgba(250, 204, 21, 0.8);
-    }
-
-    .lightning-pulse {
-      color: #00f0ff;
-      display: inline-block;
-      margin-right: 3px;
-      animation: blueLightningPulse 1.2s infinite alternate;
-    }
-
-    @keyframes blueLightningPulse {
-      0% { text-shadow: 0 0 4px #00f0ff; transform: scale(1); }
-      100% { text-shadow: 0 0 12px #00f0ff; transform: scale(1.25); }
-    }
-
-    /* Pulsante Arcobaleno Satellite & Radar */
-    .tactical-btn.rainbow-pulse {
-      background: linear-gradient(90deg, #ff2a5f, #facc15, #4ade80, #00f0ff, #a855f7);
-      background-size: 300% 300%;
-      color: #030712;
-      border: 1px solid #fff;
-      font-weight: 900;
-      flex-shrink: 0 !important;
-      animation: rainbow-animation 4s ease infinite, btn-glow-pulse 2s infinite ease-in-out;
-    }
-
-    .tactical-btn.rainbow-pulse.active {
-      background: #fff;
-      color: #030712;
-      border-color: #00f0ff;
-      box-shadow: 0 0 10px #00f0ff;
-    }
-
-    @keyframes rainbow-animation {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-
-    @keyframes btn-glow-pulse {
-      0% { box-shadow: 0 0 4px rgba(255,42,95,0.6); }
-      50% { box-shadow: 0 0 10px rgba(0,240,255,0.9); }
-      100% { box-shadow: 0 0 4px rgba(255,42,95,0.6); }
-    }
-
-    /* Contenitore Iframe */
-    .viewscreen-container {
-      width: 100%;
-      flex: 1;
-      background: #000;
-      overflow: hidden;
-      position: relative;
-    }
-
-    #viewscreen-iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-      display: block;
-    }
-  </style>
+/* Accessibilità animazioni */
+@media (prefers-reduced-motion: reduce) {
+  .iride-iris,
+  .iride-pupil,
+  .iride-name,
+  .iride-btn {
+    animation: none !important;
+  }
+}
+/* Visualizzatore originale Dashboard */
+.viewscreen-container {
+  width: 100%;
+  flex: 1;
+  background: #000;
+  overflow: hidden;
+  position: relative;
+}
+#viewscreen-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+</style>
 </head>
 <body>
 
-  <header class="bridge-header">
-    <div class="pulsing-title">Nowcasting Italia Dashboard</div>
-    <div class="header-right-group">
-      <button id="audio-btn" class="audio-tactical-btn" onclick="toggleMusic()" title="Colonna Sonora">🔊</button>
-      <div class="status-ok">● OK</div>
-    </div>
-  </header>
-
-  <audio id="tactical-audio" src="https://files.catbox.moe/ltr70o.mp3" loop preload="auto"></audio>
-
-  <nav class="tactical-nav">
-    <button class="tactical-btn alert active" onclick="switchTracker('https://19francomenenti73-dev.github.io/M.A.T.S./', this)">⚡ MATS 3D</button>
-    <button class="tactical-btn amber" onclick="switchTracker('https://19francomenenti73-dev.github.io/M.A.T.S.-REGIONALE/', this)">⚡ M.A.T.S. Regionale</button>
-    <button class="tactical-btn" onclick="switchTracker('https://19francomenenti73-dev.github.io/Dashboard-Enterprise/3d-mesoscale.html', this)">⚡ 3D Mesoscala</button>
-    <button class="tactical-btn amber" onclick="switchTracker('https://19francomenenti73-dev.github.io/3D-Nowcasting-Italia-Storm-Tracker/', this)">🛰️ Storm Tracker</button>
-    <button class="tactical-btn amber" onclick="switchTracker('https://19francomenenti73-dev.github.io/Snow-tracker/', this)">❄️ Snow Tracker</button>
-    <button class="tactical-btn alert" onclick="switchTracker('https://19francomenenti73-dev.github.io/NOWCASTING-ITALIA-TITAN-CONVECTIVE-TRACKER/', this)">🌐 Mesoscale TITAN</button>
-    <button class="tactical-btn alert" onclick="switchTracker('https://19francomenenti73-dev.github.io/hurricane-tracker/', this)">🌀 Hurricane Tracker</button>
-    <button class="tactical-btn alert" onclick="switchTracker('https://19francomenenti73-dev.github.io/earthquake-tracker-/', this)">🌋 Earthquake Tracker</button>
-    <button class="tactical-btn" onclick="switchTracker('https://19francomenenti73-dev.github.io/Dashboard-Enterprise/world-tracker.html', this)">🌍 World Storm Tracker</button>
-    <button class="tactical-btn alert" onclick="switchTracker('https://19francomenenti73-dev.github.io/archivio-eventi/', this)">📍 Archivio Eventi</button>
-    <button class="tactical-btn lab-exp-btn" onclick="switchTracker('https://19francomenenti73-dev.github.io/Dashboard-Enterprise/space-weather-correlation.html', this)"><span class="lightning-pulse">⚡</span> LABORATORY EXP</button>
-    <button class="tactical-btn rainbow-pulse" onclick="switchTracker('https://19francomenenti73-dev.github.io/Dashboard-Enterprise/satellite-radar.html', this)">🛰️ SATELLITE & RADAR</button>
-  </nav>
-
-  <div class="viewscreen-container">
-    <iframe id="viewscreen-iframe" src="https://19francomenenti73-dev.github.io/M.A.T.S./" allowfullscreen></iframe>
+<header class="bridge-header">
+  <div class="pulsing-title">
+    Nowcasting Italia Dashboard
   </div>
+  <div class="header-right-group">
+    <button
+      id="audio-btn"
+      class="audio-tactical-btn"
+      onclick="toggleMusic()"
+      title="Colonna Sonora"
+    >🔊</button>
+    <div class="status-ok">● OK</div>
+  </div>
+</header>
 
-  <script>
-    function switchTracker(url, btnElement) {
-      document.getElementById('viewscreen-iframe').src = url;
-      document.querySelectorAll('.tactical-btn').forEach(b => b.classList.remove('active'));
-      btnElement.classList.add('active');
-    }
+<audio
+  id="tactical-audio"
+  src="https://files.catbox.moe/ltr70o.mp3"
+  loop
+  preload="auto"
+></audio>
 
-    function toggleMusic() {
-      const audio = document.getElementById('tactical-audio');
-      const btn = document.getElementById('audio-btn');
+<nav class="tactical-nav">
 
-      if (audio.paused) {
-        audio.play().then(() => {
-          btn.classList.add('playing');
-          btn.innerText = '🎶';
-        }).catch(err => console.log(err));
-      } else {
-        audio.pause();
-        btn.classList.remove('playing');
-        btn.innerText = '🔊';
-      }
-    }
-  </script>
+  <!-- Nuovo I.R.I.D.E. predefinito -->
+  <button
+    class="tactical-btn iride-btn active"
+    onclick="switchTracker('https://19francomenenti73-dev.github.io/Iride/',this)"
+    title="I.R.I.D.E. — Radar Intelligence 3D"
+    aria-label="Apri I.R.I.D.E."
+  >
+    <span class="iride-eye" aria-hidden="true">
+      <span class="iride-eye-outline"></span>
+      <span class="iride-iris">
+        <span class="iride-pupil"></span>
+      </span>
+    </span>
+    <span class="iride-name">I.R.I.D.E.</span>
+  </button>
+
+  <button
+    class="tactical-btn"
+    onclick="switchTracker('https://19francomenenti73-dev.github.io/Dashboard-Enterprise/3d-mesoscale.html',this)"
+  >⚡ 3D Mesoscala</button>
+
+  <button
+    class="tactical-btn amber"
+    onclick="switchTracker('https://19francomenenti73-dev.github.io/3D-Nowcasting-Italia-Storm-Tracker/',this)"
+  >🛰️ Storm Tracker</button>
+
+  <button
+    class="tactical-btn amber"
+    onclick="switchTracker('https://19francomenenti73-dev.github.io/Snow-tracker/',this)"
+  >❄️ Snow Tracker</button>
+
+  <button
+    class="tactical-btn alert"
+    onclick="switchTracker('https://19francomenenti73-dev.github.io/hurricane-tracker/',this)"
+  >🌀 Hurricane Tracker</button>
+
+  <button
+    class="tactical-btn alert"
+    onclick="switchTracker('https://19francomenenti73-dev.github.io/earthquake-tracker-/',this)"
+  >🌋 Earthquake Tracker</button>
+
+  <button
+    class="tactical-btn"
+    onclick="switchTracker('https://19francomenenti73-dev.github.io/Dashboard-Enterprise/world-tracker.html',this)"
+  >🌍 World Storm Tracker</button>
+
+  <button
+    class="tactical-btn alert"
+    onclick="switchTracker('https://19francomenenti73-dev.github.io/archivio-eventi/',this)"
+  >📍 Archivio Eventi</button>
+
+  <button
+    class="tactical-btn lab-exp-btn"
+    onclick="switchTracker('https://19francomenenti73-dev.github.io/Dashboard-Enterprise/space-weather-correlation.html',this)"
+  >
+    <span class="lightning-pulse">⚡</span>
+    LABORATORY EXP
+  </button>
+
+  <button
+    class="tactical-btn rainbow-pulse"
+    onclick="switchTracker('https://19francomenenti73-dev.github.io/Dashboard-Enterprise/satellite-radar.html',this)"
+  >🛰️ SATELLITE & RADAR</button>
+
+</nav>
+
+<div class="viewscreen-container">
+  <iframe
+    id="viewscreen-iframe"
+    src="https://19francomenenti73-dev.github.io/Iride/"
+    title="Visualizzatore Nowcasting Italia"
+    allowfullscreen
+  ></iframe>
+</div>
+
+<script>
+function switchTracker(url, btnElement) {
+  document.getElementById('viewscreen-iframe').src = url;
+  document.querySelectorAll('.tactical-btn').forEach(
+    b => b.classList.remove('active')
+  );
+  btnElement.classList.add('active');
+}
+
+function toggleMusic() {
+  const audio = document.getElementById('tactical-audio');
+  const btn = document.getElementById('audio-btn');
+
+  if (audio.paused) {
+    audio.play().then(() => {
+      btn.classList.add('playing');
+      btn.innerText = '🎶';
+    }).catch(err => console.log(err));
+  } else {
+    audio.pause();
+    btn.classList.remove('playing');
+    btn.innerText = '🔊';
+  }
+}
+</script>
 
 </body>
 </html>
