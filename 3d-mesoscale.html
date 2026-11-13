@@ -1,317 +1,282 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nowcasting Italia 3D Storm Chaser Track</title>
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <style>
-        html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: #0f172a;
-            color: #f8fafc;
-        }
-        #map {
-            width: 100%;
-            height: 100vh;
-        }
-        .leaflet-container svg {
-            position: absolute;
-        }
-        /* Banner superiore ancorato in blu elettrico */
-        .top-banner {
-            position: absolute;
-            top: 12px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            background: rgba(15, 23, 42, 0.9);
-            backdrop-filter: blur(8px);
-            padding: 8px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            font-weight: 700;
-            font-size: 14px;
-            color: #3b82f6;
-            letter-spacing: 0.5px;
-            pointer-events: none;
-            white-space: nowrap;
-        }
-        /* Banner inferiore pulito, in stile dark mode professionale */
-        .map-banner {
-            position: absolute;
-            bottom: 16px;
-            left: 16px;
-            right: 16px;
-            z-index: 1000;
-            background: rgba(15, 23, 42, 0.9);
-            backdrop-filter: blur(8px);
-            padding: 10px 16px;
-            border-radius: 10px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 13px;
-            color: #e2e8f0;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-        .banner-section {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .counter-badge {
-            font-weight: 700;
-            color: #f87171;
-            font-size: 14px;
-            background: rgba(248, 113, 113, 0.1);
-            padding: 2px 8px;
-            border-radius: 6px;
-        }
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 12px;
-            color: #cbd5e1;
-        }
-        .legend-line {
-            width: 18px;
-            height: 3px;
-            display: inline-block;
-            border-radius: 2px;
-        }
-        /* Marker 3D trasparente */
-        .cell-3d-wrapper {
-            background: transparent;
-            border: none;
-            box-shadow: none;
-            text-align: center;
-            transition: transform 0.2s ease;
-        }
-        .cell-3d-wrapper:hover {
-            transform: scale(1.15);
-            z-index: 9999;
-        }
-        /* Anello verde pulsante per il baricentro */
-        .centroid-ring-icon {
-            background: transparent;
-            border: none;
-        }
-        .centroid-ring {
-            width: 16px;
-            height: 16px;
-            border: 2.5px solid #22c55e;
-            border-radius: 50%;
-            background: rgba(34, 197, 94, 0.2);
-            animation: pulse-green-ring 1.4s infinite ease-in-out;
-            box-shadow: 0 0 8px rgba(34, 197, 94, 0.8);
-        }
-        @keyframes pulse-green-ring {
-            0% { transform: scale(0.7); opacity: 0.5; }
-            50% { transform: scale(1.35); opacity: 1; }
-            100% { transform: scale(0.7); opacity: 0.5; }
-        }
-        /* Nodi storici blu */
-        .history-node-dot {
-            width: 7px;
-            height: 7px;
-            background: #3b82f6;
-            border: 1px solid #ffffff;
-            border-radius: 50%;
-            box-shadow: 0 0 3px rgba(0,0,0,0.8);
-        }
-        /* Vettore predittivo rosso pulsante */
-        .pulsing-arrow-icon {
-            background: transparent;
-            border: none;
-        }
-        .pulsing-arrow {
-            width: 0;
-            height: 0;
-            border-left: 6px solid transparent;
-            border-right: 6px solid transparent;
-            border-bottom: 12px solid #ef4444;
-            animation: pulse-arrow 1.2s infinite;
-            filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.9));
-        }
-        @keyframes pulse-arrow {
-            0% { transform: scale(0.8); opacity: 0.6; }
-            50% { transform: scale(1.35); opacity: 1; }
-            100% { transform: scale(0.8); opacity: 0.6; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nowcasting Italia 3D Storm Chaser Track</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<style>
+html,body{
+ height:100%;margin:0;padding:0;
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+ background:#0f172a;color:#f8fafc
+}
+#map{width:100%;height:100vh}
+.leaflet-container svg{position:absolute}
+.top-banner{
+ position:absolute;top:12px;left:50%;
+ transform:translateX(-50%);z-index:1000;
+ background:rgba(15,23,42,.9);
+ backdrop-filter:blur(8px);
+ padding:8px 20px;border-radius:8px;
+ box-shadow:0 4px 15px rgba(0,0,0,.4);
+ border:1px solid rgba(59,130,246,.3);
+ font-weight:700;font-size:14px;color:#3b82f6;
+ letter-spacing:.5px;pointer-events:none;white-space:nowrap
+}
+.map-banner{
+ position:absolute;bottom:16px;left:16px;right:16px;
+ z-index:1000;background:rgba(15,23,42,.9);
+ backdrop-filter:blur(8px);padding:10px 16px;
+ border-radius:10px;
+ box-shadow:0 10px 25px -5px rgba(0,0,0,.5);
+ border:1px solid rgba(255,255,255,.1);
+ display:flex;justify-content:space-between;
+ align-items:center;font-size:13px;color:#e2e8f0;
+ flex-wrap:wrap;gap:12px
+}
+.banner-section{display:flex;align-items:center;gap:12px}
+.counter-badge{
+ font-weight:700;color:#f87171;font-size:14px;
+ background:rgba(248,113,113,.1);
+ padding:2px 8px;border-radius:6px
+}
+.legend-item{
+ display:flex;align-items:center;gap:6px;
+ font-size:12px;color:#cbd5e1
+}
+.legend-line{
+ width:18px;height:3px;display:inline-block;border-radius:2px
+}
+.cell-3d-wrapper{
+ background:transparent;border:none;box-shadow:none;
+ text-align:center;transition:transform .2s ease
+}
+.cell-3d-wrapper:hover{
+ transform:scale(1.15);z-index:9999
+}
+.centroid-ring-icon{background:transparent;border:none}
+.centroid-ring{
+ width:16px;height:16px;border:2.5px solid #22c55e;
+ border-radius:50%;background:rgba(34,197,94,.2);
+ animation:pulse-green-ring 1.4s infinite ease-in-out;
+ box-shadow:0 0 8px rgba(34,197,94,.8)
+}
+@keyframes pulse-green-ring{
+ 0%{transform:scale(.7);opacity:.5}
+ 50%{transform:scale(1.35);opacity:1}
+ 100%{transform:scale(.7);opacity:.5}
+}
+.history-node-dot{
+ width:7px;height:7px;background:#3b82f6;
+ border:1px solid #fff;border-radius:50%;
+ box-shadow:0 0 3px rgba(0,0,0,.8)
+}
+.pulsing-arrow-icon{background:transparent;border:none}
+.pulsing-arrow{
+ width:0;height:0;border-left:6px solid transparent;
+ border-right:6px solid transparent;
+ border-bottom:12px solid #ef4444;
+ animation:pulse-arrow 1.2s infinite;
+ filter:drop-shadow(0 0 4px rgba(239,68,68,.9))
+}
+@keyframes pulse-arrow{
+ 0%{transform:scale(.8);opacity:.6}
+ 50%{transform:scale(1.35);opacity:1}
+ 100%{transform:scale(.8);opacity:.6}
+}
+</style>
 </head>
 <body>
+<div class="top-banner">Nowcasting Italia Mesoscale Tracker</div>
+<div class="map-banner">
+ <div class="banner-section">
+  <span><b>Tracker 3D:</b>
+   <span id="active-count" class="counter-badge">0</span>
+   celle attive
+  </span>
+  <span id="last-update" style="font-size:11px;color:#94a3b8;border-left:1px solid rgba(255,255,255,.2);padding-left:10px">
+   Aggiornamento in corso...
+  </span>
+ </div>
+ <div class="banner-section" style="flex-wrap:wrap">
+  <div class="legend-item">
+   <span class="legend-line" style="background:#3b82f6"></span>
+   Storico (15m)
+  </div>
+  <div class="legend-item">
+   <span style="width:10px;height:10px;border:2px solid #22c55e;border-radius:50%;display:inline-block"></span>
+   Centroide
+  </div>
+  <div class="legend-item">
+   <span style="width:10px;height:10px;background:#ef4444;display:inline-block;clip-path:polygon(50% 0%,0% 100%,100% 100%)"></span>
+   Predittivo (3h)
+  </div>
+ </div>
+</div>
+<div id="map"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+var map=L.map('map').setView([42.5,12.5],6);
 
-    <div class="top-banner">Nowcasting Italia Mesoscale Tracker</div>
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+ maxZoom:19,
+ attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+}).addTo(map);
 
-    <div class="map-banner">
-        <div class="banner-section">
-            <span><b>Tracker 3D:</b> <span id="active-count" class="counter-badge">0</span> celle attive</span>
-            <span id="last-update" style="font-size: 11px; color: #94a3b8; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 10px;">Aggiornamento in corso...</span>
-        </div>
-        <div class="banner-section" style="flex-wrap: wrap;">
-            <div class="legend-item"><span class="legend-line" style="background: #3b82f6;"></span> Storico (15m)</div>
-            <div class="legend-item"><span style="width: 10px; height: 10px; border: 2px solid #22c55e; border-radius: 50%; display:inline-block;"></span> Centroide</div>
-            <div class="legend-item"><span style="width: 10px; height: 10px; background: #ef4444; display:inline-block; clip-path: polygon(50% 0%, 0% 100%, 100% 100%);"></span> Predittivo (3h)</div>
-        </div>
-    </div>
+var radarLayer=null;
+var cellsLayer=L.layerGroup().addTo(map);
+var vectorsLayer=L.layerGroup().addTo(map);
 
-    <div id="map"></div>
+const BASE_URL='https://19francomenenti73-dev.github.io/nowcasting-italia-mesoscale-tracker/';
+    
+function loadTrackerData(){
+ fetch(BASE_URL+'storm_cells.json?'+new Date().getTime())
+ .then(response=>{
+  if(!response.ok)throw new Error('File dati non disponibile.');
+  return response.json();
+ })
+ .then(data=>{
+  if(data.radar_tile&&data.radar_tile.host&&data.radar_tile.path){
+   let radarUrl=data.radar_tile.host+data.radar_tile.path+
+    '/256/{z}/{x}/{y}/2/1_1.png';
+   if(!radarLayer){
+    radarLayer=L.tileLayer(radarUrl,{
+     tileSize:256,
+     opacity:.65,
+     attribution:'Radar by RainViewer',
+     zIndex:200
+    }).addTo(map);
+   }else{
+    radarLayer.setUrl(radarUrl);
+   }
+  }
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script>
-        var map = L.map('map').setView([42.5, 12.5], 6);
+  cellsLayer.clearLayers();
+  vectorsLayer.clearLayers();
 
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
-            maxZoom: 19,
-            attribution: 'Tiles &copy; Esri'
-        }).addTo(map);
+  let structures=data.macro_structures||[];
+  let count=structures.length;
 
-        var radarLayer = null;
-        var cellsLayer = L.layerGroup().addTo(map);
-        var vectorsLayer = L.layerGroup().addTo(map);
+  structures.forEach(track=>{
+   let center=track.center;
+   let speed=track.speed_kmh||0;
+   let direction=track.direction_deg||0;
+   let intensity=track.intensity||"N/D";
+   let vil=track.vil||0.0;
+   let echoTop=track.echo_top||0.0;
 
-        const BASE_URL = 'https://19francomenenti73-dev.github.io/nowcasting-italia-mesoscale-tracker/';
+   let profileImage=track.profile_image||"";
+   if(profileImage&&!profileImage.startsWith('http')){
+    profileImage=BASE_URL+profileImage;
+   }
 
-        function loadTrackerData() {
-            fetch(BASE_URL + 'storm_cells.json?' + new Date().getTime())
-                .then(response => {
-                    if (!response.ok) throw new Error('File dati non disponibile.');
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.radar_tile && data.radar_tile.host && data.radar_tile.path) {
-                        let radarUrl = data.radar_tile.host + data.radar_tile.path + '/256/{z}/{x}/{y}/2/1_1.png';
-                        if (!radarLayer) {
-                            radarLayer = L.tileLayer(radarUrl, {
-                                tileSize: 256,
-                                opacity: 0.65,
-                                attribution: 'Radar by RainViewer',
-                                zIndex: 200
-                            }).addTo(map);
-                        } else {
-                            radarLayer.setUrl(radarUrl);
-                        }
-                    }
+   if(track.actual_path&&track.actual_path.length>0){
+    let latLngs=track.actual_path.map(p=>[p[0],p[1]]);
+    L.polyline(latLngs,{
+     color:'#3b82f6',weight:4,opacity:.85
+    }).addTo(vectorsLayer);
 
-                    cellsLayer.clearLayers();
-                    vectorsLayer.clearLayers();
+    track.actual_path.forEach((hPoint,index)=>{
+     let minsAgo=(track.actual_path.length-1-index)*15;
+     let nodeIcon=L.divIcon({
+      className:'history-node-icon',
+      html:`<div class="history-node-dot" title="T - ${minsAgo} min"></div>`,
+      iconSize:[8,8],
+      iconAnchor:[4,4]
+     });
+     L.marker([hPoint[0],hPoint[1]],{
+      icon:nodeIcon
+     }).addTo(vectorsLayer);
+    });
+   }
 
-                    let structures = data.macro_structures || [];
-                    let count = structures.length;
+   if(center&&center.length===2){
+    let imageUrl=profileImage+'?'+new Date().getTime();
 
-                    structures.forEach(track => {
-                        let center = track.center; 
-                        let speed = track.speed_kmh || 0;
-                        let direction = track.direction_deg || 0;
-                        let intensity = track.intensity || "N/D";
-                        let vil = track.vil || 0.0;
-                        let echoTop = track.echo_top || 0.0;
-                        
-                        let profileImage = track.profile_image || "";
-                        if (profileImage && !profileImage.startsWith('http')) {
-                            profileImage = BASE_URL + profileImage;
-                        }
+    let customIcon=L.divIcon({
+     className:'custom-div-icon',
+     html:`<div class="cell-3d-wrapper">
+      <img src="${imageUrl}" width="84" height="68"
+       style="display:block" alt="3D Cell">
+      </div>`,
+     iconSize:[92,76],
+     iconAnchor:[46,38]
+    });
 
-                        if (track.actual_path && track.actual_path.length > 0) {
-                            let latLngs = track.actual_path.map(p => [p[0], p[1]]);
-                            L.polyline(latLngs, {
-                                color: '#3b82f6',
-                                weight: 4,
-                                opacity: 0.85
-                            }).addTo(vectorsLayer);
+    let marker=L.marker([center[0],center[1]],{
+     icon:customIcon
+    }).addTo(cellsLayer);
 
-                            track.actual_path.forEach((hPoint, index) => {
-                                let minsAgo = (track.actual_path.length - 1 - index) * 15;
-                                let nodeIcon = L.divIcon({
-                                    className: 'history-node-icon',
-                                    html: `<div class="history-node-dot" title="T - ${minsAgo} min"></div>`,
-                                    iconSize: [8, 8],
-                                    iconAnchor: [4, 4]
-                                });
-                                L.marker([hPoint[0], hPoint[1]], { icon: nodeIcon }).addTo(vectorsLayer);
-                            });
-                        }
+    let centroidIcon=L.divIcon({
+     className:'centroid-ring-icon',
+     html:`<div class="centroid-ring" title="Baricentro"></div>`,
+     iconSize:[16,16],
+     iconAnchor:[8,8]
+    });
 
-                        if (center && center.length === 2) {
-                            let imageUrl = profileImage + '?' + new Date().getTime();
+    L.marker([center[0],center[1]],{
+     icon:centroidIcon
+    }).addTo(cellsLayer);
 
-                            let customIcon = L.divIcon({
-                                className: 'custom-div-icon',
-                                html: `<div class="cell-3d-wrapper">
-                                           <img src="${imageUrl}" width="84" height="68" style="display: block;" alt="3D Cell">
-                                       </div>`,
-                                iconSize: [92, 76],
-                                iconAnchor: [46, 38]
-                            });
+    let popupContent=`
+     <div style="font-size:12px;line-height:1.4;min-width:180px;color:#1e293b">
+      <b>Struttura:</b> ${intensity}<br>
+      <b>Velocità:</b> ${speed} km/h (${direction}°)<br>
+      <b>VIL:</b> ${vil} kg/m² |
+      <b>Top:</b> ${echoTop} km<br>
+      <div style="text-align:center;margin-top:8px;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:6px;padding:6px">
+       <div style="font-size:10px;color:#475569;margin-bottom:3px;font-weight:bold">
+        PROFILO VERTICALE 3D
+       </div>
+       <img src="${imageUrl}" width="140" height="110"
+        style="display:block;margin:0 auto"
+        alt="Profilo Ingrandito">
+      </div>
+     </div>
+    `;
 
-                            let marker = L.marker([center[0], center[1]], { icon: customIcon }).addTo(cellsLayer);
+    marker.bindPopup(popupContent);
+   }
 
-                            let centroidIcon = L.divIcon({
-                                className: 'centroid-ring-icon',
-                                html: `<div class="centroid-ring" title="Baricentro"></div>`,
-                                iconSize: [16, 16],
-                                iconAnchor: [8, 8]
-                            });
-                            L.marker([center[0], center[1]], { icon: centroidIcon }).addTo(cellsLayer);
+   if(track.forecast_path&&track.forecast_path.length>0&&center){
+    let linePoints=[center,...track.forecast_path];
 
-                            let popupContent = `
-                                <div style="font-size: 12px; line-height: 1.4; min-width: 180px; color: #1e293b;">
-                                    <b>Struttura:</b> ${intensity}<br>
-                                    <b>Velocità:</b> ${speed} km/h (${direction}°)<br>
-                                    <b>VIL:</b> ${vil} kg/m² | <b>Top:</b> ${echoTop} km<br>
-                                    <div style="text-align: center; margin-top: 8px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px;">
-                                        <div style="font-size: 10px; color: #475569; margin-bottom: 3px; font-weight: bold;">PROFILO VERTICALE 3D</div>
-                                        <img src="${imageUrl}" width="140" height="110" style="display: block; margin: 0 auto;" alt="Profilo Ingrandito">
-                                    </div>
-                                </div>
-                            `;
+    L.polyline(linePoints,{
+     color:'#ef4444',
+     weight:3.5,
+     dashArray:'6, 8',
+     opacity:.9
+    }).addTo(vectorsLayer);
 
-                            marker.bindPopup(popupContent);
-                        }
+    track.forecast_path.forEach((fPoint,index)=>{
+     let forecastHour=index+1;
+     let arrowIcon=L.divIcon({
+      className:'pulsing-arrow-icon',
+      html:`<div class="pulsing-arrow"
+       title="Previsione +${forecastHour}h"></div>`,
+      iconSize:[16,16],
+      iconAnchor:[8,8]
+     });
 
-                        if (track.forecast_path && track.forecast_path.length > 0 && center) {
-                            let linePoints = [center, ...track.forecast_path];
-                            L.polyline(linePoints, {
-                                color: '#ef4444',
-                                weight: 3.5,
-                                dashArray: '6, 8',
-                                opacity: 0.9
-                            }).addTo(vectorsLayer);
+     L.marker([fPoint[0],fPoint[1]],{
+      icon:arrowIcon
+     }).addTo(vectorsLayer);
+    });
+   }
+  });
 
-                            track.forecast_path.forEach((fPoint, index) => {
-                                let forecastHour = (index + 1);
-                                let arrowIcon = L.divIcon({
-                                    className: 'pulsing-arrow-icon',
-                                    html: `<div class="pulsing-arrow" title="Previsione +${forecastHour}h"></div>`,
-                                    iconSize: [16, 16],
-                                    iconAnchor: [8, 8]
-                                });
-                                L.marker([fPoint[0], fPoint[1]], { icon: arrowIcon }).addTo(vectorsLayer);
-                            });
-                        }
-                    });
+  document.getElementById('active-count').innerText=count;
+  document.getElementById('last-update').innerText=
+   'Aggiornato: '+new Date().toLocaleTimeString();
+ })
+ .catch(error=>{
+  console.log('Attesa dati...',error);
+ });
+}
 
-                    document.getElementById('active-count').innerText = count;
-                    document.getElementById('last-update').innerText = 'Aggiornato: ' + new Date().toLocaleTimeString();
-                })
-                .catch(error => {
-                    console.log('Attesa dati...', error);
-                });
-        }
-
-        loadTrackerData();
-        setInterval(loadTrackerData, 180000);
-    </script>
+loadTrackerData();
+setInterval(loadTrackerData,180000);
+</script>
 </body>
 </html>
