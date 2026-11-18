@@ -278,7 +278,6 @@ html, body {
   background: linear-gradient(110deg,#0a2442,#14518b,#0a2442);
   box-shadow: 0 0 10px #3aafff88;
 }
-  
 /* Accessibilità animazioni */
 @media (prefers-reduced-motion: reduce) {
   .iride-iris,
@@ -297,6 +296,7 @@ html, body {
   position: relative;
 }
 #viewscreen-iframe {
+  
   width: 100%;
   
   height: 100%;
@@ -414,13 +414,49 @@ html, body {
 </div>
 
 <script>
+// Aggiornamento controllato del solo tracker visualizzato.
+// Non modifica le pagine dei tracker né i workflow esterni.
+const TRACKER_REFRESH_MS = 30 * 60 * 1000;
+const trackerFrame = document.getElementById('viewscreen-iframe');
+let activeTrackerUrl = trackerFrame.getAttribute('src');
+let lastTrackerLoad = Date.now();
+
+function trackerUrlWithoutCache(url) {
+  const parsed = new URL(url, window.location.href);
+  parsed.searchParams.delete('_dashboard_refresh');
+  return parsed.toString();
+}
+
+function loadTracker(url) {
+  activeTrackerUrl = trackerUrlWithoutCache(url);
+  const parsed = new URL(activeTrackerUrl);
+  parsed.searchParams.set('_dashboard_refresh', String(Date.now()));
+  lastTrackerLoad = Date.now();
+  trackerFrame.src = parsed.toString();
+}
+
+function refreshTrackerIfNeeded() {
+  if (document.visibilityState === 'hidden') return;
+  if (Date.now() - lastTrackerLoad < TRACKER_REFRESH_MS) return;
+  loadTracker(activeTrackerUrl);
+}
+
 function switchTracker(url, btnElement) {
-  document.getElementById('viewscreen-iframe').src = url;
+  loadTracker(url);
   document.querySelectorAll('.tactical-btn').forEach(
     b => b.classList.remove('active')
   );
   btnElement.classList.add('active');
 }
+
+// In primo piano: controllo periodico, senza ricariche inutili.
+setInterval(refreshTrackerIfNeeded, 60 * 1000);
+// Android può sospendere i timer: al ritorno si verifica subito l'età.
+document.addEventListener('visibilitychange', refreshTrackerIfNeeded);
+window.addEventListener('pageshow', refreshTrackerIfNeeded);
+window.addEventListener('focus', refreshTrackerIfNeeded);
+// Anche alla prima apertura, richiedi una versione non memorizzata dell'iframe.
+loadTracker(activeTrackerUrl);
 
 function toggleMusic() {
   const audio = document.getElementById('tactical-audio');
