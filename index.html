@@ -14,65 +14,105 @@
 html, body {
   width: 100%;
   height: 100%;
+  min-height: 100%;
   background: #030712;
   font-family: system-ui, -apple-system, sans-serif;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
+body {
+  position: relative;
+  padding: 5px;
+  background: linear-gradient(145deg,#030712,#07162b 55%,#030712);
+}
+/* Cornice elettrica: non copre i controlli */
+body::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border: 1px solid #19cfff;
+  border-radius: 12px;
+  pointer-events: none;
+  z-index: 30;
+  animation: electric-frame 4.5s ease-in-out infinite;
+}
+@keyframes electric-frame {
+  0%,100% {
+    border-color: #087fc5;
+    box-shadow: 0 0 4px #008cff66,
+                inset 0 0 4px #008cff33;
+  }
+  50% {
+    border-color: #42eaff;
+    box-shadow: 0 0 11px #00bfff99,
+                inset 0 0 8px #00bfff55;
+  }
+}
 .bridge-header {
   width: 100%;
-  height: 32px;
-  min-height: 32px;
-  background: #080e1c;
-  border-bottom: 2px solid #00f0ff;
+  height: 40px;
+  min-height: 40px;
+  background: linear-gradient(90deg,#061122,#0a1d36,#061122);
+  border-bottom: 1px solid #139bd4;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 8px;
+  padding: 0 12px;
   flex-shrink: 0;
   z-index: 10;
+  position: relative;
+}
+.bridge-header::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 15%;
+  right: 15%;
+  height: 1px;
+  background: #38dfff;
+  box-shadow: 0 0 9px #00bfff;
+  pointer-events: none;
 }
 .pulsing-title {
-  font-size: 9px;
+  font-size: clamp(9px,2.3vw,14px);
   font-weight: 900;
-  color: #00f0ff;
-  letter-spacing: 1px;
+  color: #72eaff;
+  letter-spacing: 1.3px;
   text-transform: uppercase;
-  animation: blue-pulse 2s infinite ease-in-out;
+  animation: blue-pulse 3s infinite ease-in-out;
 }
 @keyframes blue-pulse {
-  0%, 100% {
-    opacity: .6;
-    text-shadow: 0 0 4px rgba(0,240,255,.4);
+  0%,100% {
+    text-shadow: 0 0 4px #00bfff66;
   }
   50% {
-    opacity: 1;
-    text-shadow: 0 0 12px rgba(0,240,255,.9);
+    text-shadow: 0 0 12px #00dfff;
   }
 }
 .header-right-group {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 .status-ok {
-  font-size: 8px;
+  font-size: 9px;
   color: #4ade80;
   font-weight: 800;
 }
 .audio-tactical-btn {
-  background: rgba(8,14,28,.9);
-  border: 1px solid #4ade80;
-  color: #4ade80;
-  width: 22px;
-  height: 22px;
+  background: #071a30;
+  border: 1px solid #38cfff;
+  color: #7beaff;
+  width: 27px;
+  height: 27px;
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  font-size: 10px;
+  font-size: 12px;
+  box-shadow: 0 0 5px #00bfff44;
 }
 .audio-tactical-btn.playing {
   border-color: #ff2a5f;
@@ -80,28 +120,30 @@ html, body {
 }
 .tactical-nav {
   width: 100%;
-  height: 32px;
-  min-height: 32px;
-  background: #0d1527;
-  border-bottom: 1px solid rgba(0,240,255,.3);
+  height: 49px;
+  min-height: 49px;
+  background: linear-gradient(180deg,#061426,#091c34);
+  border-bottom: 1px solid #0879ba;
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 0 8px;
+  gap: 7px;
+  padding: 0 10px;
   overflow-x: auto;
   overflow-y: hidden;
   white-space: nowrap;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #138bcb #091c34;
   flex-shrink: 0;
   z-index: 10;
 }
 .tactical-btn {
-  background: rgba(13,25,48,.9);
-  color: #00f0ff;
-  border: 1px solid rgba(0,240,255,.4);
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 7.5px;
+  background: linear-gradient(180deg,#0b2340,#061426);
+  color: #5ce7ff;
+  border: 1px solid #168fd1;
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 9px;
   font-weight: 800;
   text-transform: uppercase;
   cursor: pointer;
@@ -109,11 +151,17 @@ html, body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  min-height: 31px;
+  box-shadow: inset 0 0 5px #00bfff22,
+              0 0 5px #00bfff33;
+  transition: background .2s,border-color .2s;
 }
 .tactical-btn.active {
-  background: #00f0ff;
-  color: #030712;
-  font-weight: 900;
+  background: linear-gradient(180deg,#123b66,#071b34);
+  color: #fff;
+  border-color: #6ceaff;
+  box-shadow: 0 0 9px #00bfff88,
+              inset 0 0 8px #00bfff44;
 }
 .tactical-btn.amber {
   border-color: #facc15;
@@ -125,78 +173,20 @@ html, body {
 }
 .tactical-btn.alert {
   border-color: #ff2a5f;
-  color: #ff2a5f;
+  color: #ff7d9c;
 }
 .tactical-btn.alert.active {
   background: #ff2a5f;
   color: #fff;
 }
-.tactical-btn.lab-exp-btn {
-  background: rgba(13,25,48,.9);
-  border: 2px solid #facc15;
-  color: #facc15;
-  font-weight: 900;
-  flex-shrink: 0 !important;
-  box-shadow: 0 0 8px rgba(250,204,21,.3);
-  transition: all .3s ease;
-}
-.tactical-btn.lab-exp-btn:hover,
-.tactical-btn.lab-exp-btn.active {
-  background: #facc15;
-  color: #030712;
-  box-shadow: 0 0 14px rgba(250,204,21,.8);
-}
-.lightning-pulse {
-  color: #00f0ff;
-  display: inline-block;
-  margin-right: 3px;
-  animation: blueLightningPulse 1.2s infinite alternate;
-}
-@keyframes blueLightningPulse {
-  0% {
-    text-shadow: 0 0 4px #00f0ff;
-    transform: scale(1);
-  }
-  100% {
-    text-shadow: 0 0 12px #00f0ff;
-    transform: scale(1.25);
-  }
-}
-.tactical-btn.rainbow-pulse {
-  background: linear-gradient(
-    90deg,#ff2a5f,#facc15,#4ade80,#00f0ff,#a855f7
-  );
-  background-size: 300% 300%;
-  color: #030712;
-  border: 1px solid #fff;
-  font-weight: 900;
-  flex-shrink: 0 !important;
-  animation: rainbow-animation 4s ease infinite,
-             btn-glow-pulse 2s infinite ease-in-out;
-}
-.tactical-btn.rainbow-pulse.active {
-  background: #fff;
-  color: #030712;
-  border-color: #00f0ff;
-  box-shadow: 0 0 10px #00f0ff;
-}
-@keyframes rainbow-animation {
-  0%,100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-@keyframes btn-glow-pulse {
-  0%,100% { box-shadow: 0 0 4px rgba(255,42,95,.6); }
-  50% { box-shadow: 0 0 10px rgba(0,240,255,.9); }
-}
-/* I.R.I.D.E. — Occhio felino */
 .tactical-btn.iride-btn {
   position: relative;
-  height: 27px;
-  gap: 5px;
-  padding: 2px 9px 2px 5px;
+  height: 35px;
+  gap: 7px;
+  padding: 3px 12px 3px 6px;
   overflow: hidden;
   border: 1px solid #51baff;
-  border-radius: 6px;
+  border-radius: 9px;
   background: linear-gradient(110deg,#08172d,#103d68,#08172d);
   color: #a9e8ff;
   box-shadow: inset 0 0 8px #278cff44,
@@ -223,7 +213,6 @@ html, body {
 .iride-iris {
   width: 15px;
   height: 15px;
-  
   border-radius: 50%;
   border: 1px solid #a4edff;
   background: conic-gradient(
@@ -244,7 +233,7 @@ html, body {
   animation: cat-pupil 5.5s ease-in-out infinite;
 }
 .iride-name {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 950;
   letter-spacing: 1.3px;
   animation: iride-text 2.4s ease-in-out infinite;
@@ -278,31 +267,29 @@ html, body {
   background: linear-gradient(110deg,#0a2442,#14518b,#0a2442);
   box-shadow: 0 0 10px #3aafff88;
 }
-/* Accessibilità animazioni */
-@media (prefers-reduced-motion: reduce) {
-  .iride-iris,
-  .iride-pupil,
-  .iride-name,
-  .iride-btn {
-    animation: none !important;
-  }
-}
-/* Visualizzatore originale Dashboard */
 .viewscreen-container {
   width: 100%;
   flex: 1;
-  background: #000;
+  min-height: 0;
+  background: #061020;
   overflow: hidden;
   position: relative;
+  border-left: 1px solid #096b9c;
+  border-right: 1px solid #096b9c;
+  border-bottom: 1px solid #096b9c;
+  border-radius: 0 0 8px 8px;
 }
 #viewscreen-iframe {
-  
   width: 100%;
-  
-  
   height: 100%;
   border: none;
   display: block;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,*::before,*::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 </style>
 </head>
@@ -332,7 +319,6 @@ html, body {
 
 <nav class="tactical-nav">
 
-  <!-- Nuovo I.R.I.D.E. predefinito -->
   <button
     class="tactical-btn iride-btn active"
     onclick="switchTracker('https://19francomenenti73-dev.github.io/Iride/',this)"
@@ -355,7 +341,7 @@ html, body {
     rel="noopener noreferrer"
     title="Apri I.R.I.D.E. in una nuova scheda"
     aria-label="Espandi I.R.I.D.E."
-    style="text-decoration:none;min-height:27px"
+    style="text-decoration:none;min-height:35px"
   >⛶ ESPANDI I.R.I.D.E.</a>
 
   <button
