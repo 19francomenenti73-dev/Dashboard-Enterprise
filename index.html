@@ -3,451 +3,414 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Nowcasting Italia — Dashboard</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Nowcasting Italia — Dashboard Enterprise</title>
 <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+*{box-sizing:border-box}
+html,body{
+ margin:0;width:100%;height:100%;
+ overflow:hidden;background:#020916;
+ font-family:system-ui,-apple-system,Arial,sans-serif;
+ color:#c9f3ff;
 }
-html, body {
-  width: 100%;
-  height: 100%;
-  min-height: 100%;
-  background: #030712;
-  font-family: system-ui, -apple-system, sans-serif;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+body{
+ display:flex;flex-direction:column;
+ padding:6px;position:relative;
+ background:linear-gradient(135deg,#020714,#081b35,#020714);
 }
-body {
-  position: relative;
-  padding: 5px;
-  background: linear-gradient(145deg,#030712,#07162b 55%,#030712);
+/* CORNICE ENTERPRISE */
+#enterprise-border{
+ position:absolute;inset:1px;
+ width:calc(100% - 2px);height:calc(100% - 2px);
+ z-index:40;pointer-events:none;overflow:visible;
 }
-/* Cornice elettrica: non copre i controlli */
-body::before {
-  content: "";
-  position: absolute;
-  inset: 2px;
-  border: 1px solid #19cfff;
-  border-radius: 12px;
-  pointer-events: none;
-  z-index: 30;
-  animation: electric-frame 4.5s ease-in-out infinite;
+#border-track{
+ fill:none;stroke:#19bfff;stroke-width:1.5;
+ animation:borderPulse 4.5s ease-in-out infinite;
 }
-@keyframes electric-frame {
-  0%,100% {
-    border-color: #087fc5;
-    box-shadow: 0 0 4px #008cff66,
-                inset 0 0 4px #008cff33;
-  }
-  50% {
-    border-color: #42eaff;
-    box-shadow: 0 0 11px #00bfff99,
-                inset 0 0 8px #00bfff55;
-  }
+@keyframes borderPulse{
+ 0%,100%{
+  stroke:#087fc5;
+  filter:drop-shadow(0 0 3px #008cff);
+ }
+ 50%{
+  stroke:#65edff;
+  filter:drop-shadow(0 0 9px #00cfff);
+ }
 }
-.bridge-header {
-  width: 100%;
-  height: 40px;
-  min-height: 40px;
-  background: linear-gradient(90deg,#061122,#0a1d36,#061122);
-  border-bottom: 1px solid #139bd4;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 12px;
-  flex-shrink: 0;
-  z-index: 10;
-  position: relative;
+#comet-halo{fill:#00aaff;opacity:.22}
+#comet-tail{fill:#40ceff;opacity:.55}
+#comet-core{
+ fill:#efffff;
+ filter:drop-shadow(0 0 4px #42dfff)
+        drop-shadow(0 0 7px #008cff);
 }
-.bridge-header::after {
-  content: "";
-  position: absolute;
-  bottom: -1px;
-  left: 15%;
-  right: 15%;
-  height: 1px;
-  background: #38dfff;
-  box-shadow: 0 0 9px #00bfff;
-  pointer-events: none;
+.bridge-header{
+ height:46px;min-height:46px;
+ display:flex;align-items:center;
+ justify-content:space-between;
+ padding:0 12px;gap:8px;
+ flex-shrink:0;position:relative;z-index:10;
+ background:linear-gradient(90deg,#061122,#10375b,#061122);
+ border:1px solid #188fc7;
+ border-radius:12px 12px 4px 4px;
+ box-shadow:inset 0 0 12px #00aaff22;
 }
-.pulsing-title {
-  font-size: clamp(9px,2.3vw,14px);
-  font-weight: 900;
-  color: #72eaff;
-  letter-spacing: 1.3px;
-  text-transform: uppercase;
-  animation: blue-pulse 3s infinite ease-in-out;
+.brand{
+ display:flex;align-items:center;gap:9px;min-width:0;
 }
-@keyframes blue-pulse {
-  0%,100% {
-    text-shadow: 0 0 4px #00bfff66;
-  }
-  50% {
-    text-shadow: 0 0 12px #00dfff;
-  }
+.brand-orbit{
+ width:30px;height:30px;flex-shrink:0;
+ border:1px solid #42dfff;border-radius:50%;
+ display:grid;place-items:center;
+ color:#9ceeff;font-size:19px;
+ box-shadow:0 0 8px #00bfff77;
 }
-.header-right-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.brand-name{
+ font-size:clamp(10px,2.5vw,15px);
+ font-weight:950;letter-spacing:1px;
+ color:#b8f1ff;text-shadow:0 0 8px #00bfff;
+ white-space:nowrap;
 }
-.status-ok {
-  font-size: 9px;
-  color: #4ade80;
-  font-weight: 800;
+.brand-sub{
+ font-size:8px;font-weight:800;
+ letter-spacing:2px;color:#54cfff;
 }
-.audio-tactical-btn {
-  background: #071a30;
-  border: 1px solid #38cfff;
-  color: #7beaff;
-  width: 27px;
-  height: 27px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  font-size: 12px;
-  box-shadow: 0 0 5px #00bfff44;
+.header-right{
+ display:flex;align-items:center;gap:8px;
 }
-.audio-tactical-btn.playing {
-  border-color: #ff2a5f;
-  color: #ff2a5f;
+.status-ok{
+ color:#4ade80;font-size:9px;font-weight:800;
 }
-.tactical-nav {
-  width: 100%;
-  height: 49px;
-  min-height: 49px;
-  background: linear-gradient(180deg,#061426,#091c34);
-  border-bottom: 1px solid #0879ba;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  padding: 0 10px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  white-space: nowrap;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-  scrollbar-color: #138bcb #091c34;
-  flex-shrink: 0;
-  z-index: 10;
+.audio-btn{
+ width:29px;height:29px;flex-shrink:0;
+ border-radius:50%;cursor:pointer;
+ border:1px solid #39dfff;
+ background:#061b31;color:#a4f2ff;
+ box-shadow:0 0 6px #00bfff55;
 }
-.tactical-btn {
-  background: linear-gradient(180deg,#0b2340,#061426);
-  color: #5ce7ff;
-  border: 1px solid #168fd1;
-  padding: 7px 10px;
-  border-radius: 8px;
-  font-size: 9px;
-  font-weight: 800;
-  text-transform: uppercase;
-  cursor: pointer;
-  flex-shrink: 0 !important;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 31px;
-  box-shadow: inset 0 0 5px #00bfff22,
-              0 0 5px #00bfff33;
-  transition: background .2s,border-color .2s;
+.audio-btn.playing{
+ border-color:#ff5d9a;color:#ff5d9a;
 }
-.tactical-btn.active {
-  background: linear-gradient(180deg,#123b66,#071b34);
-  color: #fff;
-  border-color: #6ceaff;
-  box-shadow: 0 0 9px #00bfff88,
-              inset 0 0 8px #00bfff44;
+.tactical-nav{
+ width:100%;height:49px;min-height:49px;
+ display:flex;align-items:center;gap:7px;
+ padding:0 10px;overflow-x:auto;overflow-y:hidden;
+ white-space:nowrap;flex-shrink:0;z-index:10;
+ -webkit-overflow-scrolling:touch;
+ scrollbar-width:thin;scrollbar-color:#168bc8 #071629;
+ background:linear-gradient(#061426,#0b2440);
+ border-bottom:1px solid #158cc7;
 }
-.tactical-btn.amber {
-  border-color: #facc15;
-  color: #facc15;
+.tactical-btn{
+ display:inline-flex;align-items:center;
+ justify-content:center;gap:7px;
+ flex-shrink:0;min-height:33px;
+ padding:7px 11px;border-radius:10px;
+ border:1px solid #168fd1;
+ background:linear-gradient(#0c2b4b,#061426);
+ color:#76eaff;font-size:9px;font-weight:850;
+ text-transform:uppercase;text-decoration:none;
+ cursor:pointer;
+ box-shadow:inset 0 0 7px #00bfff22;
+ transition:border-color .2s,background .2s;
 }
-.tactical-btn.amber.active {
-  background: #facc15;
-  color: #030712;
+.tactical-btn.active{
+ color:#fff;border-color:#76eaff;
+ background:linear-gradient(#164875,#09203b);
+ box-shadow:0 0 9px #00bfff88,
+ inset 0 0 8px #00bfff44;
 }
-.tactical-btn.alert {
-  border-color: #ff2a5f;
-  color: #ff7d9c;
+.tactical-btn.amber{
+ border-color:#d9ae34;color:#ffdb71;
 }
-.tactical-btn.alert.active {
-  background: #ff2a5f;
-  color: #fff;
+.tactical-btn.amber.active{
+ background:#d9ae34;color:#020916;
 }
-.tactical-btn.iride-btn {
-  position: relative;
-  height: 35px;
-  gap: 7px;
-  padding: 3px 12px 3px 6px;
-  overflow: hidden;
-  border: 1px solid #51baff;
-  border-radius: 9px;
-  background: linear-gradient(110deg,#08172d,#103d68,#08172d);
-  color: #a9e8ff;
-  box-shadow: inset 0 0 8px #278cff44,
-              0 0 7px #278cff44;
-  animation: iride-border 4s ease-in-out infinite;
+.tactical-btn.alert{
+ border-color:#b84970;color:#ff91ad;
 }
-.iride-eye {
-  position: relative;
-  width: 28px;
-  height: 19px;
-  flex: 0 0 28px;
-  display: grid;
-  place-items: center;
+.tactical-btn.alert.active{
+ background:#b84970;color:#fff;
 }
-.iride-eye-outline {
-  position: absolute;
-  width: 25px;
-  height: 15px;
-  border: 1.5px solid #8cdbff;
-  border-radius: 75% 12%;
-  transform: rotate(45deg);
-  box-shadow: 0 0 5px #42b8ff;
+.tactical-btn.iride-btn{
+ height:36px;padding:3px 12px 3px 6px;
+ border-color:#62cfff;
+ background:linear-gradient(110deg,#07162b,#144676,#07162b);
+ color:#b5eaff;
+ animation:irideBorder 4s ease-in-out infinite;
 }
-.iride-iris {
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  border: 1px solid #a4edff;
-  background: conic-gradient(
-    #12509a,#3bd7f0,#7b63ff,#39cfff,#12509a
-  );
-  box-shadow: 0 0 7px #3bbdff;
-  display: grid;
-  place-items: center;
-  animation: cat-look 5.5s ease-in-out infinite,
-             cat-colors 8s linear infinite;
+@keyframes irideBorder{
+ 0%,100%{border-color:#267bd3}
+ 50%{border-color:#83e4ff}
 }
-.iride-pupil {
-  width: 3px;
-  height: 11px;
-  border-radius: 50%;
-  background: #020917;
-  box-shadow: 1px 0 2px #c2faff;
-  animation: cat-pupil 5.5s ease-in-out infinite;
+.iride-eye{
+ position:relative;width:28px;height:19px;
+ flex:0 0 28px;display:grid;place-items:center;
 }
-.iride-name {
-  font-size: 11px;
-  font-weight: 950;
-  letter-spacing: 1.3px;
-  animation: iride-text 2.4s ease-in-out infinite;
+.iride-eye-outline{
+ position:absolute;width:25px;height:15px;
+ border:1.5px solid #8cdbff;
+ border-radius:75% 12%;
+ transform:rotate(45deg);
+ box-shadow:0 0 5px #42b8ff;
 }
-@keyframes cat-look {
-  0%,100% { transform: translateX(-3px); }
-  25% { transform: translateX(3px); }
-  50% { transform: translateX(2px); }
-  75% { transform: translateX(-2px); }
+.iride-iris{
+ width:15px;height:15px;border-radius:50%;
+ border:1px solid #a4edff;
+ background:conic-gradient(
+ #12509a,#3bd7f0,#7b63ff,#39cfff,#12509a);
+ box-shadow:0 0 7px #3bbdff;
+ display:grid;place-items:center;
+ animation:catLook 5.5s ease-in-out infinite,
+ catColors 8s linear infinite;
 }
-@keyframes cat-colors {
-  0%,100% { filter: hue-rotate(0deg); }
-  50% { filter: hue-rotate(65deg); }
+.iride-pupil{
+ width:3px;height:11px;border-radius:50%;
+ background:#020917;
+ animation:catPupil 5.5s ease-in-out infinite;
 }
-@keyframes cat-pupil {
-  0%,100% { transform: scaleX(.75); }
-  25% { transform: scaleX(1.5); }
-  50% { transform: scaleX(.55); }
-  75% { transform: scaleX(1.25); }
+.iride-name{
+ font-size:11px;font-weight:950;
+ letter-spacing:1.3px;
+ animation:irideText 2.4s ease-in-out infinite;
 }
-@keyframes iride-text {
-  0%,100% { text-shadow: 0 0 3px #1f85ff; }
-  50% { text-shadow: 0 0 10px #6de6ff; }
+@keyframes catLook{
+ 0%,100%{transform:translateX(-3px)}
+ 25%{transform:translateX(3px)}
+ 50%{transform:translateX(2px)}
+ 75%{transform:translateX(-2px)}
 }
-@keyframes iride-border {
-  0%,100% { border-color: #267bd3; }
-  50% { border-color: #83e4ff; }
+@keyframes catColors{
+ 0%,100%{filter:hue-rotate(0deg)}
+ 50%{filter:hue-rotate(65deg)}
 }
-.tactical-btn.iride-btn.active {
-  color: #d6f6ff;
-  background: linear-gradient(110deg,#0a2442,#14518b,#0a2442);
-  box-shadow: 0 0 10px #3aafff88;
+@keyframes catPupil{
+ 0%,100%{transform:scaleX(.75)}
+ 25%{transform:scaleX(1.5)}
+ 50%{transform:scaleX(.55)}
+ 75%{transform:scaleX(1.25)}
 }
-.viewscreen-container {
-  width: 100%;
-  flex: 1;
-  min-height: 0;
-  background: #061020;
-  overflow: hidden;
-  position: relative;
-  border-left: 1px solid #096b9c;
-  border-right: 1px solid #096b9c;
-  border-bottom: 1px solid #096b9c;
-  border-radius: 0 0 8px 8px;
+@keyframes irideText{
+ 0%,100%{text-shadow:0 0 3px #1f85ff}
+ 50%{text-shadow:0 0 10px #6de6ff}
 }
-#viewscreen-iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
-  display: block;
+.viewscreen-container{
+ width:100%;flex:1;min-height:0;
+ background:#061020;overflow:hidden;
+ position:relative;
+ border:1px solid #096b9c;border-top:0;
+ border-radius:0 0 9px 9px;
 }
-@media (prefers-reduced-motion: reduce) {
-  *,*::before,*::after {
-    animation: none !important;
-    transition: none !important;
-  }
+#viewscreen-iframe{
+ display:block;width:100%;height:100%;border:0;
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{
+  animation:none!important;
+  transition:none!important;
+ }
 }
 </style>
 </head>
 <body>
-  
+
+<!-- PERCORSO LUMINOSO CONTINUO -->
+<svg id="enterprise-border" aria-hidden="true">
+ <defs>
+  <path id="comet-route" d="M 14 1 H 100"/>
+ </defs>
+ <path id="border-track" d=""/>
+ <g id="comet">
+  <circle id="comet-halo" r="8"/>
+  <circle id="comet-tail" cx="-4" r="3.5"/>
+  <circle id="comet-core" r="2.2"/>
+  <animateMotion
+   dur="12s"
+   repeatCount="indefinite"
+   rotate="auto">
+   <mpath href="#comet-route"/>
+  </animateMotion>
+ </g>
+</svg>
+
 <header class="bridge-header">
-  <div class="pulsing-title">
-    Nowcasting Italia Dashboard
+ <div class="brand">
+  <div class="brand-orbit">◉</div>
+  <div>
+   <div class="brand-name">NOWCASTING ITALIA</div>
+   <div class="brand-sub">DASHBOARD ENTERPRISE</div>
   </div>
-  <div class="header-right-group">
-    <button
-      id="audio-btn"
-      class="audio-tactical-btn"
-      onclick="toggleMusic()"
-      title="Colonna Sonora"
-    >🔊</button>
-    <div class="status-ok">● OK</div>
-  </div>
+ </div>
+ <div class="header-right">
+  <button id="audio-btn" class="audio-btn"
+   onclick="toggleMusic()" title="Colonna sonora">
+   🔊
+  </button>
+  <span class="status-ok">● OK</span>
+ </div>
 </header>
 
-<audio
-  id="tactical-audio"
-  src="https://files.catbox.moe/ltr70o.mp3"
-  loop
-  preload="auto"
-></audio>
+<audio id="tactical-audio"
+ src="https://files.catbox.moe/ltr70o.mp3"
+ loop preload="none"></audio>
 
 <nav class="tactical-nav">
+ <button class="tactical-btn iride-btn active"
+  onclick="switchTracker('https://19francomenenti73-dev.github.io/Iride/',this)"
+  title="I.R.I.D.E. — Radar Intelligence 3D">
+  <span class="iride-eye" aria-hidden="true">
+   <span class="iride-eye-outline"></span>
+   <span class="iride-iris">
+    <span class="iride-pupil"></span>
+   </span>
+  </span>
+  <span class="iride-name">I.R.I.D.E.</span>
+ </button>
 
-  <button
-    class="tactical-btn iride-btn active"
-    onclick="switchTracker('https://19francomenenti73-dev.github.io/Iride/',this)"
-    title="I.R.I.D.E. — Radar Intelligence 3D"
-    aria-label="Apri I.R.I.D.E."
-  >
-    <span class="iride-eye" aria-hidden="true">
-      <span class="iride-eye-outline"></span>
-      <span class="iride-iris">
-        <span class="iride-pupil"></span>
-      </span>
-    </span>
-    <span class="iride-name">I.R.I.D.E.</span>
-  </button>
+ <a class="tactical-btn"
+  href="https://iride.nowcasting-italia.com/"
+  target="_blank" rel="noopener noreferrer">
+  ⛶ ESPANDI I.R.I.D.E.
+ </a>
 
-  <a
-    class="tactical-btn"
-    href="https://iride.nowcasting-italia.com/"
-    target="_blank"
-    rel="noopener noreferrer"
-    title="Apri I.R.I.D.E. in una nuova scheda"
-    aria-label="Espandi I.R.I.D.E."
-    style="text-decoration:none;min-height:35px"
-  >⛶ ESPANDI I.R.I.D.E.</a>
+ <button class="tactical-btn"
+  onclick="switchTracker('https://19francomenenti73-dev.github.io/Z.E.U.S./',this)">
+  ⚡ Z.E.U.S.
+ </button>
 
-  <button
-    class="tactical-btn"
-    onclick="switchTracker('https://19francomenenti73-dev.github.io/Z.E.U.S./',this)"
-    title="Z.E.U.S. — Osservazione satellitare"
-    aria-label="Apri Z.E.U.S."
-  >⚡ Z.E.U.S.</button>
+ <button class="tactical-btn amber"
+  onclick="switchTracker('https://19francomenenti73-dev.github.io/Snow-tracker/',this)">
+  ❄️ Snow Tracker
+ </button>
 
-  <button
-    class="tactical-btn amber"
-    onclick="switchTracker('https://19francomenenti73-dev.github.io/Snow-tracker/',this)"
-  >❄️ Snow Tracker</button>
+ <button class="tactical-btn"
+  onclick="switchTracker('https://19francomenenti73-dev.github.io/Dashboard-Enterprise/world-tracker.html',this)">
+  🌍 World Storm Tracker
+ </button>
 
-  <button
-    class="tactical-btn"
-    onclick="switchTracker('https://19francomenenti73-dev.github.io/Dashboard-Enterprise/world-tracker.html',this)"
-  >🌍 World Storm Tracker</button>
+ <button class="tactical-btn alert"
+  onclick="switchTracker('https://19francomenenti73-dev.github.io/hurricane-tracker/',this)">
+  🌀 Hurricane Tracker
+ </button>
 
-  <button
-    class="tactical-btn alert"
-    onclick="switchTracker('https://19francomenenti73-dev.github.io/hurricane-tracker/',this)"
-  >🌀 Hurricane Tracker</button>
+ <button class="tactical-btn alert"
+  onclick="switchTracker('https://19francomenenti73-dev.github.io/earthquake-tracker-/',this)">
+  🌋 Earthquake Tracker
+ </button>
 
-  <button
-    class="tactical-btn alert"
-    onclick="switchTracker('https://19francomenenti73-dev.github.io/earthquake-tracker-/',this)"
-  >🌋 Earthquake Tracker</button>
-
-  <button
-    class="tactical-btn alert"
-    onclick="switchTracker('https://19francomenenti73-dev.github.io/archivio-eventi/',this)"
-  >📍 Archivio Eventi</button>
-
+ <button class="tactical-btn alert"
+  onclick="switchTracker('https://19francomenenti73-dev.github.io/archivio-eventi/',this)">
+  📍 Archivio Eventi
+ </button>
 </nav>
 
 <div class="viewscreen-container">
-  <iframe
-    id="viewscreen-iframe"
-    src="https://19francomenenti73-dev.github.io/Iride/"
-    title="Visualizzatore Nowcasting Italia"
-    allowfullscreen
-  ></iframe>
+ <iframe id="viewscreen-iframe"
+  src="https://19francomenenti73-dev.github.io/Iride/"
+  title="Visualizzatore Nowcasting Italia"
+  allowfullscreen></iframe>
 </div>
 
 <script>
-// Aggiornamento controllato del solo tracker visualizzato.
-// Non modifica le pagine dei tracker né i workflow esterni.
-const TRACKER_REFRESH_MS = 30 * 60 * 1000;
-const trackerFrame = document.getElementById('viewscreen-iframe');
-let activeTrackerUrl = trackerFrame.getAttribute('src');
-let lastTrackerLoad = Date.now();
+// CORNICE SVG ADATTIVA
+function updateEnterpriseBorder(){
+ const svg=document.getElementById('enterprise-border');
+ const w=svg.clientWidth;
+ const h=svg.clientHeight;
+ if(w<30||h<30)return;
 
-function trackerUrlWithoutCache(url) {
-  const parsed = new URL(url, window.location.href);
-  parsed.searchParams.delete('_dashboard_refresh');
-  return parsed.toString();
+ svg.setAttribute('viewBox',`0 0 ${w} ${h}`);
+ const r=12;
+ const x=1.5,y=1.5;
+ const right=w-1.5,bottom=h-1.5;
+ const d=[
+  `M ${x+r} ${y}`,
+  `H ${right-r}`,
+  `Q ${right} ${y} ${right} ${y+r}`,
+  `V ${bottom-r}`,
+  `Q ${right} ${bottom} ${right-r} ${bottom}`,
+  `H ${x+r}`,
+  `Q ${x} ${bottom} ${x} ${bottom-r}`,
+  `V ${y+r}`,
+  `Q ${x} ${y} ${x+r} ${y}`,
+  'Z'
+ ].join(' ');
+
+ document.getElementById('border-track')
+  .setAttribute('d',d);
+ document.getElementById('comet-route')
+  .setAttribute('d',d);
 }
+const borderObserver=new ResizeObserver(
+ updateEnterpriseBorder
+);
+borderObserver.observe(
+ document.getElementById('enterprise-border')
+);
+updateEnterpriseBorder();
 
-function loadTracker(url) {
-  activeTrackerUrl = trackerUrlWithoutCache(url);
-  const parsed = new URL(activeTrackerUrl);
-  parsed.searchParams.set('_dashboard_refresh', String(Date.now()));
-  lastTrackerLoad = Date.now();
-  trackerFrame.src = parsed.toString();
+// TRACKER: REFRESH OGNI 30 MINUTI
+const TRACKER_REFRESH_MS=30*60*1000;
+const trackerFrame=document.getElementById(
+ 'viewscreen-iframe'
+);
+let activeTrackerUrl=trackerFrame.getAttribute('src');
+let lastTrackerLoad=Date.now();
+
+function trackerUrlWithoutCache(url){
+ const parsed=new URL(url,window.location.href);
+ parsed.searchParams.delete('_dashboard_refresh');
+ return parsed.toString();
 }
-
-function refreshTrackerIfNeeded() {
-  if (document.visibilityState === 'hidden') return;
-  if (Date.now() - lastTrackerLoad < TRACKER_REFRESH_MS) return;
-  loadTracker(activeTrackerUrl);
+function loadTracker(url){
+ activeTrackerUrl=trackerUrlWithoutCache(url);
+ const parsed=new URL(activeTrackerUrl);
+ parsed.searchParams.set(
+  '_dashboard_refresh',String(Date.now())
+ );
+ lastTrackerLoad=Date.now();
+ trackerFrame.src=parsed.toString();
 }
-
-function switchTracker(url, btnElement) {
-  loadTracker(url);
-  document.querySelectorAll('.tactical-btn').forEach(
-    b => b.classList.remove('active')
-  );
-  btnElement.classList.add('active');
+function refreshTrackerIfNeeded(){
+ if(document.visibilityState==='hidden')return;
+ if(Date.now()-lastTrackerLoad<TRACKER_REFRESH_MS)return;
+ loadTracker(activeTrackerUrl);
 }
-
-// In primo piano: controllo periodico, senza ricariche inutili.
-setInterval(refreshTrackerIfNeeded, 60 * 1000);
-// Android può sospendere i timer: al ritorno si verifica subito l'età.
-document.addEventListener('visibilitychange', refreshTrackerIfNeeded);
-window.addEventListener('pageshow', refreshTrackerIfNeeded);
-window.addEventListener('focus', refreshTrackerIfNeeded);
-// Anche alla prima apertura, richiedi una versione non memorizzata dell'iframe.
+function switchTracker(url,btnElement){
+ loadTracker(url);
+ document.querySelectorAll('.tactical-btn').forEach(
+  b=>b.classList.remove('active')
+ );
+ btnElement.classList.add('active');
+}
+setInterval(refreshTrackerIfNeeded,60*1000);
+document.addEventListener(
+ 'visibilitychange',refreshTrackerIfNeeded
+);
+window.addEventListener(
+ 'pageshow',refreshTrackerIfNeeded
+);
+window.addEventListener(
+ 'focus',refreshTrackerIfNeeded
+);
 loadTracker(activeTrackerUrl);
 
-function toggleMusic() {
-  const audio = document.getElementById('tactical-audio');
-  const btn = document.getElementById('audio-btn');
-
-  if (audio.paused) {
-    audio.play().then(() => {
-      btn.classList.add('playing');
-      btn.innerText = '🎶';
-    }).catch(err => console.log(err));
-  } else {
-    audio.pause();
-    btn.classList.remove('playing');
-    btn.innerText = '🔊';
-  }
+// COLONNA SONORA
+function toggleMusic(){
+ const audio=document.getElementById('tactical-audio');
+ const btn=document.getElementById('audio-btn');
+ if(audio.paused){
+  audio.play().then(()=>{
+   btn.classList.add('playing');
+   btn.textContent='🎶';
+  }).catch(err=>console.log(err));
+ }else{
+  audio.pause();
+  btn.classList.remove('playing');
+  btn.textContent='🔊';
+ }
 }
 </script>
-
 </body>
 </html>
