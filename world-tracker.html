@@ -199,7 +199,7 @@ async function updateRadar(){
    {
     opacity:.7,tileSize:256,
     maxNativeZoom:6,maxZoom:18,
-    attribution:'Radar: RainViewer'
+    attribution:'Weather data by <a href="https://www.rainviewer.com/" target="_blank" rel="noopener noreferrer">RainViewer</a>'
    }
   ).addTo(map);
 
@@ -347,7 +347,7 @@ async function scanVisibleTiles(){
    tilePromises.push(p);
   }
  }
-
+ 
  await Promise.all(tilePromises);
 
  const thresholdKm=currentZoom<5?75:45;
@@ -486,4 +486,3 @@ setInterval(updateRadar,300000);
 </script>
 </body>
 </html>
-
