@@ -179,14 +179,14 @@ body{
 /* PORTA METALLICA ORIGINALE */
 #airlock{
  position:fixed;inset:0;z-index:100;
- background:#020713;overflow:hidden;isolation:isolate;
+ background:transparent;overflow:hidden;
+ isolation:isolate;
 }
 #liquid-energy{
  position:absolute;inset:0;z-index:1;
  width:100%;height:100%;opacity:0;
  transition:opacity .3s;
- background:radial-gradient(
- ellipse,#107ac2,#06204a 75%,#020916);
+ background:transparent;
 }
 .door{
  position:absolute;top:0;bottom:0;width:50%;
@@ -234,10 +234,11 @@ body{
  opacity:0;pointer-events:none;
 }
 #airlock.dissolving #liquid-energy{
- opacity:0;filter:blur(12px);
- transition:opacity 1s ease-out,filter 1s ease-out;
+ opacity:1;filter:none;transition:none;
 }
-#airlock.dissolving{animation:screenShimmer .16s 4}
+#airlock.dissolving{
+ animation:screenShimmer .16s 4;
+}
 @keyframes screenShimmer{
  0%,100%{filter:brightness(1)}
  50%{filter:brightness(1.13)}
@@ -344,7 +345,7 @@ function updateEnterpriseBorder(){
   `M ${x+r} ${y}`,`H ${right-r}`,
   `Q ${right} ${y} ${right} ${y+r}`,
   `V ${bottom-r}`,
-  `Q ${right} ${bottom} ${right-r} ${bottom}`,
+  `Q ${right} ${bottom} ${right-r}`,
   `H ${x+r}`,
   `Q ${x} ${bottom} ${x} ${bottom-r}`,
   `V ${y+r}`,
@@ -399,29 +400,33 @@ function toggleMusic(){
    btn.textContent='🎶';
   }).catch(console.log);
  }else{
-  audio.pause();btn.classList.remove('playing');
+  audio.pause();
+  btn.classList.remove('playing');
   btn.textContent='🔊';
  }
 }
 
-// NUOVO MOTORE ENERGETICO WEBGL
+// ENERGIA LIQUIDA WEBGL + COLLASSO IRREGOLARE
 let energyRunning=false;
 let energyFrame=0;
 let energyCleanup=()=>{};
+let energyFallback=false;
 
 function startLiquidEnergy(){
  const canvas=document.getElementById('liquid-energy');
  let gl;
  try{
   gl=canvas.getContext('webgl',{
-   alpha:false,antialias:false,
-   depth:false,stencil:false,
+   alpha:true,
+   premultipliedAlpha:false,
+   antialias:false,
+   depth:false,
+   stencil:false,
    powerPreference:'low-power'
   });
  }catch(e){}
  if(!gl){
-  canvas.style.background=
-   'radial-gradient(ellipse,#1bdfff,#084d9a 65%,#020916)';
+  useEnergyFallback(canvas);
   return;
  }
 
@@ -438,6 +443,7 @@ function startLiquidEnergy(){
  varying vec2 v_uv;
  uniform float u_time;
  uniform vec2 u_resolution;
+ uniform float u_collapse;
 
  float hash(vec2 p){
   return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);
@@ -465,6 +471,7 @@ function startLiquidEnergy(){
   vec2 p=vec2((uv.x-.5)*aspect,uv.y-.5);
   float t=u_time*.38;
 
+  // Energia liquida originale
   float n1=fbm(p*3.4+vec2(t,-t*.4));
   float n2=fbm(p*5.8+vec2(-t*.6,t*.7));
   vec2 flow=vec2(n1-.5,n2-.5);
@@ -493,7 +500,39 @@ function startLiquidEnergy(){
   float vignette=1.-.38*smoothstep(.35,.85,length(p));
   col*=vignette;
   col=pow(max(col,0.),vec3(.91));
-  gl_FragColor=vec4(col,1.);
+
+  // Nuovo collasso: varchi casuali
+  // Il campo resta identico prima del collasso.
+  float progress=clamp(u_collapse,0.,1.);
+  float alpha=1.0;
+
+  if(progress>0.0){
+   // Distribuzione irregolare, senza righe
+   float cracks=fbm(p*5.7+vec2(13.7,8.3));
+   cracks+=.20*fbm(p*14.0+vec2(31.1,5.6));
+   cracks=clamp(cracks/1.20,0.,1.);
+
+   // Le zone deboli cedono per prime
+   float threshold=mix(-.15,1.15,progress);
+   float softness=.035+.018*progress;
+
+   // Alpha zero = Dashboard visibile
+   alpha=smoothstep(
+    threshold-softness,
+    threshold+softness,
+    cracks
+   );
+
+   // Margini energetici dei varchi
+   float distanceToEdge=abs(cracks-threshold);
+   float edge=1.0-smoothstep(
+    .006,.045,distanceToEdge
+   );
+   edge*=4.0*progress*(1.0-progress);
+   col+=vec3(.10,.65,.95)*edge*.55;
+  }
+
+  gl_FragColor=vec4(col,alpha);
  }`;
 
  function compile(type,source){
@@ -521,29 +560,49 @@ function startLiquidEnergy(){
   const buffer=gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
   gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([
-   -1,-1,1,-1,-1,1,-1,1,1,-1,1,1
+   -1,-1,1,-1,-1,1,-1,1,1,-1,1,1,1,1
   ]),gl.STATIC_DRAW);
   const loc=gl.getAttribLocation(program,'a_position');
   gl.enableVertexAttribArray(loc);
   gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+
   const timeLoc=gl.getUniformLocation(program,'u_time');
   const resLoc=gl.getUniformLocation(program,'u_resolution');
+  const collapseLoc=gl.getUniformLocation(program,'u_collapse');
 
-  const scale=Math.min(1,480/Math.max(innerWidth,innerHeight));
+  const scale=Math.min(
+   1,480/Math.max(innerWidth,innerHeight)
+  );
   canvas.width=Math.max(1,Math.round(innerWidth*scale));
   canvas.height=Math.max(1,Math.round(innerHeight*scale));
   gl.viewport(0,0,canvas.width,canvas.height);
   gl.uniform2f(resLoc,canvas.width,canvas.height);
 
+  // Trasparenza reale nei varchi
+  gl.clearColor(0,0,0,0);
+  gl.disable(gl.BLEND);
+
   energyRunning=true;
   const started=performance.now();
+
   function render(now){
    if(!energyRunning)return;
-   gl.uniform1f(timeLoc,(now-started)*.001);
+   const elapsed=(now-started)*.001;
+
+   // Cedimento soltanto nell'ultimo secondo
+   let collapse=Math.max(
+    0,Math.min(1,(elapsed-4.3)/1.0)
+   );
+   collapse=collapse*collapse*(3-2*collapse);
+
+   gl.uniform1f(timeLoc,elapsed);
+   gl.uniform1f(collapseLoc,collapse);
+   gl.clear(gl.COLOR_BUFFER_BIT);
    gl.drawArrays(gl.TRIANGLES,0,6);
    energyFrame=requestAnimationFrame(render);
   }
   energyFrame=requestAnimationFrame(render);
+
   energyCleanup=()=>{
    gl.deleteBuffer(buffer);
    gl.deleteProgram(program);
@@ -552,10 +611,16 @@ function startLiquidEnergy(){
   };
  }catch(err){
   console.warn('WebGL energia:',err);
-  canvas.style.background=
-   'radial-gradient(ellipse,#1bdfff,#084d9a 65%,#020916)';
+  useEnergyFallback(canvas);
  }
 }
+
+function useEnergyFallback(canvas){
+ energyFallback=true;
+ canvas.style.background=
+  'radial-gradient(ellipse,#1bdfff,#084d9a 65%,#020916)';
+}
+
 function stopLiquidEnergy(){
  energyRunning=false;
  cancelAnimationFrame(energyFrame);
@@ -576,6 +641,7 @@ function playDoorSound(){
   const master=ac.createGain();
   master.gain.value=.22;
   master.connect(ac.destination);
+
   function tone(type,f1,f2,start,duration,volume){
    const osc=ac.createOscillator();
    const gain=ac.createGain();
@@ -591,16 +657,18 @@ function playDoorSound(){
    gain.gain.exponentialRampToValueAtTime(
     .0001,t+start+duration
    );
-   osc.connect(gain);gain.connect(master);
+   osc.connect(gain);
+   gain.connect(master);
    osc.start(t+start);
    osc.stop(t+start+duration+.02);
   }
+
   function noise(start,duration,volume,cutoff){
    const length=Math.ceil(ac.sampleRate*duration);
    const buffer=ac.createBuffer(1,length,ac.sampleRate);
    const arr=buffer.getChannelData(0);
    for(let i=0;i<length;i++){
-    arr[i]=(Math.random()*2-1);
+    arr[i]=Math.random()*2-1;
    }
    const src=ac.createBufferSource();
    src.buffer=buffer;
@@ -615,10 +683,13 @@ function playDoorSound(){
    gain.gain.exponentialRampToValueAtTime(
     .0001,t+start+duration
    );
-   src.connect(filter);filter.connect(gain);
+   src.connect(filter);
+   filter.connect(gain);
    gain.connect(master);
-   src.start(t+start);src.stop(t+start+duration);
+   src.start(t+start);
+   src.stop(t+start+duration);
   }
+
   tone('sine',850,1250,0,.15,.2);
   tone('triangle',240,75,.22,.5,.4);
   tone('sawtooth',65,115,.8,1.5,.42);
@@ -630,26 +701,55 @@ function playDoorSound(){
   tone('sine',190,38,4.3,1,.25);
   noise(4.3,1,.12,850);
   setTimeout(()=>ac.close().catch(()=>{}),5700);
- }catch(err){console.warn('Audio porta:',err)}
+ }catch(err){
+  console.warn('Audio porta:',err);
+ }
 }
 
-// TEMPI DI APERTURA INVARIATI
+// SEQUENZA COMPLETA: 5,3 SECONDI
 let entranceStarted=false;
 function enterEnterprise(){
  if(entranceStarted)return;
  entranceStarted=true;
+
  const gate=document.getElementById('airlock');
  const btn=document.getElementById('fingerprint');
+ const canvas=document.getElementById('liquid-energy');
  btn.disabled=true;
+
  const reduced=window.matchMedia(
   '(prefers-reduced-motion: reduce)'
  ).matches;
- if(reduced){gate.remove();return}
+ if(reduced){
+  gate.remove();
+  return;
+ }
+
  playDoorSound();
  startLiquidEnergy();
  gate.classList.add('activating');
- setTimeout(()=>gate.classList.add('opening'),800);
- setTimeout(()=>gate.classList.add('dissolving'),4300);
+
+ // Apertura delle due ante metalliche
+ setTimeout(()=>{
+  gate.classList.add('opening');
+ },800);
+
+ // Collasso energetico finale
+ setTimeout(()=>{
+  gate.classList.add('dissolving');
+
+  // Alternativa per browser senza WebGL
+  if(energyFallback){
+   canvas.style.setProperty(
+    'transition','opacity 1s ease-out','important'
+   );
+   canvas.style.setProperty(
+    'opacity','0','important'
+   );
+  }
+ },4300);
+
+ // Il campo è già completamente dissolto
  setTimeout(()=>{
   stopLiquidEnergy();
   gate.remove();
