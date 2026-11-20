@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -247,6 +248,32 @@ body{
   animation:none!important;transition:none!important;
  }
 }
+/* METEO CITTÀ OLO */
+.meteo-olo-btn{
+ border-color:#6ceeff;color:#d1fbff;
+ background:linear-gradient(110deg,#092442,#17628a,#092442);
+ box-shadow:0 0 9px #00cfff55,inset 0 0 9px #00bfff33;
+}
+#meteo-olo-layer{
+ position:fixed;inset:0;z-index:80;
+ background:rgba(0,7,21,.78);
+ backdrop-filter:blur(5px);
+ display:none;align-items:center;justify-content:center;
+ padding:6px;
+}
+#meteo-olo-layer.visible{display:flex}
+#meteo-olo-frame{
+ display:block;width:100%;height:100%;
+ border:0;background:transparent;
+}
+#meteo-olo-dismiss{
+ position:absolute;right:12px;top:9px;z-index:2;
+ width:34px;height:34px;border-radius:50%;
+ border:1px solid #77eaff;
+ color:#eaffff;background:#073253;
+ font-size:21px;cursor:pointer;
+ box-shadow:0 0 12px #00cfff;
+}
 </style>
 </head>
 <body>
@@ -295,8 +322,13 @@ body{
   onclick="switchTracker('https://19francomenenti73-dev.github.io/Z.E.U.S./',this)">
   ⚡ Z.E.U.S.
  </button>
+ <button class="tactical-btn meteo-olo-btn"
+  type="button" onclick="openMeteoOlo()">
+  ◉ METEO CITTÀ
+ </button>
  <button class="tactical-btn amber"
-  onclick="switchTracker('https://19francomenenti73-dev.github.io/Snow-tracker/',this)">  ❄️ Snow Tracker
+  onclick="switchTracker('https://19francomenenti73-dev.github.io/Snow-tracker/',this)">
+  ❄️ Snow Tracker
  </button>
  <button class="tactical-btn"
   onclick="switchTracker('https://19francomenenti73-dev.github.io/Dashboard-Enterprise/world-tracker.html',this)">
@@ -321,6 +353,14 @@ body{
   title="Visualizzatore Nowcasting Italia"
   allowfullscreen></iframe>
 </div>
+<div id="meteo-olo-layer" aria-hidden="true">
+ <button id="meteo-olo-dismiss" type="button"
+  aria-label="Chiudi Meteo Città"
+  onclick="closeMeteoOlo()">×</button>
+ <iframe id="meteo-olo-frame"
+  title="Previsioni Meteo Città Olografiche"
+  allow="autoplay"></iframe>
+</div>
 <div id="airlock" role="region"
  aria-label="Ingresso al ponte di comando Enterprise">
  <canvas id="liquid-energy" aria-hidden="true"></canvas>
@@ -331,7 +371,7 @@ body{
   title="Tocca per accedere"></button>
 </div>
 <script>
-
+ 
 function updateEnterpriseBorder(){
  const svg=document.getElementById('enterprise-border');
  const w=svg.clientWidth,h=svg.clientHeight;
@@ -580,7 +620,8 @@ function startLiquidEnergy(){
   gl.clearColor(0,0,0,0);
   gl.disable(gl.BLEND);
 
-  energyRunning=true;  const started=performance.now();
+  energyRunning=true;
+  const started=performance.now();
 
   function render(now){
    if(!energyRunning)return;
@@ -610,8 +651,8 @@ function startLiquidEnergy(){
   console.warn('WebGL energia:',err);
   useEnergyFallback(canvas);
  }
-}
-
+ }
+ 
 function useEnergyFallback(canvas){
  energyFallback=true;
  canvas.style.background=
@@ -752,6 +793,43 @@ function enterEnterprise(){
   gate.remove();
  },5350);
 }
+
+/* METEO CITTÀ OLO — INTEGRAZIONE ISOLATA */
+const meteoOloLayer=
+ document.getElementById('meteo-olo-layer');
+const meteoOloFrame=
+ document.getElementById('meteo-olo-frame');
+
+const meteoOloUrl=new URL(
+ 'meteo-citta.html?embed=1',location.href
+);
+
+function openMeteoOlo(){
+ if(meteoOloLayer.classList.contains('visible'))return;
+ meteoOloLayer.classList.add('visible');
+ meteoOloLayer.setAttribute('aria-hidden','false');
+ meteoOloFrame.src=meteoOloUrl.href;
+ document.getElementById('meteo-olo-dismiss').focus();
+}
+
+function closeMeteoOlo(){
+ if(!meteoOloLayer.classList.contains('visible'))return;
+ meteoOloLayer.classList.remove('visible');
+ meteoOloLayer.setAttribute('aria-hidden','true');
+ meteoOloFrame.removeAttribute('src');
+}
+
+window.addEventListener('message',event=>{
+ if(event.origin!==location.origin)return;
+ if(event.source!==meteoOloFrame.contentWindow)return;
+ if(event.data?.type==='NOWCASTING_METEO_CLOSE'){
+  closeMeteoOlo();
+ }
+});
+
+document.addEventListener('keydown',event=>{
+ if(event.key==='Escape')closeMeteoOlo();
+});
 </script>
 </body>
 </html>
