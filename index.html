@@ -176,7 +176,7 @@ body{
 #viewscreen-iframe{
  display:block;width:100%;height:100%;border:0;
 }
-/* PORTA APPROVATA */
+/* PORTA METALLICA ORIGINALE */
 #airlock{
  position:fixed;inset:0;z-index:100;
  background:#020713;overflow:hidden;isolation:isolate;
@@ -185,6 +185,8 @@ body{
  position:absolute;inset:0;z-index:1;
  width:100%;height:100%;opacity:0;
  transition:opacity .3s;
+ background:radial-gradient(
+ ellipse,#107ac2,#06204a 75%,#020916);
 }
 .door{
  position:absolute;top:0;bottom:0;width:50%;
@@ -232,7 +234,7 @@ body{
  opacity:0;pointer-events:none;
 }
 #airlock.dissolving #liquid-energy{
- opacity:0;filter:blur(18px);
+ opacity:0;filter:blur(12px);
  transition:opacity 1s ease-out,filter 1s ease-out;
 }
 #airlock.dissolving{animation:screenShimmer .16s 4}
@@ -330,6 +332,7 @@ body{
   title="Tocca per accedere"></button>
 </div>
 <script>
+ 
 function updateEnterpriseBorder(){
  const svg=document.getElementById('enterprise-border');
  const w=svg.clientWidth,h=svg.clientHeight;
@@ -401,67 +404,166 @@ function toggleMusic(){
  }
 }
 
-// ENERGIA LIQUIDA: RIFRAZIONI SENZA RIGHE
+// NUOVO MOTORE ENERGETICO WEBGL
 let energyRunning=false;
 let energyFrame=0;
+let energyCleanup=()=>{};
+
 function startLiquidEnergy(){
  const canvas=document.getElementById('liquid-energy');
- const ctx=canvas.getContext('2d',{alpha:false});
- if(!ctx)return;
- const w=96;
- const h=Math.max(128,Math.min(256,
-  Math.round(w*innerHeight/Math.max(innerWidth,1))));
- canvas.width=w;canvas.height=h;
- const image=ctx.createImageData(w,h);
- energyRunning=true;
- let lastDraw=0;
- const started=performance.now();
- function draw(now){
-  if(!energyRunning)return;
-  energyFrame=requestAnimationFrame(draw);
-  if(now-lastDraw<40)return;
-  lastDraw=now;
-  const t=(now-started)*.001;
-  const data=image.data;
-  for(let y=0;y<h;y++){
-   for(let x=0;x<w;x++){
-    const u=x/w,v=y/h;
-    const dx=u-.5,dy=v-.5;
-    const r=Math.hypot(dx*1.3,dy);
-    const angle=Math.atan2(dy,dx);
-    const swirl=angle+2.8*Math.exp(-r*3)
-     *Math.sin(t*.9+r*5);
-    const wx=u+.085*Math.sin(swirl*2.5+t*.8+v*7);
-    const wy=v+.07*Math.cos(swirl*2-t*.7+u*8);
-    const wave=Math.sin(
-     9*Math.hypot(wx-.3,wy-.45)-t*1.8
-     +2*Math.sin(wx*5+wy*3+t*.6)
-    );
-    const wave2=Math.cos(
-     8*Math.hypot(wx-.75,wy-.6)+t*1.2
-     +Math.sin(wy*6-t)
-    );
-    const light=Math.max(0,Math.min(1,
-     .48+.25*wave+.18*wave2
-     +.18*Math.cos(r*8-t*.9)
-    ));
-    const i=(y*w+x)*4;
-    data[i]=Math.round(2+65*light);
-    data[i+1]=Math.round(45+185*light);
-    data[i+2]=Math.round(135+120*light);
-    data[i+3]=255;
-   }
-  }
-  ctx.putImageData(image,0,0);
+ let gl;
+ try{
+  gl=canvas.getContext('webgl',{
+   alpha:false,antialias:false,
+   depth:false,stencil:false,
+   powerPreference:'low-power'
+  });
+ }catch(e){}
+ if(!gl){
+  canvas.style.background=
+   'radial-gradient(ellipse,#1bdfff,#084d9a 65%,#020916)';
+  return;
  }
- energyFrame=requestAnimationFrame(draw);
+
+ const vertex=`
+ attribute vec2 a_position;
+ varying vec2 v_uv;
+ void main(){
+  v_uv=a_position*.5+.5;
+  gl_Position=vec4(a_position,0.,1.);
+ }`;
+
+ const fragment=`
+ precision highp float;
+ varying vec2 v_uv;
+ uniform float u_time;
+ uniform vec2 u_resolution;
+
+ float hash(vec2 p){
+  return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);
+ }
+ float noise(vec2 p){
+  vec2 i=floor(p),f=fract(p);
+  f=f*f*(3.-2.*f);
+  return mix(
+   mix(hash(i),hash(i+vec2(1.,0.)),f.x),
+   mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.,1.)),f.x),
+   f.y);
+ }
+ float fbm(vec2 p){
+  float v=0.,a=.5;
+  for(int i=0;i<5;i++){
+   v+=a*noise(p);
+   p=mat2(1.6,-1.2,1.2,1.6)*p+2.7;
+   a*=.5;
+  }
+  return v;
+ }
+ void main(){
+  vec2 uv=v_uv;
+  float aspect=u_resolution.x/u_resolution.y;
+  vec2 p=vec2((uv.x-.5)*aspect,uv.y-.5);
+  float t=u_time*.38;
+
+  float n1=fbm(p*3.4+vec2(t,-t*.4));
+  float n2=fbm(p*5.8+vec2(-t*.6,t*.7));
+  vec2 flow=vec2(n1-.5,n2-.5);
+  vec2 q=p+flow*.18;
+
+  float a=fbm(q*8.0+vec2(t*.3,-t*.5));
+  float b=fbm(q*15.0-vec2(t*.5,t*.2));
+  float c=fbm(q*29.0+vec2(-t*.8,t*.4));
+
+  float ridge=1.-abs(a-b)*2.7;
+  ridge=pow(clamp(ridge,0.,1.),5.);
+  float fine=pow(clamp(1.-abs(b-c)*3.0,0.,1.),9.);
+  float light=clamp(.22+a*.5+b*.2,0.,1.);
+
+  vec3 deep=vec3(.008,.035,.16);
+  vec3 blue=vec3(.012,.22,.58);
+  vec3 cyan=vec3(.025,.76,.90);
+  vec3 silver=vec3(.65,.96,1.);
+
+  vec3 col=mix(deep,blue,smoothstep(.22,.7,light));
+  col=mix(col,cyan,smoothstep(.48,.88,a)*.7);
+  col+=cyan*ridge*.25;
+  col+=silver*fine*.34;
+  col+=vec3(.01,.06,.12)*n2;
+
+  float vignette=1.-.38*smoothstep(.35,.85,length(p));
+  col*=vignette;
+  col=pow(max(col,0.),vec3(.91));
+  gl_FragColor=vec4(col,1.);
+ }`;
+
+ function compile(type,source){
+  const s=gl.createShader(type);
+  gl.shaderSource(s,source);
+  gl.compileShader(s);
+  if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){
+   const error=gl.getShaderInfoLog(s);
+   gl.deleteShader(s);
+   throw new Error(error);
+  }
+  return s;
+ }
+ try{
+  const vs=compile(gl.VERTEX_SHADER,vertex);
+  const fs=compile(gl.FRAGMENT_SHADER,fragment);
+  const program=gl.createProgram();
+  gl.attachShader(program,vs);
+  gl.attachShader(program,fs);
+  gl.linkProgram(program);
+  if(!gl.getProgramParameter(program,gl.LINK_STATUS)){
+   throw new Error(gl.getProgramInfoLog(program));
+  }
+  gl.useProgram(program);
+  const buffer=gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([
+   -1,-1,1,-1,-1,1,-1,1,1,-1,1,1
+  ]),gl.STATIC_DRAW);
+  const loc=gl.getAttribLocation(program,'a_position');
+  gl.enableVertexAttribArray(loc);
+  gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+  const timeLoc=gl.getUniformLocation(program,'u_time');
+  const resLoc=gl.getUniformLocation(program,'u_resolution');
+
+  const scale=Math.min(1,480/Math.max(innerWidth,innerHeight));
+  canvas.width=Math.max(1,Math.round(innerWidth*scale));
+  canvas.height=Math.max(1,Math.round(innerHeight*scale));
+  gl.viewport(0,0,canvas.width,canvas.height);
+  gl.uniform2f(resLoc,canvas.width,canvas.height);
+
+  energyRunning=true;
+  const started=performance.now();
+  function render(now){
+   if(!energyRunning)return;
+   gl.uniform1f(timeLoc,(now-started)*.001);
+   gl.drawArrays(gl.TRIANGLES,0,6);
+   energyFrame=requestAnimationFrame(render);
+  }
+  energyFrame=requestAnimationFrame(render);
+  energyCleanup=()=>{
+   gl.deleteBuffer(buffer);
+   gl.deleteProgram(program);
+   gl.deleteShader(vs);
+   gl.deleteShader(fs);
+  };
+ }catch(err){
+  console.warn('WebGL energia:',err);
+  canvas.style.background=
+   'radial-gradient(ellipse,#1bdfff,#084d9a 65%,#020916)';
+ }
 }
 function stopLiquidEnergy(){
  energyRunning=false;
  cancelAnimationFrame(energyFrame);
+ energyCleanup();
+ energyCleanup=()=>{};
 }
 
-// AUDIO ORIGINALE: SERVOMOTORI E CAMPO ENERGETICO
+// AUDIO ORIGINALE INVARIATO
 let audioContext=null;
 function playDoorSound(){
  const AC=window.AudioContext||window.webkitAudioContext;
@@ -531,7 +633,7 @@ function playDoorSound(){
  }catch(err){console.warn('Audio porta:',err)}
 }
 
-// SEQUENZA DI APERTURA
+// TEMPI DI APERTURA INVARIATI
 let entranceStarted=false;
 function enterEnterprise(){
  if(entranceStarted)return;
