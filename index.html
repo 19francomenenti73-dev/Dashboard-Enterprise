@@ -3,25 +3,24 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Nowcasting Italia — Dashboard Enterprise</title>
 <style>
 *{box-sizing:border-box}
 html,body{
- margin:0;width:100%;height:100%;
- overflow:hidden;background:#020916;
+ margin:0;width:100%;height:100%;overflow:hidden;
+ background:#020916;color:#c9f3ff;
  font-family:system-ui,-apple-system,Arial,sans-serif;
- color:#c9f3ff;
 }
 body{
- display:flex;flex-direction:column;
- padding:6px;position:relative;
+ display:flex;flex-direction:column;padding:6px;
+ position:relative;
  background:linear-gradient(135deg,#020714,#081b35,#020714);
 }
 #enterprise-border{
- position:absolute;inset:1px;
- width:calc(100% - 2px);height:calc(100% - 2px);
- z-index:40;pointer-events:none;overflow:visible;
+ position:absolute;inset:1px;width:calc(100% - 2px);
+ height:calc(100% - 2px);z-index:40;
+ pointer-events:none;overflow:visible;
 }
 #border-track{
  fill:none;stroke:#19bfff;stroke-width:1.5;
@@ -42,45 +41,36 @@ body{
 #comet-core{
  fill:#efffff;
  filter:drop-shadow(0 0 4px #42dfff)
-        drop-shadow(0 0 7px #008cff);
+ drop-shadow(0 0 7px #008cff);
 }
 .bridge-header{
- height:46px;min-height:46px;
+ height:46px;min-height:46px;flex-shrink:0;
  display:flex;align-items:center;
- justify-content:space-between;
- padding:0 12px;gap:8px;
- flex-shrink:0;position:relative;z-index:10;
+ justify-content:space-between;gap:8px;
+ padding:0 12px;position:relative;z-index:10;
  background:linear-gradient(90deg,#061122,#10375b,#061122);
  border:1px solid #188fc7;
  border-radius:12px 12px 4px 4px;
  box-shadow:inset 0 0 12px #00aaff22;
 }
-.brand{
- display:flex;align-items:center;gap:9px;min-width:0;
-}
+.brand{display:flex;align-items:center;gap:9px;min-width:0}
 .brand-orbit{
  width:30px;height:30px;flex-shrink:0;
  border:1px solid #42dfff;border-radius:50%;
- display:grid;place-items:center;
- color:#9ceeff;font-size:19px;
- box-shadow:0 0 8px #00bfff77;
+ display:grid;place-items:center;color:#9ceeff;
+ font-size:19px;box-shadow:0 0 8px #00bfff77;
 }
 .brand-name{
- font-size:clamp(10px,2.5vw,15px);
- font-weight:950;letter-spacing:1px;
- color:#b8f1ff;text-shadow:0 0 8px #00bfff;
- white-space:nowrap;
+ font-size:clamp(10px,2.5vw,15px);font-weight:950;
+ letter-spacing:1px;color:#b8f1ff;
+ text-shadow:0 0 8px #00bfff;white-space:nowrap;
 }
 .brand-sub{
  font-size:8px;font-weight:800;
  letter-spacing:2px;color:#54cfff;
 }
-.header-right{
- display:flex;align-items:center;gap:8px;
-}
-.status-ok{
- color:#4ade80;font-size:9px;font-weight:800;
-}
+.header-right{display:flex;align-items:center;gap:8px}
+.status-ok{color:#4ade80;font-size:9px;font-weight:800}
 .audio-btn{
  width:29px;height:29px;flex-shrink:0;
  border-radius:50%;cursor:pointer;
@@ -88,9 +78,7 @@ body{
  background:#061b31;color:#a4f2ff;
  box-shadow:0 0 6px #00bfff55;
 }
-.audio-btn.playing{
- border-color:#ff5d9a;color:#ff5d9a;
-}
+.audio-btn.playing{border-color:#ff5d9a;color:#ff5d9a}
 .tactical-nav{
  width:100%;height:49px;min-height:49px;
  display:flex;align-items:center;gap:7px;
@@ -103,35 +91,23 @@ body{
 }
 .tactical-btn{
  display:inline-flex;align-items:center;
- justify-content:center;gap:7px;
- flex-shrink:0;min-height:33px;
- padding:7px 11px;border-radius:10px;
+ justify-content:center;gap:7px;flex-shrink:0;
+ min-height:33px;padding:7px 11px;border-radius:10px;
  border:1px solid #168fd1;
  background:linear-gradient(#0c2b4b,#061426);
  color:#76eaff;font-size:9px;font-weight:850;
  text-transform:uppercase;text-decoration:none;
- cursor:pointer;
- box-shadow:inset 0 0 7px #00bfff22;
- transition:border-color .2s,background .2s;
+ cursor:pointer;box-shadow:inset 0 0 7px #00bfff22;
 }
 .tactical-btn.active{
  color:#fff;border-color:#76eaff;
  background:linear-gradient(#164875,#09203b);
- box-shadow:0 0 9px #00bfff88,
- inset 0 0 8px #00bfff44;
+ box-shadow:0 0 9px #00bfff88,inset 0 0 8px #00bfff44;
 }
-.tactical-btn.amber{
- border-color:#d9ae34;color:#ffdb71;
-}
-.tactical-btn.amber.active{
- background:#d9ae34;color:#020916;
-}
-.tactical-btn.alert{
- border-color:#b84970;color:#ff91ad;
-}
-.tactical-btn.alert.active{
- background:#b84970;color:#fff;
-}
+.tactical-btn.amber{border-color:#d9ae34;color:#ffdb71}
+.tactical-btn.amber.active{background:#d9ae34;color:#020916}
+.tactical-btn.alert{border-color:#b84970;color:#ff91ad}
+.tactical-btn.alert.active{background:#b84970;color:#fff}
 .tactical-btn.iride-btn{
  height:36px;padding:3px 12px 3px 6px;
  border-color:#62cfff;
@@ -149,10 +125,8 @@ body{
 }
 .iride-eye-outline{
  position:absolute;width:25px;height:15px;
- border:1.5px solid #8cdbff;
- border-radius:75% 12%;
- transform:rotate(45deg);
- box-shadow:0 0 5px #42b8ff;
+ border:1.5px solid #8cdbff;border-radius:75% 12%;
+ transform:rotate(45deg);box-shadow:0 0 5px #42b8ff;
 }
 .iride-iris{
  width:15px;height:15px;border-radius:50%;
@@ -170,8 +144,7 @@ body{
  animation:catPupil 5.5s ease-in-out infinite;
 }
 .iride-name{
- font-size:11px;font-weight:950;
- letter-spacing:1.3px;
+ font-size:11px;font-weight:950;letter-spacing:1.3px;
  animation:irideText 2.4s ease-in-out infinite;
 }
 @keyframes catLook{
@@ -196,44 +169,28 @@ body{
 }
 .viewscreen-container{
  width:100%;flex:1;min-height:0;
- background:#061020;overflow:hidden;
- position:relative;
+ background:#061020;overflow:hidden;position:relative;
  border:1px solid #096b9c;border-top:0;
  border-radius:0 0 9px 9px;
 }
 #viewscreen-iframe{
  display:block;width:100%;height:100%;border:0;
 }
-/* PORTA METALLICA VERTICALE */
+/* PORTA APPROVATA */
 #airlock{
  position:fixed;inset:0;z-index:100;
- background:#020713;overflow:hidden;
- isolation:isolate;
+ background:#020713;overflow:hidden;isolation:isolate;
 }
-.energy{
+#liquid-energy{
  position:absolute;inset:0;z-index:1;
- background:
- radial-gradient(ellipse at 50% 48%,
- #b4ffff 0%,#20cfff 16%,#006eff 42%,
- #002d78 68%,#020916 100%);
- opacity:0;
-}
-.energy::after{
- content:"";position:absolute;inset:0;
- background:repeating-linear-gradient(
- 100deg,transparent 0 16px,
- #9aefff55 18px,transparent 22px);
- animation:energyFlow .45s linear infinite;
-}
-@keyframes energyFlow{
- to{transform:translateX(45px)}
+ width:100%;height:100%;opacity:0;
+ transition:opacity .3s;
 }
 .door{
- position:absolute;top:0;bottom:0;
- width:50%;z-index:3;
+ position:absolute;top:0;bottom:0;width:50%;
+ z-index:3;
  background-image:url("enterprise-porta.webp");
- background-size:200% 100%;
- background-repeat:no-repeat;
+ background-size:200% 100%;background-repeat:no-repeat;
  will-change:transform;
 }
 .door-left{
@@ -245,21 +202,15 @@ body{
  border-left:1px solid #23d9ff;
 }
 #fingerprint{
- position:absolute;
- left:50%;top:54%;
+ position:absolute;left:50%;top:54%;
  transform:translate(-50%,-50%);
- z-index:6;
- width:min(31vw,150px);
- height:min(36vw,170px);
- min-width:85px;min-height:95px;
- border:0;border-radius:18px;
- background:transparent;
- cursor:pointer;
- touch-action:manipulation;
+ z-index:6;width:min(31vw,150px);
+ height:min(36vw,170px);min-width:85px;min-height:95px;
+ border:0;border-radius:18px;background:transparent;
+ cursor:pointer;touch-action:manipulation;
 }
 #fingerprint:focus-visible{
- outline:3px solid #b8faff;
- outline-offset:4px;
+ outline:3px solid #b8faff;outline-offset:4px;
 }
 #airlock.activating .door{
  animation:doorPulse .2s ease-in-out 4;
@@ -268,10 +219,7 @@ body{
  0%,100%{filter:brightness(1)}
  50%{filter:brightness(1.65) saturate(1.4)}
 }
-#airlock.activating .energy{
- opacity:1;
- transition:opacity .25s;
-}
+#airlock.activating #liquid-energy{opacity:1}
 #airlock.opening .door-left{
  transform:translateX(-102%);
  transition:transform 1.5s cubic-bezier(.65,0,.25,1);
@@ -283,36 +231,34 @@ body{
 #airlock.opening #fingerprint{
  opacity:0;pointer-events:none;
 }
-#airlock.dissolving .energy{
- opacity:0;
- transition:opacity 1s ease-out;
+#airlock.dissolving #liquid-energy{
+ opacity:0;filter:blur(18px);
+ transition:opacity 1s ease-out,filter 1s ease-out;
+}
+#airlock.dissolving{animation:screenShimmer .16s 4}
+@keyframes screenShimmer{
+ 0%,100%{filter:brightness(1)}
+ 50%{filter:brightness(1.13)}
 }
 @media(prefers-reduced-motion:reduce){
  *,*::before,*::after{
- animation:none!important;
- transition:none!important;
+  animation:none!important;transition:none!important;
  }
 }
 </style>
 </head>
 <body>
-
 <svg id="enterprise-border" aria-hidden="true">
- <defs>
-  <path id="comet-route" d="M 14 1 H 100"/>
- </defs>
+ <defs><path id="comet-route" d="M 14 1 H 100"/></defs>
  <path id="border-track" d=""/>
  <g id="comet">
   <circle id="comet-halo" r="8"/>
   <circle id="comet-tail" cx="-4" r="3.5"/>
   <circle id="comet-core" r="2.2"/>
-  <animateMotion dur="12s"
-   repeatCount="indefinite" rotate="auto">
-   <mpath href="#comet-route"/>
-  </animateMotion>
+  <animateMotion dur="12s" repeatCount="indefinite"
+   rotate="auto"><mpath href="#comet-route"/></animateMotion>
  </g>
 </svg>
-
 <header class="bridge-header">
  <div class="brand">
   <div class="brand-orbit">◉</div>
@@ -327,21 +273,16 @@ body{
   <span class="status-ok">● OK</span>
  </div>
 </header>
-
 <audio id="tactical-audio"
  src="https://files.catbox.moe/ltr70o.mp3"
  loop preload="none"></audio>
-
 <nav class="tactical-nav">
  <button class="tactical-btn iride-btn active"
   onclick="switchTracker('https://19francomenenti73-dev.github.io/Iride/',this)">
   <span class="iride-eye" aria-hidden="true">
    <span class="iride-eye-outline"></span>
-   <span class="iride-iris">
-    <span class="iride-pupil"></span>
-   </span>
-  </span>
-  <span class="iride-name">I.R.I.D.E.</span>
+   <span class="iride-iris"><span class="iride-pupil"></span></span>
+  </span><span class="iride-name">I.R.I.D.E.</span>
  </button>
  <a class="tactical-btn"
   href="https://iride.nowcasting-italia.com/"
@@ -373,26 +314,21 @@ body{
   📍 Archivio Eventi
  </button>
 </nav>
-
 <div class="viewscreen-container">
  <iframe id="viewscreen-iframe"
   src="https://19francomenenti73-dev.github.io/Iride/"
   title="Visualizzatore Nowcasting Italia"
   allowfullscreen></iframe>
 </div>
-
-<!-- INGRESSO SCENOGRAFICO -->
 <div id="airlock" role="region"
  aria-label="Ingresso al ponte di comando Enterprise">
- <div class="energy"></div>
+ <canvas id="liquid-energy" aria-hidden="true"></canvas>
  <div class="door door-left"></div>
  <div class="door door-right"></div>
- <button id="fingerprint"
-  onclick="enterEnterprise()"
+ <button id="fingerprint" onclick="enterEnterprise()"
   aria-label="Tocca per aprire la porta Enterprise"
   title="Tocca per accedere"></button>
 </div>
-
 <script>
 function updateEnterpriseBorder(){
  const svg=document.getElementById('enterprise-border');
@@ -402,33 +338,26 @@ function updateEnterpriseBorder(){
  const x=1.5,y=1.5,r=12;
  const right=w-1.5,bottom=h-1.5;
  const d=[
-  `M ${x+r} ${y}`,
-  `H ${right-r}`,
+  `M ${x+r} ${y}`,`H ${right-r}`,
   `Q ${right} ${y} ${right} ${y+r}`,
   `V ${bottom-r}`,
   `Q ${right} ${bottom} ${right-r} ${bottom}`,
   `H ${x+r}`,
   `Q ${x} ${bottom} ${x} ${bottom-r}`,
   `V ${y+r}`,
-  `Q ${x} ${y} ${x+r} ${y}`,
-  'Z'
+  `Q ${x} ${y} ${x+r} ${y}`,'Z'
  ].join(' ');
- document.getElementById('border-track')
-  .setAttribute('d',d);
- document.getElementById('comet-route')
-  .setAttribute('d',d);
+ document.getElementById('border-track').setAttribute('d',d);
+ document.getElementById('comet-route').setAttribute('d',d);
 }
 const borderObserver=new ResizeObserver(updateEnterpriseBorder);
-borderObserver.observe(
- document.getElementById('enterprise-border')
-);
+borderObserver.observe(document.getElementById('enterprise-border'));
 updateEnterpriseBorder();
 
 const TRACKER_REFRESH_MS=30*60*1000;
 const trackerFrame=document.getElementById('viewscreen-iframe');
 let activeTrackerUrl=trackerFrame.getAttribute('src');
 let lastTrackerLoad=Date.now();
-
 function trackerUrlWithoutCache(url){
  const parsed=new URL(url,window.location.href);
  parsed.searchParams.delete('_dashboard_refresh');
@@ -458,7 +387,6 @@ document.addEventListener('visibilitychange',refreshTrackerIfNeeded);
 window.addEventListener('pageshow',refreshTrackerIfNeeded);
 window.addEventListener('focus',refreshTrackerIfNeeded);
 loadTracker(activeTrackerUrl);
-
 function toggleMusic(){
  const audio=document.getElementById('tactical-audio');
  const btn=document.getElementById('audio-btn');
@@ -466,37 +394,164 @@ function toggleMusic(){
   audio.play().then(()=>{
    btn.classList.add('playing');
    btn.textContent='🎶';
-  }).catch(err=>console.log(err));
+  }).catch(console.log);
  }else{
-  audio.pause();
-  btn.classList.remove('playing');
+  audio.pause();btn.classList.remove('playing');
   btn.textContent='🔊';
  }
 }
 
+// ENERGIA LIQUIDA: RIFRAZIONI SENZA RIGHE
+let energyRunning=false;
+let energyFrame=0;
+function startLiquidEnergy(){
+ const canvas=document.getElementById('liquid-energy');
+ const ctx=canvas.getContext('2d',{alpha:false});
+ if(!ctx)return;
+ const w=96;
+ const h=Math.max(128,Math.min(256,
+  Math.round(w*innerHeight/Math.max(innerWidth,1))));
+ canvas.width=w;canvas.height=h;
+ const image=ctx.createImageData(w,h);
+ energyRunning=true;
+ let lastDraw=0;
+ const started=performance.now();
+ function draw(now){
+  if(!energyRunning)return;
+  energyFrame=requestAnimationFrame(draw);
+  if(now-lastDraw<40)return;
+  lastDraw=now;
+  const t=(now-started)*.001;
+  const data=image.data;
+  for(let y=0;y<h;y++){
+   for(let x=0;x<w;x++){
+    const u=x/w,v=y/h;
+    const dx=u-.5,dy=v-.5;
+    const r=Math.hypot(dx*1.3,dy);
+    const angle=Math.atan2(dy,dx);
+    const swirl=angle+2.8*Math.exp(-r*3)
+     *Math.sin(t*.9+r*5);
+    const wx=u+.085*Math.sin(swirl*2.5+t*.8+v*7);
+    const wy=v+.07*Math.cos(swirl*2-t*.7+u*8);
+    const wave=Math.sin(
+     9*Math.hypot(wx-.3,wy-.45)-t*1.8
+     +2*Math.sin(wx*5+wy*3+t*.6)
+    );
+    const wave2=Math.cos(
+     8*Math.hypot(wx-.75,wy-.6)+t*1.2
+     +Math.sin(wy*6-t)
+    );
+    const light=Math.max(0,Math.min(1,
+     .48+.25*wave+.18*wave2
+     +.18*Math.cos(r*8-t*.9)
+    ));
+    const i=(y*w+x)*4;
+    data[i]=Math.round(2+65*light);
+    data[i+1]=Math.round(45+185*light);
+    data[i+2]=Math.round(135+120*light);
+    data[i+3]=255;
+   }
+  }
+  ctx.putImageData(image,0,0);
+ }
+ energyFrame=requestAnimationFrame(draw);
+}
+function stopLiquidEnergy(){
+ energyRunning=false;
+ cancelAnimationFrame(energyFrame);
+}
+
+// AUDIO ORIGINALE: SERVOMOTORI E CAMPO ENERGETICO
+let audioContext=null;
+function playDoorSound(){
+ const AC=window.AudioContext||window.webkitAudioContext;
+ if(!AC)return;
+ try{
+  audioContext=new AC();
+  const ac=audioContext;
+  ac.resume().catch(()=>{});
+  const t=ac.currentTime;
+  const master=ac.createGain();
+  master.gain.value=.22;
+  master.connect(ac.destination);
+  function tone(type,f1,f2,start,duration,volume){
+   const osc=ac.createOscillator();
+   const gain=ac.createGain();
+   osc.type=type;
+   osc.frequency.setValueAtTime(f1,t+start);
+   osc.frequency.exponentialRampToValueAtTime(
+    Math.max(1,f2),t+start+duration
+   );
+   gain.gain.setValueAtTime(.0001,t+start);
+   gain.gain.linearRampToValueAtTime(
+    volume,t+start+Math.min(.12,duration*.25)
+   );
+   gain.gain.exponentialRampToValueAtTime(
+    .0001,t+start+duration
+   );
+   osc.connect(gain);gain.connect(master);
+   osc.start(t+start);
+   osc.stop(t+start+duration+.02);
+  }
+  function noise(start,duration,volume,cutoff){
+   const length=Math.ceil(ac.sampleRate*duration);
+   const buffer=ac.createBuffer(1,length,ac.sampleRate);
+   const arr=buffer.getChannelData(0);
+   for(let i=0;i<length;i++){
+    arr[i]=(Math.random()*2-1);
+   }
+   const src=ac.createBufferSource();
+   src.buffer=buffer;
+   const filter=ac.createBiquadFilter();
+   filter.type='lowpass';
+   filter.frequency.value=cutoff;
+   const gain=ac.createGain();
+   gain.gain.setValueAtTime(.0001,t+start);
+   gain.gain.linearRampToValueAtTime(
+    volume,t+start+Math.min(.2,duration*.3)
+   );
+   gain.gain.exponentialRampToValueAtTime(
+    .0001,t+start+duration
+   );
+   src.connect(filter);filter.connect(gain);
+   gain.connect(master);
+   src.start(t+start);src.stop(t+start+duration);
+  }
+  tone('sine',850,1250,0,.15,.2);
+  tone('triangle',240,75,.22,.5,.4);
+  tone('sawtooth',65,115,.8,1.5,.42);
+  tone('triangle',130,58,.9,1.4,.3);
+  noise(.85,1.55,.27,650);
+  tone('sine',92,105,2.3,2,.26);
+  tone('sine',215,140,2.3,2,.12);
+  noise(2.3,2,.09,1400);
+  tone('sine',190,38,4.3,1,.25);
+  noise(4.3,1,.12,850);
+  setTimeout(()=>ac.close().catch(()=>{}),5700);
+ }catch(err){console.warn('Audio porta:',err)}
+}
+
+// SEQUENZA DI APERTURA
 let entranceStarted=false;
 function enterEnterprise(){
  if(entranceStarted)return;
  entranceStarted=true;
  const gate=document.getElementById('airlock');
- document.getElementById('fingerprint').disabled=true;
+ const btn=document.getElementById('fingerprint');
+ btn.disabled=true;
  const reduced=window.matchMedia(
   '(prefers-reduced-motion: reduce)'
  ).matches;
- if(reduced){
-  gate.remove();
-  return;
- }
+ if(reduced){gate.remove();return}
+ playDoorSound();
+ startLiquidEnergy();
  gate.classList.add('activating');
- window.setTimeout(()=>{
-  gate.classList.add('opening');
- },800);
- window.setTimeout(()=>{
-  gate.classList.add('dissolving');
- },2300);
- window.setTimeout(()=>{
+ setTimeout(()=>gate.classList.add('opening'),800);
+ setTimeout(()=>gate.classList.add('dissolving'),4300);
+ setTimeout(()=>{
+  stopLiquidEnergy();
   gate.remove();
- },3350);
+ },5350);
 }
 </script>
 </body>
