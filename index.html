@@ -18,7 +18,6 @@ body{
  padding:6px;position:relative;
  background:linear-gradient(135deg,#020714,#081b35,#020714);
 }
-/* CORNICE ENTERPRISE */
 #enterprise-border{
  position:absolute;inset:1px;
  width:calc(100% - 2px);height:calc(100% - 2px);
@@ -205,17 +204,99 @@ body{
 #viewscreen-iframe{
  display:block;width:100%;height:100%;border:0;
 }
+/* PORTA METALLICA VERTICALE */
+#airlock{
+ position:fixed;inset:0;z-index:100;
+ background:#020713;overflow:hidden;
+ isolation:isolate;
+}
+.energy{
+ position:absolute;inset:0;z-index:1;
+ background:
+ radial-gradient(ellipse at 50% 48%,
+ #b4ffff 0%,#20cfff 16%,#006eff 42%,
+ #002d78 68%,#020916 100%);
+ opacity:0;
+}
+.energy::after{
+ content:"";position:absolute;inset:0;
+ background:repeating-linear-gradient(
+ 100deg,transparent 0 16px,
+ #9aefff55 18px,transparent 22px);
+ animation:energyFlow .45s linear infinite;
+}
+@keyframes energyFlow{
+ to{transform:translateX(45px)}
+}
+.door{
+ position:absolute;top:0;bottom:0;
+ width:50%;z-index:3;
+ background-image:url("enterprise-porta.webp");
+ background-size:200% 100%;
+ background-repeat:no-repeat;
+ will-change:transform;
+}
+.door-left{
+ left:0;background-position:left center;
+ border-right:1px solid #23d9ff;
+}
+.door-right{
+ right:0;background-position:right center;
+ border-left:1px solid #23d9ff;
+}
+#fingerprint{
+ position:absolute;
+ left:50%;top:54%;
+ transform:translate(-50%,-50%);
+ z-index:6;
+ width:min(31vw,150px);
+ height:min(36vw,170px);
+ min-width:85px;min-height:95px;
+ border:0;border-radius:18px;
+ background:transparent;
+ cursor:pointer;
+ touch-action:manipulation;
+}
+#fingerprint:focus-visible{
+ outline:3px solid #b8faff;
+ outline-offset:4px;
+}
+#airlock.activating .door{
+ animation:doorPulse .2s ease-in-out 4;
+}
+@keyframes doorPulse{
+ 0%,100%{filter:brightness(1)}
+ 50%{filter:brightness(1.65) saturate(1.4)}
+}
+#airlock.activating .energy{
+ opacity:1;
+ transition:opacity .25s;
+}
+#airlock.opening .door-left{
+ transform:translateX(-102%);
+ transition:transform 1.5s cubic-bezier(.65,0,.25,1);
+}
+#airlock.opening .door-right{
+ transform:translateX(102%);
+ transition:transform 1.5s cubic-bezier(.65,0,.25,1);
+}
+#airlock.opening #fingerprint{
+ opacity:0;pointer-events:none;
+}
+#airlock.dissolving .energy{
+ opacity:0;
+ transition:opacity 1s ease-out;
+}
 @media(prefers-reduced-motion:reduce){
  *,*::before,*::after{
-  animation:none!important;
-  transition:none!important;
+ animation:none!important;
+ transition:none!important;
  }
 }
 </style>
 </head>
 <body>
 
-<!-- PERCORSO LUMINOSO CONTINUO -->
 <svg id="enterprise-border" aria-hidden="true">
  <defs>
   <path id="comet-route" d="M 14 1 H 100"/>
@@ -225,10 +306,8 @@ body{
   <circle id="comet-halo" r="8"/>
   <circle id="comet-tail" cx="-4" r="3.5"/>
   <circle id="comet-core" r="2.2"/>
-  <animateMotion
-   dur="12s"
-   repeatCount="indefinite"
-   rotate="auto">
+  <animateMotion dur="12s"
+   repeatCount="indefinite" rotate="auto">
    <mpath href="#comet-route"/>
   </animateMotion>
  </g>
@@ -244,9 +323,7 @@ body{
  </div>
  <div class="header-right">
   <button id="audio-btn" class="audio-btn"
-   onclick="toggleMusic()" title="Colonna sonora">
-   🔊
-  </button>
+   onclick="toggleMusic()" title="Colonna sonora">🔊</button>
   <span class="status-ok">● OK</span>
  </div>
 </header>
@@ -257,8 +334,7 @@ body{
 
 <nav class="tactical-nav">
  <button class="tactical-btn iride-btn active"
-  onclick="switchTracker('https://19francomenenti73-dev.github.io/Iride/',this)"
-  title="I.R.I.D.E. — Radar Intelligence 3D">
+  onclick="switchTracker('https://19francomenenti73-dev.github.io/Iride/',this)">
   <span class="iride-eye" aria-hidden="true">
    <span class="iride-eye-outline"></span>
    <span class="iride-iris">
@@ -267,38 +343,31 @@ body{
   </span>
   <span class="iride-name">I.R.I.D.E.</span>
  </button>
-
  <a class="tactical-btn"
   href="https://iride.nowcasting-italia.com/"
   target="_blank" rel="noopener noreferrer">
   ⛶ ESPANDI I.R.I.D.E.
  </a>
-
  <button class="tactical-btn"
   onclick="switchTracker('https://19francomenenti73-dev.github.io/Z.E.U.S./',this)">
   ⚡ Z.E.U.S.
  </button>
-
  <button class="tactical-btn amber"
   onclick="switchTracker('https://19francomenenti73-dev.github.io/Snow-tracker/',this)">
   ❄️ Snow Tracker
  </button>
-
  <button class="tactical-btn"
   onclick="switchTracker('https://19francomenenti73-dev.github.io/Dashboard-Enterprise/world-tracker.html',this)">
   🌍 World Storm Tracker
  </button>
-
  <button class="tactical-btn alert"
   onclick="switchTracker('https://19francomenenti73-dev.github.io/hurricane-tracker/',this)">
   🌀 Hurricane Tracker
  </button>
-
  <button class="tactical-btn alert"
   onclick="switchTracker('https://19francomenenti73-dev.github.io/earthquake-tracker-/',this)">
   🌋 Earthquake Tracker
  </button>
-
  <button class="tactical-btn alert"
   onclick="switchTracker('https://19francomenenti73-dev.github.io/archivio-eventi/',this)">
   📍 Archivio Eventi
@@ -312,17 +381,25 @@ body{
   allowfullscreen></iframe>
 </div>
 
+<!-- INGRESSO SCENOGRAFICO -->
+<div id="airlock" role="region"
+ aria-label="Ingresso al ponte di comando Enterprise">
+ <div class="energy"></div>
+ <div class="door door-left"></div>
+ <div class="door door-right"></div>
+ <button id="fingerprint"
+  onclick="enterEnterprise()"
+  aria-label="Tocca per aprire la porta Enterprise"
+  title="Tocca per accedere"></button>
+</div>
+
 <script>
-// CORNICE SVG ADATTIVA
 function updateEnterpriseBorder(){
  const svg=document.getElementById('enterprise-border');
- const w=svg.clientWidth;
- const h=svg.clientHeight;
+ const w=svg.clientWidth,h=svg.clientHeight;
  if(w<30||h<30)return;
-
  svg.setAttribute('viewBox',`0 0 ${w} ${h}`);
- const r=12;
- const x=1.5,y=1.5;
+ const x=1.5,y=1.5,r=12;
  const right=w-1.5,bottom=h-1.5;
  const d=[
   `M ${x+r} ${y}`,
@@ -336,25 +413,19 @@ function updateEnterpriseBorder(){
   `Q ${x} ${y} ${x+r} ${y}`,
   'Z'
  ].join(' ');
-
  document.getElementById('border-track')
   .setAttribute('d',d);
  document.getElementById('comet-route')
   .setAttribute('d',d);
 }
-const borderObserver=new ResizeObserver(
- updateEnterpriseBorder
-);
+const borderObserver=new ResizeObserver(updateEnterpriseBorder);
 borderObserver.observe(
  document.getElementById('enterprise-border')
 );
 updateEnterpriseBorder();
 
-// TRACKER: REFRESH OGNI 30 MINUTI
 const TRACKER_REFRESH_MS=30*60*1000;
-const trackerFrame=document.getElementById(
- 'viewscreen-iframe'
-);
+const trackerFrame=document.getElementById('viewscreen-iframe');
 let activeTrackerUrl=trackerFrame.getAttribute('src');
 let lastTrackerLoad=Date.now();
 
@@ -366,9 +437,7 @@ function trackerUrlWithoutCache(url){
 function loadTracker(url){
  activeTrackerUrl=trackerUrlWithoutCache(url);
  const parsed=new URL(activeTrackerUrl);
- parsed.searchParams.set(
-  '_dashboard_refresh',String(Date.now())
- );
+ parsed.searchParams.set('_dashboard_refresh',String(Date.now()));
  lastTrackerLoad=Date.now();
  trackerFrame.src=parsed.toString();
 }
@@ -385,18 +454,11 @@ function switchTracker(url,btnElement){
  btnElement.classList.add('active');
 }
 setInterval(refreshTrackerIfNeeded,60*1000);
-document.addEventListener(
- 'visibilitychange',refreshTrackerIfNeeded
-);
-window.addEventListener(
- 'pageshow',refreshTrackerIfNeeded
-);
-window.addEventListener(
- 'focus',refreshTrackerIfNeeded
-);
+document.addEventListener('visibilitychange',refreshTrackerIfNeeded);
+window.addEventListener('pageshow',refreshTrackerIfNeeded);
+window.addEventListener('focus',refreshTrackerIfNeeded);
 loadTracker(activeTrackerUrl);
 
-// COLONNA SONORA
 function toggleMusic(){
  const audio=document.getElementById('tactical-audio');
  const btn=document.getElementById('audio-btn');
@@ -410,6 +472,31 @@ function toggleMusic(){
   btn.classList.remove('playing');
   btn.textContent='🔊';
  }
+}
+
+let entranceStarted=false;
+function enterEnterprise(){
+ if(entranceStarted)return;
+ entranceStarted=true;
+ const gate=document.getElementById('airlock');
+ document.getElementById('fingerprint').disabled=true;
+ const reduced=window.matchMedia(
+  '(prefers-reduced-motion: reduce)'
+ ).matches;
+ if(reduced){
+  gate.remove();
+  return;
+ }
+ gate.classList.add('activating');
+ window.setTimeout(()=>{
+  gate.classList.add('opening');
+ },800);
+ window.setTimeout(()=>{
+  gate.classList.add('dissolving');
+ },2300);
+ window.setTimeout(()=>{
+  gate.remove();
+ },3350);
 }
 </script>
 </body>
