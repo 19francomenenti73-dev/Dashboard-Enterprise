@@ -1,0 +1,49 @@
+{
+  "checked_utc": "2026-11-21T19:28:22.879717+00:00",
+  "source": "https://radar-backup.meteogate.eu/",
+  "purpose": "catalog structure only",
+  "product_verified": false,
+  "http_status": 200,
+  "catalog_shape": {
+    "title": {
+      "type": "string",
+      "length": 17
+    },
+    "description": {
+      "type": "string",
+      "length": 84
+    },
+    "links": {
+      "count": 5,
+      "first": {
+        "href": "str",
+        "rel": "str",
+        "type": "str",
+        "title": "str"
+      }
+    },
+    "keywords": {
+      "count": 6,
+      "first": {
+        "type": "string",
+        "length": 15
+      }
+    },
+    "provider": {
+      "name": {
+        "type": "string",
+        "length": 14
+      },
+      "url": {
+        "type": "string",
+        "length": 83
+      }
+    },
+    "contact": {
+      "email": {
+        "type": "string",
+        "length": 25
+      }
+    }
+  }
+}
