@@ -46,7 +46,7 @@ def open_grib(raw, short_name, level=None):
     with tempfile.NamedTemporaryFile(suffix=".grib2") as t:
         t.write(raw);t.flush()
         ds=xr.open_dataset(t.name,engine="cfgrib",
-          backend_kwargs={"filter_by_keys":dict({"shortName":short_name}, **({"typeOfLevel":"isobaricInhPa","level":250} if level in (250,850) else {"typeOfLevel":"meanSea"})),"indexpath":""})
+          backend_kwargs={"filter_by_keys":dict({"shortName":short_name}, **({"typeOfLevel":"isobaricInhPa","level":level} if level in (250,850) else {"typeOfLevel":"meanSea"})),"indexpath":""})
         ds.load()
         return ds
 
