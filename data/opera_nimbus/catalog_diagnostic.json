@@ -1,5 +1,5 @@
 {
-  "checked_utc": "2026-11-21T19:34:39.056480+00:00",
+  "checked_utc": "2026-11-21T19:36:41.241385+00:00",
   "source": "https://radar-backup.meteogate.eu/",
   "purpose": "catalog structure only",
   "product_verified": false,
@@ -79,5 +79,6 @@
       "title": "European weather radar data products"
     }
   ],
-  "conformance_count": 6
+  "conformance_count": 6,
+  "items_error": "HTTPError: HTTP Error 400: Bad Request"
 }
