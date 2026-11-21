@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Inspect official MeteoGate backup catalog without downloading radar data."""
 import json
+from urllib.parse import urljoin, urlsplit
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
@@ -28,7 +29,29 @@ def main():
             content=response.read(300_001)
             if len(content)>300_000:raise ValueError("Catalog response too large")
             result["http_status"]=response.status
-            result["catalog_shape"]=describe(json.loads(content))
+            catalog=json.loads(content)
+            result["catalog_shape"]=describe(catalog)
+            result["navigation"]=[]
+            for item in catalog.get("links",[]):
+                if not isinstance(item,dict):continue
+                href=item.get("href","")
+                absolute=urljoin(URL,href)
+                parsed=urlsplit(absolute)
+                if parsed.scheme!="https" or parsed.hostname!="radar-backup.meteogate.eu":continue
+                result["navigation"].append({"path":parsed.path,"rel":item.get("rel"),"type":item.get("type")})
+            for path in ["/collections","/conformance"]:
+                endpoint=urljoin(URL,path)
+                try:
+                    with urllib.request.urlopen(urllib.request.Request(endpoint,headers={"Accept":"application/json","User-Agent":"Nowcasting-Italia-OPERA-catalog-check/1.0"}),timeout=12) as sub:
+                        body=sub.read(250001)
+                        if len(body)>250000:raise ValueError("Response too large")
+                        obj=json.loads(body)
+                        if path=="/collections":
+                            result["collections"]=[{"id":v.get("id"),"title":v.get("title")} for v in obj.get("collections",[]) if isinstance(v,dict)][:80]
+                        else:
+                            result["conformance_count"]=len(obj.get("conformsTo",[]))
+                except Exception as error:
+                    result[path.strip("/")+"_error"]=f"{type(error).__name__}: {str(error)[:100]}"
     except Exception as exc:
         result["error"]=f"{type(exc).__name__}: {str(exc)[:180]}"
     OUT.parent.mkdir(parents=True,exist_ok=True)
