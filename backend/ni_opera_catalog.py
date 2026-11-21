@@ -77,6 +77,34 @@ def main():
                     })
             except Exception as error:
                 result["items_error"]=f"{type(error).__name__}: {str(error)[:160]}"
+                # A 400 may indicate required parameters or unsupported endpoint.
+                # Fetch the published OpenAPI schema and collection metadata instead of guessing.
+                for label,route in [
+                    ("observations_collection","/api/collections/observations"),
+                    ("openapi","/api/openapi.json")]:
+                    try:
+                        with urllib.request.urlopen(urllib.request.Request(
+                            urljoin(URL,route),headers={"Accept":"application/json",
+                            "User-Agent":"Nowcasting-Italia-OPERA-catalog-check/1.0"}
+                        ),timeout=18) as resp:
+                            body=resp.read(900001)
+                            if len(body)>900000:raise ValueError("Response too large")
+                            obj=json.loads(body)
+                        if label=="openapi":
+                            result["openapi_paths"]=[p for p in obj.get("paths",{})
+                                if "collection" in p or "observation" in p][:60]
+                            result["openapi_items_get"]=describe(
+                                obj.get("paths",{}).get("/collections/{collectionId}/items",{}),0)
+                        else:
+                            result["collection_detail"]={
+                                "id":obj.get("id"),
+                                "itemType":obj.get("itemType"),
+                                "extent":describe(obj.get("extent")),
+                                "links":[{"rel":v.get("rel"),"path":urlsplit(
+                                    urljoin(URL,v.get("href",""))).path}
+                                    for v in obj.get("links",[]) if isinstance(v,dict)][:25]}
+                    except Exception as detail_error:
+                        result[label+"_error"]=f"{type(detail_error).__name__}: {str(detail_error)[:140]}"
     except Exception as exc:
         result["error"]=f"{type(exc).__name__}: {str(exc)[:180]}"
     OUT.parent.mkdir(parents=True,exist_ok=True)
