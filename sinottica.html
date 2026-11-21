@@ -13,20 +13,30 @@ label{display:block;margin:7px 0}button{background:#114c76;border:1px solid #48b
 .sample{display:inline-block;width:22px;border-top:3px solid;margin-right:7px}.cold{border-color:#2059ff}.warm{border-color:#f3323d}.occluded{border-color:#b344db}.iso{border-color:#333}
 @media(max-width:650px){header{height:75px}#map{height:calc(100% - 75px)}.layers{top:85px;right:6px;font-size:11px}.status{top:85px;max-width:45vw;font-size:11px}.legend{font-size:11px}}
 </style></head><body>
-<header><div><strong>N.I. SINOTTICA</strong><div><small>Nowcasting Italia · carta originale</small></div></div><div><button id="prev">◀</button><button id="play">▶</button><button id="next">▶|</button><button id="full">⛶</button></div></header>
+<header><div><strong>N.I. SINOTTICA</strong><div><small>Nowcasting Italia · Natural Earth (pubblico dominio) · NOAA GFS · Leaflet BSD-2-Clause</small></div></div><div><button id="prev">◀</button><button id="play">▶</button><button id="next">▶|</button><button id="full">⛶</button></div></header>
 <div id="map"></div>
-<div class="panel layers"><b>Livelli</b><label><input id="fronts" type="checkbox" checked> Fronti</label><label><input id="isobars" type="checkbox" checked> Isobare</label><label><input id="pressure" type="checkbox" checked> H / L</label><label><input id="jet" type="checkbox" checked> Jet 250 hPa</label></div>
+<div class="panel layers"><b>Livelli</b><label><input id="fronts" type="checkbox" checked> Fronti</label><label><input id="isobars" type="checkbox" checked> Isobare</label><label><input id="pressure" type="checkbox" checked> H / L</label><label><input id="jet" type="checkbox" checked> Jet 250 hPa (isotache km/h)</label></div>
 <div class="panel legend"><b>Legenda</b><div><i class="sample cold"></i>Fronte freddo</div><div><i class="sample warm"></i>Fronte caldo</div><div><i class="sample occluded"></i>Occluso</div><div><i class="sample iso"></i>Isobara</div></div>
 <div class="panel status" id="status">Caricamento cartografia locale…</div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 'use strict';
 const map=L.map('map',{preferCanvas:true,minZoom:3,maxZoom:9,maxBounds:[[-12,-35],[78,55]]}).setView([44,10],4);
+map.createPane('bathymetry').style.zIndex=205;
 map.createPane('baseLand').style.zIndex=210;
+map.createPane('relief').style.zIndex=215;
 map.createPane('baseLines').style.zIndex=220;
 const status=document.getElementById('status');
 function notice(s){status.textContent=s}
 async function json(url){const r=await fetch(url);if(!r.ok)throw Error(url+' HTTP '+r.status);return r.json()}
+async function terrain(){
+ try{
+  const t=await json('data/cartografia/terrain.json');
+  if(!Array.isArray(t.bounds)||t.bounds.length!==2)throw Error('Invalid terrain bounds');
+  if(t.sea)L.imageOverlay(t.sea,t.bounds,{pane:'bathymetry',opacity:.8,interactive:false}).addTo(map);
+  if(t.land)L.imageOverlay(t.land,t.bounds,{pane:'relief',opacity:.7,interactive:false}).addTo(map);
+ }catch(e){console.info('Optional terrain unavailable:',e.message)}
+}
 async function base(){
  const specs=[
   ['land.geojson','baseLand',{color:'#8499a5',weight:.7,fillColor:'#e6e5e0',fillOpacity:1}],
@@ -60,7 +70,8 @@ function draw(){
    return L.circleMarker(ll,{radius:3});
   }}).addTo(groups[key]);
  }
- notice('Fonte: '+frame.source+' · validità: '+frame.valid_utc+' UTC · '+(index+1)+'/'+frames.length);
+ notice('Fonte: '+frame.source+' · run '+(frame.run_utc||'?')+' · validità: '+frame.valid_utc+' · '+(index+1)+'/'+frames.length+' · Fronti: '+(frame.fronts_status==='not_computed'?'non diagnosticati':'dati disponibili'));
+ document.getElementById('fronts').disabled=frame.fronts_status==='not_computed';
 }
 async function weather(){
  try{
@@ -69,7 +80,7 @@ async function weather(){
   frames=data.frames.filter(f=>f&&f.source&&f.valid_utc);
   if(!frames.length)throw Error('fonte o orario mancanti');
   index=0;draw();
- }catch(e){frames=[];Object.values(groups).forEach(g=>g.clearLayers());notice('Dati meteorologici non disponibili: nessun fronte o isobara simulati')}
+ }catch(e){frames=[];document.getElementById('fronts').disabled=true;Object.values(groups).forEach(g=>g.clearLayers());notice('Dati meteorologici non disponibili: nessun fronte o isobara simulati')}
 }
 for(const k of Object.keys(groups))document.getElementById(k).onchange=e=>e.target.checked?groups[k].addTo(map):map.removeLayer(groups[k]);
 function move(n){if(!frames.length)return;index=(index+n+frames.length)%frames.length;draw()}
@@ -77,5 +88,5 @@ document.getElementById('prev').onclick=()=>move(-1);
 document.getElementById('next').onclick=()=>move(1);
 document.getElementById('play').onclick=()=>{if(timer){clearInterval(timer);timer=null;return}if(frames.length<2)return;timer=setInterval(()=>move(1),1200)};
 document.getElementById('full').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen?.();
-base();weather();setInterval(weather,1800000);
+base().then(terrain);weather();setInterval(weather,1800000);
 </script></body></html>
