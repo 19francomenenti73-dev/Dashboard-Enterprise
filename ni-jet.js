@@ -6,7 +6,7 @@ const canvas=document.createElement('canvas');
 canvas.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:450';
 document.getElementById('map').appendChild(canvas);
 const ctx=canvas.getContext('2d',{alpha:true});
-let ribbon=null,wind=null,last=0,phase=0,cacheKey='',paused=false;
+let ribbon=null,wind=null,last=0,phase=0,cacheKey='',paused=false,streamlines=[];
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const mix=(a,b,t)=>a+(b-a)*t;
 function interp(w,lat,lon){
@@ -48,37 +48,42 @@ function raster(){
  }
  c.putImageData(im,0,0);return off;
 }
+function buildStreamlines(){
+ const sz=map.getSize(),out=[],spacing=48;
+ for(let yy=0;yy<sz.y;yy+=spacing)for(let xx=0;xx<sz.x;xx+=spacing){
+  let x=xx,y=yy,pts=[],maxSpeed=0;
+  for(let n=0;n<65;n++){
+   const v=velocity(x,y);if(!v||v[2]<110)break;
+   pts.push([x,y]);maxSpeed=Math.max(maxSpeed,v[2]);
+   x+=v[0]*3.5;y+=v[1]*3.5;
+   if(x<0||y<0||x>sz.x||y>sz.y)break;
+  }
+  if(pts.length>=14)out.push({pts,speed:maxSpeed,offset:out.length*13});
+ }
+ return out;
+}
 function resize(){const sz=map.getSize(),d=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(sz.x*d);canvas.height=Math.round(sz.y*d);canvas.style.width=sz.x+'px';canvas.style.height=sz.y+'px';ctx.setTransform(d,0,0,d,0,0);cacheKey=''}
 function animate(t){
  requestAnimationFrame(animate);
  const frame=frames[index],active=frame&&document.getElementById('jet').checked&&map.hasLayer(groups.jet)&&frame.wind_vectors;
  const sz=map.getSize();ctx.clearRect(0,0,sz.x,sz.y);
- if(!active){wind=null;return}
+ if(!active){wind=null;last=t;return}
  const key=frame.valid_utc+':'+map.getZoom()+':'+map.getCenter().toString()+':'+sz.x+':'+sz.y;
- if(key!==cacheKey){wind=frame.wind_vectors;ribbon=raster();cacheKey=key}
+ if(key!==cacheKey){wind=frame.wind_vectors;ribbon=raster();streamlines=buildStreamlines();cacheKey=key}
  if(ribbon){ctx.imageSmoothingEnabled=true;ctx.drawImage(ribbon,0,0,sz.x,sz.y)}
- const dt=clamp((t-last)/1000,0,.05);last=t;if(!paused)phase+=dt*14;
- // Long continuous streamlines, with a traveling luminous gradient rather than dashes.
- const spacing=38,seedShift=phase%spacing;
+ const dt=clamp((t-last)/1000,0,.05);last=t;if(!paused)phase+=dt*7;
+ // Streamline geometry is stable: only a broad, continuous luminous wave travels.
+ // The forecast Play/Pause changes forecast time, NOT the wind-flow animation.
  ctx.lineCap='round';ctx.lineJoin='round';
- for(let yy=-spacing+seedShift;yy<sz.y+spacing;yy+=spacing){
-  for(let xx=-spacing;xx<sz.x+spacing;xx+=spacing){
-   let x=xx,y=yy,points=[],speed=0;
-   for(let n=0;n<32;n++){
-    const v=velocity(x,y);if(!v||v[2]<105)break;
-    points.push([x,y]);speed=Math.max(speed,v[2]);
-    x+=v[0]*3.8;y+=v[1]*3.8;
-    if(x<0||y<0||x>sz.x||y>sz.y)break;
-   }
-   if(points.length<9)continue;
-   const start=points[0],end=points[points.length-1],gradient=ctx.createLinearGradient(start[0],start[1],end[0],end[1]);
-   const shift=(phase/80)%1;
-   gradient.addColorStop(0,'rgba(255,255,255,.05)');
-   gradient.addColorStop(clamp(.25+shift*.3,0,1),'rgba(255,255,255,.09)');
-   gradient.addColorStop(clamp(.48+shift*.3,0,1),'rgba(255,255,255,.36)');
-   gradient.addColorStop(1,'rgba(255,255,255,.06)');
-   ctx.beginPath();ctx.moveTo(...points[0]);for(let n=1;n<points.length;n++)ctx.lineTo(...points[n]);
-   ctx.lineWidth=speed>180?1.1:.7;ctx.strokeStyle=gradient;ctx.stroke();
+ for(const line of streamlines){
+  const pts=line.pts,n=pts.length;
+  const wave=(phase*.85+line.offset)%n;
+  for(let i=1;i<n;i++){
+   const dist=Math.abs(i-wave),wrapped=Math.min(dist,n-dist);
+   const glow=Math.exp(-(wrapped*wrapped)/(2*10*10));
+   ctx.strokeStyle='rgba(240,252,255,'+(0.035+0.25*glow).toFixed(3)+')';
+   ctx.lineWidth=0.8+0.6*glow;
+   ctx.beginPath();ctx.moveTo(pts[i-1][0],pts[i-1][1]);ctx.lineTo(pts[i][0],pts[i][1]);ctx.stroke();
   }
  }
 }
