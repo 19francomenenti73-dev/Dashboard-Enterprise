@@ -1,0 +1,28 @@
+{
+  "checked_utc": "2026-11-21T19:22:04.151849+00:00",
+  "purpose": "Endpoint reachability only; not product or license validation",
+  "endpoints": [
+    {
+      "host": "radar.meteogate.eu",
+      "dns": true,
+      "http_status": null,
+      "error": "URLError: <urlopen error timed out>"
+    },
+    {
+      "host": "radar-backup.meteogate.eu",
+      "dns": true,
+      "http_status": 200,
+      "error": null,
+      "content_type": "application/json"
+    },
+    {
+      "host": "s3.waw3-1.cloudferro.com",
+      "dns": true,
+      "http_status": 200,
+      "error": null,
+      "content_type": "application/xml"
+    }
+  ],
+  "nimbus_verified": false,
+  "radar_published": false
+}
