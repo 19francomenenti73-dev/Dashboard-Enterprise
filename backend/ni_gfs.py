@@ -41,11 +41,11 @@ def fetch_piece(cycle, hour, west, east):
         raise ValueError("NOMADS did not return GRIB2 data")
     return r.content
 
-def open_grib(raw, short_name):
+def open_grib(raw, short_name, level=None):
     with tempfile.NamedTemporaryFile(suffix=".grib2") as t:
         t.write(raw);t.flush()
         ds=xr.open_dataset(t.name,engine="cfgrib",
-          backend_kwargs={"filter_by_keys":{"shortName":short_name},"indexpath":""})
+          backend_kwargs={"filter_by_keys":dict({"shortName":short_name}, **({"typeOfLevel":"isobaricInhPa","level":250} if level==250 else {"typeOfLevel":"meanSea"})),"indexpath":""})
         ds.load()
         return ds
 
@@ -110,7 +110,7 @@ def build():
                     # cfgrib shortName varies by GFS edition: verify explicitly.
                     names={"prmsl":"prmsl","u":"u","v":"v"}
                     try:
-                        a=open_grib(pieces[0],names[var]);b=open_grib(pieces[1],names[var])
+                        a=open_grib(pieces[0],names[var],250 if var in ("u","v") else None);b=open_grib(pieces[1],names[var],250 if var in ("u","v") else None)
                         fields[var]=combine(a,b)
                     except Exception as exc:
                         raise RuntimeError(f"Cannot decode {var}: {exc}")
@@ -118,6 +118,8 @@ def build():
                 _,_,u=fields["u"];_,_,v=fields["v"]
                 msl=msl/100.0
                 wind=np.hypot(u,v)*3.6
+                if msl.shape!=wind.shape or not np.allclose(lat,fields["u"][0]) or not np.allclose(lon,fields["u"][1]) or not np.allclose(lat,fields["v"][0]) or not np.allclose(lon,fields["v"][1]):
+                    raise ValueError("Pressure and jet grids do not align")
                 if not np.isfinite(msl).all() or not np.isfinite(wind).all():
                     raise ValueError("Non-finite weather grid")
                 frames.append({
