@@ -217,9 +217,9 @@ fullButton.onclick=()=>{
  // Google Sites embeds the Dashboard inside another iframe. A new top-level
  // page is the only reliable way to escape that viewport on mobile.
  if(window.top!==window.self){
-   const tab=window.open(new URL('sinottica.html',location.href).href,'_blank','noopener');
+   const tab=window.open('https://sinottica.nowcasting-italia.com/','_blank','noopener');
    if(!tab){
-     const a=document.createElement('a');a.href=new URL('sinottica.html',location.href).href;
+     const a=document.createElement('a');a.href='https://sinottica.nowcasting-italia.com/';
      a.target='_blank';a.rel='noopener';a.textContent='Apri Sinottica in una nuova scheda';
      a.style.cssText='position:absolute;z-index:1200;top:80px;left:12px;background:#103c60;color:white;padding:14px;border-radius:8px';
      document.body.appendChild(a);
