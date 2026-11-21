@@ -1,5 +1,5 @@
 {
-  "checked_utc": "2026-11-21T19:58:51.983953+00:00",
+  "checked_utc": "2026-11-21T20:00:47.231169+00:00",
   "source": "https://radar-backup.meteogate.eu/",
   "purpose": "catalog structure only",
   "product_verified": false,
@@ -98,6 +98,50 @@
       "assets": {}
     }
   ],
+  "rate_nested_data": {
+    "shape": {
+      "type": "string",
+      "length": 138
+    },
+    "keys": [],
+    "list_count": null,
+    "first_shape": null
+  },
+  "rate_radar_meta_shape": {
+    "object": {
+      "type": "string",
+      "length": 4
+    },
+    "product": {
+      "type": "string",
+      "length": 3
+    },
+    "projdef": {
+      "type": "string",
+      "length": 87
+    },
+    "xsize": 1900,
+    "ysize": 2200,
+    "xscale": 2000.0,
+    "yscale": 2000.0,
+    "LL_lon": -10.4345768386404,
+    "LL_lat": 31.7462153182675,
+    "UL_lon": -39.5357864125034,
+    "UL_lat": 67.0228327624372,
+    "UR_lon": 57.8119647501499,
+    "UR_lat": 67.6210371071631,
+    "LR_lon": 29.421038635578,
+    "LR_lat": 31.987650276733
+  },
+  "rate_period_shape": {
+    "type": "string",
+    "length": 4
+  },
+  "rate_summary_shape": {
+    "type": "string",
+    "length": 30
+  },
+  "rate_license": "https://creativecommons.org/licenses/by/4.0/ (CC BY 4.0)",
   "rate_detail_structure": {
     "top_level_keys": [
       "type",
