@@ -18,7 +18,7 @@ body.fullscreen-fallback{position:fixed;inset:0;z-index:999999;background:#061d3
 <header><div><strong>N.I. SINOTTICA</strong><div><small>Nowcasting Italia · Natural Earth (pubblico dominio) · NOAA GFS · Leaflet BSD-2-Clause</small></div></div><div><button id="prev">◀</button><button id="play">▶</button><button id="next">▶|</button><button id="full">⛶</button></div></header>
 <div id="map"></div>
 <div class="panel layers" id="layersPanel"><button id="toggleLayers" type="button" aria-expanded="true" style="background:transparent;border:0;color:#e9f7ff;font-weight:700;cursor:pointer;padding:0 4px 5px 0">Livelli ▾</button><div id="layersContent"><label><input id="satellite" type="checkbox"> Satellite RGB EUMETSAT</label><label><input id="fronts" type="checkbox" disabled> Fronti validati (non disponibili)</label><label><input id="candidates" type="checkbox"> Zone frontali sperimentali</label><label><input id="isobars" type="checkbox" checked> Isobare</label><label><input id="pressure" type="checkbox" checked> H / L</label><label><input id="jet" type="checkbox" checked> Jet 250 hPa (flusso reale U/V)</label></div></div>
-<div class="panel legend"><b>Legenda</b><div><i class="sample iso"></i>Isobare NOAA GFS</div><div style="color:#ff5050">H — alta pressione</div><div style="color:#238dff">L — bassa pressione</div><div style="font-size:10px;opacity:.8">Zone frontali 850 hPa: diagnostica sperimentale, non fronti confermati</div></div>
+<div class="panel legend"><b>Legenda</b><div><i class="sample iso"></i>Isobare NOAA GFS</div><div style="color:#ff5050">H — alta pressione</div><div style="color:#238dff">L — bassa pressione</div><div style="font-size:10px;opacity:.8">Zone frontali sperimentali: rosso vicino a H, blu vicino a L; non indica fronte caldo/freddo</div></div>
 <div class="panel status" id="status">Caricamento cartografia locale…</div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
@@ -83,6 +83,17 @@ function draw(){
  const stale=!Number.isFinite(validDate)||ageHours>9;
  if(stale){Object.values(groups).forEach(g=>g.clearLayers());notice('Dati meteorologici scaduti: ultimo valido '+frame.valid_utc+' · mappa non aggiornata');return;}
  const frontsValid=frame.fronts_status==='validated';
+ // Candidate zones are colored by proximity to a GFS pressure center, NOT by front type.
+ const centers=(frame.pressure?.features||[]).filter(f=>['high','low'].includes(String(f.properties?.type||'').toLowerCase())&&f.geometry?.type==='Point');
+ function candidateColor(f){
+  const coords=f.geometry?.coordinates;
+  if(!Array.isArray(coords)||!coords.length||!centers.length)return '#b5beca';
+  const p=coords[Math.floor(coords.length/2)];if(!Array.isArray(p))return '#b5beca';
+  let nearest=null,dist=Infinity;
+  for(const c of centers){const q=c.geometry.coordinates,dy=(p[1]-q[1]),dx=(p[0]-q[0])*Math.cos(p[1]*Math.PI/180),d=dx*dx+dy*dy;
+   if(d<dist){dist=d;nearest=c}}
+  return nearest?.properties?.type==='high'?'#f03232':'#007bff';
+ }
  document.getElementById('fronts').disabled=!frontsValid;
  if(!frontsValid&&map.hasLayer(groups.fronts))map.removeLayer(groups.fronts);
  if(frontsValid&&document.getElementById('fronts').checked&&!map.hasLayer(groups.fronts))groups.fronts.addTo(map);
@@ -92,7 +103,7 @@ function draw(){
   if(!fc||fc.type!=='FeatureCollection')continue;
   L.geoJSON(fc,{style:f=>{
    const type=String(f.properties?.type||'').toLowerCase();
-   return {color:key==='candidates'?'#e5ac36':key==='isobars'?'#26333c':key==='jet'?'#6b9cc1':({cold:'#2059ff',warm:'#f3323d',occluded:'#b344db',stationary:'#2059ff'}[type]||'#536477'),weight:key==='isobars'?0.85:1.6,opacity:key==='candidates'?.7:key==='jet'?.42:.65,dashArray:key==='candidates'?'6 7':null};
+   return {color:key==='candidates'?candidateColor(f):key==='isobars'?'#26333c':key==='jet'?'#6b9cc1':({cold:'#2059ff',warm:'#f3323d',occluded:'#b344db',stationary:'#2059ff'}[type]||'#536477'),weight:key==='candidates'?3.2:key==='isobars'?0.85:1.6,opacity:key==='candidates'?.7:key==='jet'?.42:.65,dashArray:key==='candidates'?'6 7':null};
   },pointToLayer:(f,ll)=>{
    const type=String(f.properties?.type||'').toLowerCase();
    if(key==='pressure'&&['high','low'].includes(type)){
