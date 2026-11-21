@@ -283,14 +283,27 @@ body{
  box-shadow:0 0 12px #00cfff;
 }
 
-#niKovalenWelcome{position:fixed;inset:0;z-index:2147483640;background:radial-gradient(ellipse at center,#174e8a,#06172e 72%,#020610);display:flex;align-items:center;justify-content:center;color:white;text-align:center;overflow:hidden}
-#niKovalenWelcome .niKBody{width:min(94vw,620px);padding:15px;animation:niKBeam 7s ease-in-out forwards}
-#niKovalenWelcome .kovalenFigure{height:min(49dvh,370px);width:auto;max-width:100%;display:block;margin:auto;filter:drop-shadow(0 0 22px #00bfff)}
-#niKovalenWelcome .niKMessage{font:700 clamp(17px,4vw,26px)/1.35 system-ui,sans-serif;color:#fff;text-shadow:0 0 13px #00bfff;margin-top:15px}
-#niKovalenWelcome .niKTitle{font:700 15px system-ui,sans-serif;letter-spacing:2px;color:#70dbff;margin-top:12px}
-#niKovalenWelcome .niKSkip{position:absolute;right:16px;top:16px;background:#06315a;color:#fff;border:1px solid #33dfff;border-radius:6px;padding:10px}
-@keyframes niKBeam{0%{opacity:0;transform:scale(.5);filter:blur(25px)}18%,82%{opacity:1;transform:scale(1);filter:blur(0)}100%{opacity:0;transform:scale(1.25);filter:blur(22px)}}
-@media(prefers-reduced-motion:reduce){#niKovalenWelcome .niKBody{animation:none}}
+.niKovalenWelcome{position:fixed;inset:0;z-index:60;width:100vw;height:100dvh;overflow:hidden;pointer-events:none;opacity:0;visibility:hidden;background:radial-gradient(ellipse at 35% 50%,#06315aee,#010916f5 75%)}
+.niKovalenWelcome.visible{opacity:1;visibility:visible}
+.niKBody{position:relative;left:0;bottom:0;width:min(80vw,450px);height:auto;object-fit:contain;filter:drop-shadow(0 0 20px #00cfff)}
+.niKMessage{position:relative;margin:12px auto;max-width:550px;padding:16px;border:2px solid #62eeff;border-radius:18px;background:#03132cf2;box-shadow:0 0 25px #00cfffaa;color:#efffff;font-size:clamp(16px,3vw,24px);font-weight:750;line-height:1.4}
+.niKMessage strong{color:#63eaff}
+.niKTitle{position:relative;margin:12px auto;color:#b5faff;font-weight:900;letter-spacing:2px}
+.niKParticles{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.niKovalenWelcome.arriving .niKBody{animation:niKArrival 1.25s ease-out both}
+.niKovalenWelcome.arriving .niKMessage,.niKovalenWelcome.arriving .niKTitle{animation:niKTextIn 1.25s ease-out both}
+.niKovalenWelcome.beaming .niKBody{animation:niKTeleport 1.25s ease-in forwards}
+.niKovalenWelcome.beaming .niKMessage,.niKovalenWelcome.beaming .niKTitle{animation:niKTextOut .6s ease-in forwards}
+.niKovalenWelcome.beaming{animation:niKBackdropOut 1.25s ease-in forwards}
+@keyframes niKArrival{0%{opacity:0;clip-path:inset(100% 0 0);filter:brightness(4) blur(12px)}40%{opacity:.8;filter:brightness(2.5) blur(3px)}100%{opacity:1;clip-path:inset(0);filter:brightness(1)}}
+@keyframes niKTeleport{0%{opacity:1;clip-path:inset(0);filter:brightness(1)}45%{opacity:.95;filter:brightness(3) blur(2px)}100%{opacity:0;clip-path:inset(0 0 100%);filter:brightness(5) blur(10px)}}
+@keyframes niKTextIn{0%,50%{opacity:0;transform:translateY(15px)}100%{opacity:1;transform:none}}
+@keyframes niKTextOut{to{opacity:0;transform:scale(.9)}}
+@keyframes niKBackdropOut{0%,60%{opacity:1}100%{opacity:0}}
+@media(max-width:800px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.weather{height:100px}.weather svg{height:90px}.heading h1{font-size:24px}}
+
+#niKovalenWelcome{z-index:2147483640;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;pointer-events:auto}
+#niKovalenWelcome .niKParticles{z-index:1}#niKovalenWelcome .niKBody,#niKovalenWelcome .niKTitle,#niKovalenWelcome .niKMessage{z-index:2}#niKovalenWelcome .niKSkip{z-index:3}
 </style>
 </head>
 <body>
@@ -441,9 +454,34 @@ function refreshTrackerIfNeeded(){
  loadTracker(activeTrackerUrl);
 }
 
+let niKFrame=0,niKTimers=[];
+function niKParticles(entering){
+ cancelAnimationFrame(niKFrame);
+ const canvas=document.getElementById('niKParticles');if(!canvas)return;
+ const box=canvas.getBoundingClientRect(),ratio=Math.min(devicePixelRatio||1,2);
+ canvas.width=Math.max(1,Math.round(box.width*ratio));canvas.height=Math.max(1,Math.round(box.height*ratio));
+ const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
+ const left=w*.2,right=w*.8,top=h*.13,bottom=h*.8;
+ const points=Array.from({length:190},()=>({x:left+Math.random()*(right-left),y:top+Math.random()*(bottom-top),vx:(Math.random()-.5)*w*.12,vy:(Math.random()-.5)*h*.24,r:(.6+Math.random()*2.5)*ratio}));
+ const started=performance.now();
+ function draw(now){
+  if(!canvas.isConnected)return;
+  const p=Math.min(1,(now-started)/1250);
+  ctx.clearRect(0,0,w,h);ctx.save();ctx.globalCompositeOperation='lighter';
+  for(const q of points){const d=entering?1-p:p,alpha=entering?Math.max(0,1-p*.85):Math.max(0,1-p);
+   ctx.fillStyle='rgba(95,238,255,'+alpha+')';ctx.shadowColor='#00cfff';ctx.shadowBlur=12*ratio;
+   ctx.fillRect(q.x+q.vx*d,q.y+q.vy*d,q.r,q.r*3);}
+  const bx=(left+right)/2,g=ctx.createLinearGradient(bx-35*ratio,0,bx+35*ratio,0);
+  g.addColorStop(0,'rgba(0,160,255,0)');g.addColorStop(.5,'rgba(90,235,255,'+(Math.sin(Math.PI*p)*.35)+')');g.addColorStop(1,'rgba(0,160,255,0)');
+  ctx.fillStyle=g;ctx.fillRect(bx-35*ratio,top,70*ratio,bottom-top);ctx.restore();
+  if(p<1)niKFrame=requestAnimationFrame(draw);else ctx.clearRect(0,0,w,h);
+ }
+ niKFrame=requestAnimationFrame(draw);
+}
 function showKovalenWelcome(){
+ niKTimers.forEach(clearTimeout);niKTimers=[];cancelAnimationFrame(niKFrame);
  document.getElementById('niKovalenWelcome')?.remove();
- const el=document.createElement('div');el.id='niKovalenWelcome';
+ const el=document.createElement('div');el.id='niKovalenWelcome';el.className='visible arriving';
  el.setAttribute('role','dialog');el.setAttribute('aria-label','Benvenuto in Analisi Sinottica');
  el.innerHTML=`<button class="niKSkip" type="button">Salta ▶</button><div class="niKBody"><svg class="kovalenFigure" viewBox="0 0 260 340" role="img" aria-label="Kovalen, ufficiale di sistema con tuta gialla e bordi blu elettrico">
 <defs><linearGradient id="ksuit" x2="1" y2="1"><stop stop-color="#ffe46a"/><stop offset=".55" stop-color="#f7ac18"/><stop offset="1" stop-color="#9b5a0a"/></linearGradient></defs>
@@ -458,11 +496,14 @@ function showKovalenWelcome(){
 <circle cx="163" cy="110" r="8" fill="#27cfff"/><path d="M170 113 L190 121" stroke="#29dfff" stroke-width="4"/>
 <circle cx="171" cy="218" r="22" fill="#072a53" stroke="#17dfff" stroke-width="3"/><text x="171" y="215" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">N.I.</text><text x="171" y="227" text-anchor="middle" font-size="7" fill="#9ceaff">NOWCASTING</text>
 <path d="M35 201 L52 182 68 191 M192 191 L209 182 226 201" stroke="#1ae4ff" stroke-width="5" fill="none"/>
-</svg><div class="niKTitle">KOVALEN · NOWCASTING ITALIA</div><div class="niKMessage">Sono Kovalen, benvenuti in Analisi Sinottica! A destra trovate il menù a tendina; in alto il pulsante per lo schermo intero.</div></div>`;
+</svg></div><div class="niKTitle">KOVALEN · NOWCASTING ITALIA</div><div class="niKMessage">Sono Kovalen, benvenuti in Analisi Sinottica! A destra trovate il menù a tendina; in alto il pulsante per lo schermo intero.</div><canvas class="niKParticles" id="niKParticles" aria-hidden="true"></canvas>`;
  document.body.appendChild(el);
- let closed=false;const close=()=>{if(closed)return;closed=true;el.remove();};
+ const close=()=>{niKTimers.forEach(clearTimeout);niKTimers=[];cancelAnimationFrame(niKFrame);el.remove();};
  el.querySelector('button').onclick=close;
- setTimeout(close,window.matchMedia('(prefers-reduced-motion: reduce)').matches?1000:7000);
+ const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+ if(!reduced)niKParticles(true);
+ niKTimers.push(setTimeout(()=>{el.classList.remove('arriving');el.classList.add('beaming');if(!reduced)niKParticles(false);},reduced?5500:5700));
+ niKTimers.push(setTimeout(close,7000));
 }
 function switchTracker(url,btnElement){
  if(url.includes('sinottica.html'))showKovalenWelcome();
