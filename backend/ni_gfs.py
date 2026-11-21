@@ -77,6 +77,37 @@ def contours(lat,lon,z,values,kind,minimum_length=6):
               "geometry":{"type":"LineString","coordinates":xy}})
     return {"type":"FeatureCollection","features":feats}
 
+def thermal_isobars(lat,lon,msl,temp850):
+    """Color isobar segments by local 850 hPa temperature anomaly, not pressure."""
+    if temp850.shape!=msl.shape or not np.isfinite(temp850).all():
+        raise ValueError("850 hPa thermal grid missing or invalid")
+    # Broad regional median: a relative warm/cold classification, not a front.
+    reference=float(np.median(temp850))
+    base=contours(lat,lon,msl,np.arange(960,1053,4),"isobar")
+    feats=[]
+    for feature in base["features"]:
+        coords=feature["geometry"]["coordinates"]
+        if len(coords)<2:continue
+        # Split at thermal transitions, retaining exact original contour vertices.
+        segment=[coords[0]]
+        previous=None
+        for point in coords[1:]:
+            x=int(np.clip(np.searchsorted(lon,point[0]),0,len(lon)-1))
+            # latitude in NOAA grids descends north to south
+            y=int(np.argmin(np.abs(lat-point[1])))
+            anomaly=float(temp850[y,x]-reference)
+            band="warm" if anomaly>=1.5 else "cold" if anomaly<=-1.5 else "neutral"
+            if previous is not None and band!=previous and len(segment)>=2:
+                feats.append({"type":"Feature","properties":dict(feature["properties"],thermal_band=previous),
+                  "geometry":{"type":"LineString","coordinates":segment}})
+                segment=[segment[-1]]
+            segment.append(point)
+            previous=band
+        if len(segment)>=2:
+            feats.append({"type":"Feature","properties":dict(feature["properties"],thermal_band=previous or "neutral"),
+              "geometry":{"type":"LineString","coordinates":segment}})
+    return {"type":"FeatureCollection","features":feats}
+
 def wind_vectors(lat,lon,u,v,step=7):
     """Compact real 250 hPa U/V grid in m/s, never interpolated synthetic flow."""
     return {"lat":np.round(lat[::step],3).tolist(),"lon":np.round(lon[::step],3).tolist(),
@@ -129,6 +160,7 @@ def build():
                 if not np.isfinite(msl).all() or not np.isfinite(wind).all():
                     raise ValueError("Non-finite weather grid")
                 candidates=EMPTY
+                thermal_lines=None
                 try:
                     low={}
                     for name,short in (("temp","t"),("rh","r"),("u","u"),("v","v")):
@@ -138,6 +170,7 @@ def build():
                         if not np.array_equal(lat,low[name][0]) or not np.array_equal(lon,low[name][1]):
                             raise ValueError("850 hPa grid mismatch")
                     candidates=frontal_candidates(lat,lon,*[low[k][2] for k in ("temp","rh","u","v")])
+                    thermal_lines=thermal_isobars(lat,lon,msl,low['temp'][2])
                 except Exception as e:
                     print("Frontal diagnostic unavailable, preserving other fields:",e)
                 frames.append({
@@ -145,7 +178,7 @@ def build():
                   "run_utc":initial.strftime("%Y-%m-%dT%H:%M:%SZ"),
                   "valid_utc":(initial+dt.timedelta(hours=h)).strftime("%Y-%m-%dT%H:%M:%SZ"),
                   "forecast_hour":h,
-                  "isobars":contours(lat,lon,msl,np.arange(960,1053,4),"isobar"),
+                  "isobars":thermal_lines if thermal_lines is not None else contours(lat,lon,msl,np.arange(960,1053,4),"isobar"),
                   "pressure":pressure_centers(lat,lon,msl),
                   "jet":contours(lat,lon,wind,[100,140,180,220,260],"jet_speed_kmh"),
                   "wind_vectors":wind_vectors(lat,lon,u,v),
