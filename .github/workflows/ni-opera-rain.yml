@@ -1,13 +1,6 @@
 name: SINOTTICA observed OPERA rain publication
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '7,37 * * * *'
-  push:
-    branches: [main]
-    paths:
-      - 'backend/ni_opera_rain_publish.py'
-      - '.github/workflows/ni-opera-rain.yml'
 permissions:
   contents: write
 concurrency:
