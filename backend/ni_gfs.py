@@ -76,6 +76,11 @@ def contours(lat,lon,z,values,kind,minimum_length=6):
               "geometry":{"type":"LineString","coordinates":xy}})
     return {"type":"FeatureCollection","features":feats}
 
+def wind_vectors(lat,lon,u,v,step=7):
+    """Compact real 250 hPa U/V grid in m/s, never interpolated synthetic flow."""
+    return {"lat":np.round(lat[::step],3).tolist(),"lon":np.round(lon[::step],3).tolist(),
+      "u":np.round(u[::step,::step],2).tolist(),"v":np.round(v[::step,::step],2).tolist(),"units":"m/s","level_hpa":250}
+
 def pressure_centers(lat,lon,z):
     # Avoid duplicate pressure centers by comparing in a broad local neighborhood.
     sm=np.asarray(z)
@@ -130,6 +135,7 @@ def build():
                   "isobars":contours(lat,lon,msl,np.arange(960,1053,4),"isobar"),
                   "pressure":pressure_centers(lat,lon,msl),
                   "jet":contours(lat,lon,wind,[100,140,180,220,260],"jet_speed_kmh"),
+                  "wind_vectors":wind_vectors(lat,lon,u,v),
                   "fronts":EMPTY,
                   "fronts_status":"not_computed"
                 })
