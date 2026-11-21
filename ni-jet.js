@@ -58,7 +58,7 @@ function buildStreamlines(){
    x+=v[0]*3.5;y+=v[1]*3.5;
    if(x<0||y<0||x>sz.x||y>sz.y)break;
   }
-  if(pts.length>=14)out.push({pts,speed:maxSpeed,offset:out.length*13});
+  if(pts.length>=14)out.push({pts,speed:maxSpeed,offset:(xx*0.17+yy*0.09)%240});
  }
  return out;
 }
@@ -71,18 +71,20 @@ function animate(t){
  const key=frame.valid_utc+':'+map.getZoom()+':'+map.getCenter().toString()+':'+sz.x+':'+sz.y;
  if(key!==cacheKey){wind=frame.wind_vectors;ribbon=raster();streamlines=buildStreamlines();cacheKey=key}
  if(ribbon){ctx.imageSmoothingEnabled=true;ctx.drawImage(ribbon,0,0,sz.x,sz.y)}
- const dt=clamp((t-last)/1000,0,.05);last=t;if(!paused)phase+=dt*7;
- // Streamline geometry is stable: only a broad, continuous luminous wave travels.
- // The forecast Play/Pause changes forecast time, NOT the wind-flow animation.
+ const dt=clamp((t-last)/1000,0,.05);last=t;if(!paused)phase+=dt;
+ // Continuous advection: wide light waves slide along the real U/V streamlines.
+ // No dashes, no frame-dependent animation, and no Play dependency.
  ctx.lineCap='round';ctx.lineJoin='round';
  for(const line of streamlines){
   const pts=line.pts,n=pts.length;
-  const wave=(phase*.85+line.offset)%n;
+  const waveDistance=(phase*22+line.offset)%(n*3.5+100);
   for(let i=1;i<n;i++){
-   const dist=Math.abs(i-wave),wrapped=Math.min(dist,n-dist);
-   const glow=Math.exp(-(wrapped*wrapped)/(2*10*10));
-   ctx.strokeStyle='rgba(240,252,255,'+(0.035+0.25*glow).toFixed(3)+')';
-   ctx.lineWidth=0.8+0.6*glow;
+   const along=i*3.5;
+   const delta=Math.abs(along-waveDistance);
+   const glow=Math.exp(-(delta*delta)/(2*34*34));
+   const opacity=0.065+0.65*glow;
+   ctx.strokeStyle='rgba(244,253,255,'+opacity.toFixed(3)+')';
+   ctx.lineWidth=1.1+2.5*glow;
    ctx.beginPath();ctx.moveTo(pts[i-1][0],pts[i-1][1]);ctx.lineTo(pts[i][0],pts[i][1]);ctx.stroke();
   }
  }
