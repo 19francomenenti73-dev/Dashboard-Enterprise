@@ -1,5 +1,5 @@
 {
-  "checked_utc": "2026-11-21T19:39:45.963929+00:00",
+  "checked_utc": "2026-11-21T19:41:22.669712+00:00",
   "source": "https://radar-backup.meteogate.eu/",
   "purpose": "catalog structure only",
   "product_verified": false,
@@ -81,6 +81,7 @@
   ],
   "conformance_count": 6,
   "items_error": "HTTPError: HTTP Error 400: Bad Request",
+  "items_error_detail": "{\"detail\":\"Have to set at least one of bbox or platform.\"}",
   "collection_parameters": [
     {
       "id": "standard_name",
