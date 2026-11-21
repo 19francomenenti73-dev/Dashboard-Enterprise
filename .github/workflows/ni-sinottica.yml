@@ -4,6 +4,10 @@ on:
     branches: [main, feature/ni-sinottica]
     paths:
       - 'backend/ni_gfs.py'
+      - 'backend/ni_front_candidates.py'
+      - 'backend/ni_front_validation.py'
+      - 'backend/test_ni_front_validation.py'
+      - 'backend/test_ni_front_candidates.py'
       - 'backend/requirements-sinottica.txt'
       - '.github/workflows/ni-sinottica.yml'
   workflow_dispatch:
@@ -31,6 +35,7 @@ jobs:
         run: |
           python backend/test_sinottica.py
           python backend/test_ni_front_validation.py
+          python backend/test_ni_front_candidates.py
       - name: Retrieve and analyze NOAA GFS
         run: python backend/ni_gfs.py
       - name: Commit updated data to current branch
