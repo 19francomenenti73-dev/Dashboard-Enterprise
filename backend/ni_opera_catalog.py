@@ -109,6 +109,18 @@ def main():
                                         detail=json.loads(detail_bytes)
                                     dp=detail.get("properties",{})
                                     # Examine the exact provider metadata without assuming RATE means mm/h.
+                                    # Inspect nested data metadata without leaking signed URLs or payloads.
+                                    nested=dp.get("data")
+                                    result["rate_nested_data"]={
+                                        "shape":describe(nested),
+                                        "keys":list(nested.keys())[:40] if isinstance(nested,dict) else [],
+                                        "list_count":len(nested) if isinstance(nested,list) else None,
+                                        "first_shape":describe(nested[0]) if isinstance(nested,list) and nested else None
+                                    }
+                                    result["rate_radar_meta_shape"]=describe(dp.get("radar_meta"))
+                                    result["rate_period_shape"]=describe(dp.get("period"))
+                                    result["rate_summary_shape"]=describe(dp.get("summary"))
+                                    result["rate_license"]=str(dp.get("license",""))[:180]
                                     result["rate_detail_structure"]={
                                         "top_level_keys":list(detail.keys())[:40],
                                         "property_keys":list(dp.keys())[:70],
