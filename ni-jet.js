@@ -27,8 +27,7 @@ void main(){
  vec2 v2=vel(mid);
  vec2 back=uv-dt*v2;
  float old=texture(prevTex,clamp(back,0.,1.)).r;
- float fresh=hash(floor(uv*vec2(950.,950.))+floor(tick*0.7));
- float noise=mix(old,fresh,injection);
+ float noise=old;
  result=vec4(noise,0.,0.,1.);
 }`;
 const drawFrag=`#version 300 es
@@ -51,8 +50,8 @@ void main(){
  if(speed<85.){result=vec4(0.);return;}
  float n=texture(advTex,uv).r;
  // Texture contrast is deliberately broad and continuous, never discrete streaks.
- float variation=.62+.38*smoothstep(.15,.85,n);
- float opacity=clamp((speed-85.)/35.,0.,.58)*variation;
+ float variation=.91+.09*smoothstep(.18,.82,n);
+ float opacity=clamp((speed-85.)/35.,0.,.53)*variation;
  result=vec4(palette(speed)*variation,opacity);
 }`;
 function program(fs){
@@ -94,7 +93,11 @@ function reset(wind){
  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
   const px=(x+.5)*sz.x/w,py=sz.y-(y+.5)*sz.y/h;
   const ll=map.containerPointToLatLng([px,py]),uv=bilinear(wind,ll.lat,ll.lng);
-  const i=(y*w+x)*4;initial[i]=Math.floor(Math.random()*256);initial[i+3]=255;
+  const i=(y*w+x)*4;
+  // Smooth, spatially coherent scalar field; no random pixel noise/ripples.
+  const nx=x/w,ny=y/h;
+  const seed=.5+.23*Math.sin(nx*17.0+ny*8.0)+.17*Math.sin(nx*9.0-ny*13.0);
+  initial[i]=Math.round(Math.max(0,Math.min(255,seed*255)));initial[i+3]=255;
   if(!uv)continue;
   const speed=Math.hypot(...uv)*3.6;
   // Pixel displacement in mercator: positive U -> right, positive V -> up.
@@ -140,5 +143,8 @@ function animate(t){
  gl.drawArrays(gl.TRIANGLE_STRIP,0,4);gl.disable(gl.BLEND);
 }
 map.on('zoomend moveend resize',()=>{cache=''});
+// Switching the satellite must not retain an old advected texture.
+const satelliteToggle=document.getElementById('satellite');
+if(satelliteToggle)satelliteToggle.addEventListener('change',()=>{cache=''});
 requestAnimationFrame(animate);
 })();
