@@ -1,0 +1,34 @@
+name: N.I. Sinottica NOAA GFS
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 2,8,14,20 * * *'
+permissions:
+  contents: write
+concurrency:
+  group: ni-sinottica
+  cancel-in-progress: false
+jobs:
+  forecast:
+    if: github.ref == 'refs/heads/feature/ni-sinottica'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/ni-sinottica
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r backend/requirements-sinottica.txt
+      - run: python backend/ni_gfs.py
+      - name: Commit data on development branch only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/sinottica.json
+          if ! git diff --cached --quiet; then
+            git commit -m "data(sinottica): refresh NOAA GFS"
+            git push
+          fi
