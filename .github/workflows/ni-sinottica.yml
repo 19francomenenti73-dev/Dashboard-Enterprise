@@ -28,8 +28,10 @@ jobs:
           python-version: '3.12'
           cache: pip
       - run: pip install -r backend/requirements-sinottica.txt
-      - name: Offline algorithm checks
-        run: python backend/test_sinottica.py
+      - name: Offline algorithm and front validation checks
+        run: |
+          python backend/test_sinottica.py
+          python backend/test_ni_front_validation.py
       - name: Retrieve and analyze NOAA GFS
         run: python backend/ni_gfs.py
       - name: Commit data on development branch only
