@@ -43,7 +43,7 @@ function raster(){
  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
   const v=velocity(x*step,y*step),i=(y*w+x)*4;
   if(!v||v[2]<85)continue;
-  const rgb=color(v[2]),alpha=clamp((v[2]-85)/35,0,.84);
+  const rgb=color(v[2]),alpha=clamp((v[2]-85)/35,0,.58);
   im.data[i]=rgb[0];im.data[i+1]=rgb[1];im.data[i+2]=rgb[2];im.data[i+3]=Math.round(alpha*255);
  }
  c.putImageData(im,0,0);return off;
@@ -74,11 +74,11 @@ function animate(t){
    const start=points[0],end=points[points.length-1],gradient=ctx.createLinearGradient(start[0],start[1],end[0],end[1]);
    const shift=(phase/80)%1;
    gradient.addColorStop(0,'rgba(255,255,255,.05)');
-   gradient.addColorStop(clamp(.25+shift*.3,0,1),'rgba(255,255,255,.14)');
-   gradient.addColorStop(clamp(.48+shift*.3,0,1),'rgba(255,255,255,.58)');
+   gradient.addColorStop(clamp(.25+shift*.3,0,1),'rgba(255,255,255,.09)');
+   gradient.addColorStop(clamp(.48+shift*.3,0,1),'rgba(255,255,255,.36)');
    gradient.addColorStop(1,'rgba(255,255,255,.06)');
    ctx.beginPath();ctx.moveTo(...points[0]);for(let n=1;n<points.length;n++)ctx.lineTo(...points[n]);
-   ctx.lineWidth=speed>180?1.4:.8;ctx.strokeStyle=gradient;ctx.stroke();
+   ctx.lineWidth=speed>180?1.1:.7;ctx.strokeStyle=gradient;ctx.stroke();
   }
  }
 }
