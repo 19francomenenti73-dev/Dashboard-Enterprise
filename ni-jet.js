@@ -50,7 +50,7 @@ void main(){
  if(speed<85.){result=vec4(0.);return;}
  float n=texture(advTex,uv).r;
  // Texture contrast is deliberately broad and continuous, never discrete streaks.
- float variation=.91+.09*smoothstep(.18,.82,n);
+ float variation=.67+.33*smoothstep(.18,.82,n);
  float opacity=clamp((speed-85.)/35.,0.,.53)*variation;
  result=vec4(palette(speed)*variation,opacity);
 }`;
@@ -96,18 +96,18 @@ function reset(wind){
   const i=(y*w+x)*4;
   // Smooth, spatially coherent scalar field; no random pixel noise/ripples.
   const nx=x/w,ny=y/h;
-  const seed=.5+.23*Math.sin(nx*17.0+ny*8.0)+.17*Math.sin(nx*9.0-ny*13.0);
+  const seed=.5+.27*Math.sin(nx*42.0+ny*17.0)+.18*Math.sin(nx*25.0-ny*31.0);
   initial[i]=Math.round(Math.max(0,Math.min(255,seed*255)));initial[i+3]=255;
   if(!uv)continue;
   const speed=Math.hypot(...uv)*3.6;
   // Pixel displacement in mercator: positive U -> right, positive V -> up.
   const merc=256*Math.pow(2,map.getZoom())/(2*Math.PI*6371000);
-  const east=uv[0]*merc*sz.x/w;
-  const north=uv[1]*merc*sz.y/h/Math.max(.15,Math.cos(ll.lat*Math.PI/180));
+  const east=uv[0]*merc/Math.max(.15,Math.cos(ll.lat*Math.PI/180));
+  const north=uv[1]*merc/Math.max(.15,Math.cos(ll.lat*Math.PI/180));
   // 128 denotes zero velocity, signed components encoded in RG.
   // 0.0025 scales real wind displacement into perceptible animation time.
-  field[i]=Math.round(Math.max(0,Math.min(255,128+east*4000)));
-  field[i+1]=Math.round(Math.max(0,Math.min(255,128+north*4000)));
+  field[i]=Math.round(Math.max(0,Math.min(255,128+east*160000)));
+  field[i+1]=Math.round(Math.max(0,Math.min(255,128+north*160000)));
   field[i+2]=Math.round(Math.min(255,speed/320*255));field[i+3]=255;
  }
  if(flow)gl.deleteTexture(flow);for(const t of states)gl.deleteTexture(t);
@@ -130,7 +130,7 @@ function animate(t){
  gl.uniform1i(gl.getUniformLocation(adv,'prevTex'),0);
  gl.uniform1i(gl.getUniformLocation(adv,'flowTex'),1);
  // Signed velocity stored around 128/255; decode in shader.
- uniform(adv,'dt',dt);uniform(adv,'injection',.008);uniform(adv,'tick',t*.001);
+ uniform(adv,'dt',dt*5);uniform(adv,'injection',.008);uniform(adv,'tick',t*.001);
  gl.bindFramebuffer(gl.FRAMEBUFFER,fbo);
  gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,states[(step+1)%2],0);
  gl.drawArrays(gl.TRIANGLE_STRIP,0,4);step++;
