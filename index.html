@@ -490,7 +490,7 @@ function showKovalenWelcome(){
  document.getElementById('niKovalenWelcome')?.remove();
  const el=document.createElement('div');el.id='niKovalenWelcome';el.className='visible arriving';
  el.setAttribute('role','dialog');el.setAttribute('aria-label','Benvenuto in Analisi Sinottica');
- el.innerHTML=`<button class="niKSkip" type="button">Salta ▶</button><div class="niKBody"><img class="niKPortrait" src="https://raw.githubusercontent.com/19francomenenti73-dev/Dashboard-Enterprise/main/kovalen-approved.webp" alt="Kovalen, ufficiale Nowcasting Italia in tuta gialla con bordi blu elettrico" onerror="this.style.display='none'"></div><div class="niKTitle">KOVALEN · NOWCASTING ITALIA</div><div class="niKMessage"><span class="niKTyped"></span><span class="niKCursor" aria-hidden="true">▌</span></div><canvas class="niKParticles" id="niKParticles" aria-hidden="true"></canvas>`;
+ el.innerHTML=`<button class="niKSkip" type="button">Salta ▶</button><div class="niKBody"><img class="niKPortrait" src="https://raw.githubusercontent.com/19francomenenti73-dev/Dashboard-Enterprise/main/kovalen_approved.webp" alt="Kovalen, ufficiale Nowcasting Italia in tuta gialla con bordi blu elettrico" onerror="this.style.display='none'"></div><div class="niKTitle">KOVALEN · NOWCASTING ITALIA</div><div class="niKMessage"><span class="niKTyped"></span><span class="niKCursor" aria-hidden="true">▌</span></div><canvas class="niKParticles" id="niKParticles" aria-hidden="true"></canvas>`;
  document.body.appendChild(el);
  const close=()=>{niKTimers.forEach(clearTimeout);niKTimers=[];cancelAnimationFrame(niKFrame);el.remove();};
  el.querySelector('button').onclick=close;
