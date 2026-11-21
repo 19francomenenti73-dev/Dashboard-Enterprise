@@ -3,8 +3,11 @@
 (function(){
 'use strict';
 const canvas=document.createElement('canvas');
+// Keep the animated canvas anchored to Leaflet's visible viewport.
+const mapElement=document.getElementById('map');
+if(getComputedStyle(mapElement).position==='static')mapElement.style.position='relative';
 canvas.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:450';
-document.getElementById('map').appendChild(canvas);
+mapElement.appendChild(canvas);
 const gl=canvas.getContext('webgl2',{alpha:true,antialias:false,preserveDrawingBuffer:false});
 if(!gl){console.warn('N.I. Jet: WebGL2 unavailable');return}
 const vert=`#version 300 es
@@ -28,7 +31,7 @@ void main(){
  vec2 back=uv-dt*v2;
  float old=texture(prevTex,clamp(back,0.,1.)).r;
  // Replenish smoothly advected dye; otherwise the pattern washes out at edges.
- float seed=.5+.27*sin(uv.x*42.0+uv.y*17.0+tick*.12)+.18*sin(uv.x*25.0-uv.y*31.0-tick*.09);
+ float seed=.5+.27*sin(uv.x*125.0+uv.y*41.0)+.18*sin(uv.x*75.0-uv.y*93.0);
  float noise=mix(old,seed,clamp(injection,0.,1.));
  result=vec4(noise,0.,0.,1.);
 }`;
@@ -52,7 +55,7 @@ void main(){
  if(speed<85.){result=vec4(0.);return;}
  float n=texture(advTex,uv).r;
  // Texture contrast is deliberately broad and continuous, never discrete streaks.
- float variation=.76+.24*smoothstep(.18,.82,n);
+ float variation=.60+.40*smoothstep(.18,.82,n);
  float opacity=clamp((speed-85.)/35.,0.,.68)*variation;
  result=vec4(palette(speed)*variation,opacity);
 }`;
@@ -120,7 +123,7 @@ function bind(t,unit){gl.activeTexture(gl.TEXTURE0+unit);gl.bindTexture(gl.TEXTU
 function uniform(p,name,val){gl.uniform1f(gl.getUniformLocation(p,name),val)}
 function animate(t){
  requestAnimationFrame(animate);
- if(t-last<45)return;
+ if(t-last<30)return;
  const dt=last?Math.min((t-last)/1000,.12):0;last=t;
  const frame=frames[index],sz=map.getSize();
  if(gl.isContextLost())return;
@@ -133,7 +136,7 @@ function animate(t){
  gl.uniform1i(gl.getUniformLocation(adv,'prevTex'),0);
  gl.uniform1i(gl.getUniformLocation(adv,'flowTex'),1);
  // Signed velocity stored around 128/255; decode in shader.
- uniform(adv,'dt',dt*5);uniform(adv,'injection',.018);uniform(adv,'tick',t*.001);
+ uniform(adv,'dt',dt*5);uniform(adv,'injection',.004);uniform(adv,'tick',t*.001);
  gl.bindFramebuffer(gl.FRAMEBUFFER,fbo);
  gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,states[(step+1)%2],0);
  gl.drawArrays(gl.TRIANGLE_STRIP,0,4);step++;
