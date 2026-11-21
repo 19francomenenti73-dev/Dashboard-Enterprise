@@ -1,5 +1,5 @@
 {
-  "checked_utc": "2026-11-21T20:00:47.231169+00:00",
+  "checked_utc": "2026-11-21T20:03:51.869072+00:00",
   "source": "https://radar-backup.meteogate.eu/",
   "purpose": "catalog structure only",
   "product_verified": false,
@@ -98,6 +98,14 @@
       "assets": {}
     }
   ],
+  "rate_data_reference": {
+    "scheme": "https",
+    "host": "radar-backup.meteogate.eu",
+    "path": "/api/collections/observations/locations/0-20010-0-OPERA",
+    "has_query": true,
+    "is_absolute_url": true,
+    "prefix_class": "url"
+  },
   "rate_nested_data": {
     "shape": {
       "type": "string",
