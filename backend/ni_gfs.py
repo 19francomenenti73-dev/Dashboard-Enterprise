@@ -16,6 +16,7 @@ import requests
 import xarray as xr
 import contourpy
 from scipy.ndimage import maximum_filter, minimum_filter
+from ni_front_candidates import frontal_candidates
 
 OUT = Path("data/sinottica.json")
 BASE = "https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_0p25.pl"
@@ -29,8 +30,8 @@ def fetch_piece(cycle, hour, west, east):
     day, run = cycle
     params = {
         "file": f"gfs.t{run:02d}z.pgrb2.0p25.f{hour:03d}",
-        "lev_mean_sea_level": "on", "lev_250_mb": "on",
-        "var_PRMSL": "on", "var_UGRD": "on", "var_VGRD": "on",
+        "lev_mean_sea_level": "on", "lev_250_mb": "on", "lev_850_mb": "on",
+        "var_PRMSL": "on", "var_UGRD": "on", "var_VGRD": "on", "var_TMP": "on", "var_RH": "on",
         "subregion": "", "leftlon":str(west), "rightlon":str(east),
         "toplat":"78", "bottomlat":"-12",
         "dir": f"/gfs.{day}/{run:02d}/atmos"
@@ -45,7 +46,7 @@ def open_grib(raw, short_name, level=None):
     with tempfile.NamedTemporaryFile(suffix=".grib2") as t:
         t.write(raw);t.flush()
         ds=xr.open_dataset(t.name,engine="cfgrib",
-          backend_kwargs={"filter_by_keys":dict({"shortName":short_name}, **({"typeOfLevel":"isobaricInhPa","level":250} if level==250 else {"typeOfLevel":"meanSea"})),"indexpath":""})
+          backend_kwargs={"filter_by_keys":dict({"shortName":short_name}, **({"typeOfLevel":"isobaricInhPa","level":250} if level in (250,850) else {"typeOfLevel":"meanSea"})),"indexpath":""})
         ds.load()
         return ds
 
@@ -127,6 +128,18 @@ def build():
                     raise ValueError("Pressure and jet grids do not align")
                 if not np.isfinite(msl).all() or not np.isfinite(wind).all():
                     raise ValueError("Non-finite weather grid")
+                candidates=EMPTY
+                try:
+                    low={}
+                    for name,short in (("temp","t"),("rh","r"),("u","u"),("v","v")):
+                        a=open_grib(pieces[0],short,850)
+                        b=open_grib(pieces[1],short,850)
+                        low[name]=combine(a,b)
+                        if not np.array_equal(lat,low[name][0]) or not np.array_equal(lon,low[name][1]):
+                            raise ValueError("850 hPa grid mismatch")
+                    candidates=frontal_candidates(lat,lon,*[low[k][2] for k in ("temp","rh","u","v")])
+                except Exception as e:
+                    print("Frontal diagnostic unavailable, preserving other fields:",e)
                 frames.append({
                   "source":"NOAA/NCEP GFS 0.25° (model forecast)",
                   "run_utc":initial.strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -137,7 +150,8 @@ def build():
                   "jet":contours(lat,lon,wind,[100,140,180,220,260],"jet_speed_kmh"),
                   "wind_vectors":wind_vectors(lat,lon,u,v),
                   "fronts":EMPTY,
-                  "fronts_status":"not_computed"
+                  "fronts_status":"not_validated",
+                  "frontal_candidates":candidates
                 })
             if len(frames)!=len(LEVELS):raise ValueError("Incomplete forecast")
             OUT.parent.mkdir(parents=True,exist_ok=True)
