@@ -27,7 +27,9 @@ void main(){
  vec2 v2=vel(mid);
  vec2 back=uv-dt*v2;
  float old=texture(prevTex,clamp(back,0.,1.)).r;
- float noise=old;
+ // Replenish smoothly advected dye; otherwise the pattern washes out at edges.
+ float seed=.5+.27*sin(uv.x*42.0+uv.y*17.0+tick*.12)+.18*sin(uv.x*25.0-uv.y*31.0-tick*.09);
+ float noise=mix(old,seed,clamp(injection,0.,1.));
  result=vec4(noise,0.,0.,1.);
 }`;
 const drawFrag=`#version 300 es
@@ -121,6 +123,7 @@ function animate(t){
  if(t-last<45)return;
  const dt=last?Math.min((t-last)/1000,.12):0;last=t;
  const frame=frames[index],sz=map.getSize();
+ if(gl.isContextLost())return;
  const active=frame?.wind_vectors&&document.getElementById('jet').checked&&map.hasLayer(groups.jet);
  if(!active){gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);return}
  const key=frame.valid_utc+':'+map.getZoom()+':'+map.getCenter().toString()+':'+sz.x+':'+sz.y;
@@ -130,7 +133,7 @@ function animate(t){
  gl.uniform1i(gl.getUniformLocation(adv,'prevTex'),0);
  gl.uniform1i(gl.getUniformLocation(adv,'flowTex'),1);
  // Signed velocity stored around 128/255; decode in shader.
- uniform(adv,'dt',dt*5);uniform(adv,'injection',.008);uniform(adv,'tick',t*.001);
+ uniform(adv,'dt',dt*5);uniform(adv,'injection',.018);uniform(adv,'tick',t*.001);
  gl.bindFramebuffer(gl.FRAMEBUFFER,fbo);
  gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,states[(step+1)%2],0);
  gl.drawArrays(gl.TRIANGLE_STRIP,0,4);step++;
