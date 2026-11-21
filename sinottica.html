@@ -15,7 +15,7 @@ label{display:block;margin:7px 0}button{background:#114c76;border:1px solid #48b
 </style></head><body>
 <header><div><strong>N.I. SINOTTICA</strong><div><small>Nowcasting Italia · Natural Earth (pubblico dominio) · NOAA GFS · Leaflet BSD-2-Clause</small></div></div><div><button id="prev">◀</button><button id="play">▶</button><button id="next">▶|</button><button id="full">⛶</button></div></header>
 <div id="map"></div>
-<div class="panel layers"><b>Livelli</b><label><input id="fronts" type="checkbox" checked> Fronti</label><label><input id="isobars" type="checkbox" checked> Isobare</label><label><input id="pressure" type="checkbox" checked> H / L</label><label><input id="jet" type="checkbox" checked> Jet 250 hPa (flusso reale U/V)</label></div>
+<div class="panel layers"><b>Livelli</b><label><input id="satellite" type="checkbox"> Satellite RGB EUMETSAT</label><label><input id="fronts" type="checkbox" checked> Fronti</label><label><input id="isobars" type="checkbox" checked> Isobare</label><label><input id="pressure" type="checkbox" checked> H / L</label><label><input id="jet" type="checkbox" checked> Jet 250 hPa (flusso reale U/V)</label></div>
 <div class="panel legend"><b>Legenda</b><div><i class="sample cold"></i>Fronte freddo (non validato)</div><div><i class="sample warm"></i>Fronte caldo</div><div><i class="sample occluded"></i>Occluso</div><div><i class="sample iso"></i>Isobara</div></div>
 <div class="panel status" id="status">Caricamento cartografia locale…</div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -26,6 +26,7 @@ map.createPane('bathymetry').style.zIndex=205;
 map.createPane('baseLand').style.zIndex=210;
 map.createPane('relief').style.zIndex=215;
 map.createPane('baseLines').style.zIndex=220;
+map.createPane('satelliteRGB').style.zIndex=225;
 const status=document.getElementById('status');
 function notice(s){status.textContent=s}
 async function json(url){const r=await fetch(url);if(!r.ok)throw Error(url+' HTTP '+r.status);return r.json()}
@@ -50,6 +51,18 @@ async function base(){
  }
  notice(loaded===3?'Cartografia Natural Earth caricata · in attesa dei dati meteorologici':'Cartografia incompleta: generare i GeoJSON nel workflow');
 }
+// Same official EUMETSAT WMS service already used by Z.E.U.S.; no image copying.
+const satellite=L.tileLayer.wms('https://view.eumetsat.int/geoserver/wms',{
+ layers:'mtg_fd:rgb_geocolour',format:'image/png',transparent:true,
+ version:'1.1.1',pane:'satelliteRGB',opacity:.83,
+ attribution:'© EUMETSAT — satellite RGB (orario acquisizione non verificato)'
+});
+let satelliteErrors=0;
+satellite.on('tileerror',()=>{if(++satelliteErrors>=3){map.removeLayer(satellite);document.getElementById('satellite').checked=false;notice('Satellite EUMETSAT non disponibile: mantenuta cartografia sinottica')}});
+document.getElementById('satellite').onchange=e=>{
+ satelliteErrors=0;
+ if(e.target.checked)satellite.addTo(map);else map.removeLayer(satellite);
+};
 const groups=Object.fromEntries(['fronts','isobars','pressure','jet'].map(k=>[k,L.layerGroup().addTo(map)]));
 let frames=[],index=0,timer=null;
 const jetCanvas=document.createElement('canvas');jetCanvas.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:450';document.getElementById('map').appendChild(jetCanvas);
