@@ -18,19 +18,23 @@ jobs:
         with:
           python-version: '3.12'
       - name: Verify DNS and endpoint reachability
-        run: python backend/ni_opera_probe.py
+        run: |
+          python backend/ni_opera_probe.py
+          python backend/ni_opera_catalog.py
       - name: Publish diagnostic only
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           # Keep the latest successful diagnostic; concurrent runs must not rebase a stale JSON.
           cp data/opera_nimbus/diagnostics.json /tmp/ni-opera-diagnostics.json
+          cp data/opera_nimbus/catalog_diagnostic.json /tmp/ni-opera-catalog.json
           for attempt in 1 2 3 4; do
             git fetch origin main
             git reset --hard origin/main
             mkdir -p data/opera_nimbus
             cp /tmp/ni-opera-diagnostics.json data/opera_nimbus/diagnostics.json
-            git add data/opera_nimbus/diagnostics.json
+            cp /tmp/ni-opera-catalog.json data/opera_nimbus/catalog_diagnostic.json
+            git add data/opera_nimbus/diagnostics.json data/opera_nimbus/catalog_diagnostic.json
             if git diff --cached --quiet; then exit 0; fi
             git commit -m "diagnostics: probe OPERA radar access"
             if git push origin HEAD:main; then exit 0; fi
