@@ -1,5 +1,5 @@
 {
-  "checked_utc": "2026-11-21T19:32:25.069333+00:00",
+  "checked_utc": "2026-11-21T19:34:39.056480+00:00",
   "source": "https://radar-backup.meteogate.eu/",
   "purpose": "catalog structure only",
   "product_verified": false,
@@ -73,6 +73,11 @@
       "type": null
     }
   ],
-  "collections_error": "HTTPError: HTTP Error 503: Service Unavailable",
-  "conformance_error": "HTTPError: HTTP Error 503: Service Unavailable"
+  "collections": [
+    {
+      "id": "observations",
+      "title": "European weather radar data products"
+    }
+  ],
+  "conformance_count": 6
 }
