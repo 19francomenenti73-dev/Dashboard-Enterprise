@@ -59,18 +59,18 @@ function animate(t){
  if(ribbon){ctx.imageSmoothingEnabled=true;ctx.drawImage(ribbon,0,0,sz.x,sz.y)}
  const dt=clamp((t-last)/1000,0,.05);last=t;if(!paused)phase+=dt*14;
  // Long continuous streamlines, with a traveling luminous gradient rather than dashes.
- const spacing=24,seedShift=phase%spacing;
+ const spacing=38,seedShift=phase%spacing;
  ctx.lineCap='round';ctx.lineJoin='round';
  for(let yy=-spacing+seedShift;yy<sz.y+spacing;yy+=spacing){
   for(let xx=-spacing;xx<sz.x+spacing;xx+=spacing){
    let x=xx,y=yy,points=[],speed=0;
-   for(let n=0;n<42;n++){
+   for(let n=0;n<32;n++){
     const v=velocity(x,y);if(!v||v[2]<105)break;
     points.push([x,y]);speed=Math.max(speed,v[2]);
     x+=v[0]*3.8;y+=v[1]*3.8;
     if(x<0||y<0||x>sz.x||y>sz.y)break;
    }
-   if(points.length<12)continue;
+   if(points.length<9)continue;
    const start=points[0],end=points[points.length-1],gradient=ctx.createLinearGradient(start[0],start[1],end[0],end[1]);
    const shift=(phase/80)%1;
    gradient.addColorStop(0,'rgba(255,255,255,.05)');
