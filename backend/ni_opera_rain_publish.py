@@ -49,9 +49,7 @@ def main():
     p = item["properties"]
     if p.get("standard_name") != "RATE" or p.get("format") != "GeoTIFF":
         raise ValueError("Unexpected OPERA product")
-    # Catalog 'unit' currently reports %, not mm/h: fail closed.
-    if str(p.get("unit", "")).strip().lower() not in ("mm/h", "mm h-1", "mm hr-1"):
-        raise ValueError("OPERA catalog does not certify mm/h; publication blocked")
+    # Only depict observed wet/dry coverage; never claim precipitation intensity.
     observed = utc_time(p.get("datetime") or p.get("end_datetime"))
     url = p.get("data")
     if not isinstance(url, str):
@@ -78,8 +76,7 @@ def main():
                 resampling=Resampling.nearest,
             )
     wet = np.isfinite(values) & (values > 0)
-    if not wet.any():
-        raise ValueError("No observed precipitation pixels")
+    # A valid dry scene is still an observation: publish a transparent PNG.
     # Transparent everywhere without rain; categorical palette, no dry backdrop.
     rgba = np.zeros((h, w, 4), dtype=np.uint8)
     levels = [(0, (82, 177, 239)), (1, (45, 182, 118)),
@@ -96,13 +93,13 @@ def main():
     # Write image first, manifest last: the frontend never sees a new manifest without its image.
     (OUT / name).write_bytes(buffer.getvalue())
     manifest = {
-        "product": "OPERA_NIMBUS_RRATE", "units": "mm/h", "license": "CC BY 4.0",
+        "product": "OPERA_NIMBUS_RRATE", "units": "presence", "license": "CC BY 4.0",
         "observed_utc": observed, "bounds": [[bottom, left], [top, right]],
         "image": name, "rain_only": True, "transparent_no_rain": True,
         "attribution": "EUMETNET OPERA / MeteoGate",
     }
     (OUT / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
-    print("Published real observed rain", observed, int(wet.sum()))
+    print("Published observed wet-area mask", observed, int(wet.sum()))
 
 if __name__ == "__main__":
     main()
