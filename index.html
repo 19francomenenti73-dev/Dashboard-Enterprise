@@ -303,6 +303,10 @@ body{
 @media(max-width:800px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.weather{height:100px}.weather svg{height:90px}.heading h1{font-size:24px}}
 
 #niKovalenWelcome{z-index:2147483640;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;pointer-events:auto}
+#niKovalenWelcome .niKMessage{visibility:hidden;opacity:0;transition:opacity .18s;min-height:100px}
+#niKovalenWelcome .niKMessage.niKTyping{visibility:visible;opacity:1}
+#niKovalenWelcome .niKCursor{display:inline-block;width:.55em;color:#59eaff;animation:niKCursorBlink .55s steps(1) infinite}
+@keyframes niKCursorBlink{50%{opacity:0}}
 #niKovalenWelcome .niKParticles{z-index:1}#niKovalenWelcome .niKBody,#niKovalenWelcome .niKTitle,#niKovalenWelcome .niKMessage{z-index:2}#niKovalenWelcome .niKSkip{z-index:3}
 </style>
 </head>
@@ -454,7 +458,7 @@ function refreshTrackerIfNeeded(){
  loadTracker(activeTrackerUrl);
 }
 
-let niKFrame=0,niKTimers=[];
+let niKFrame=0,niKTimers=[],niKTypeTimer=null;
 function niKParticles(entering){
  cancelAnimationFrame(niKFrame);
  const canvas=document.getElementById('niKParticles');if(!canvas)return;
@@ -479,7 +483,7 @@ function niKParticles(entering){
  niKFrame=requestAnimationFrame(draw);
 }
 function showKovalenWelcome(){
- niKTimers.forEach(clearTimeout);niKTimers=[];cancelAnimationFrame(niKFrame);
+ niKTimers.forEach(clearTimeout);niKTimers=[];clearInterval(niKTypeTimer);cancelAnimationFrame(niKFrame);
  document.getElementById('niKovalenWelcome')?.remove();
  const el=document.createElement('div');el.id='niKovalenWelcome';el.className='visible arriving';
  el.setAttribute('role','dialog');el.setAttribute('aria-label','Benvenuto in Analisi Sinottica');
@@ -496,12 +500,23 @@ function showKovalenWelcome(){
 <circle cx="163" cy="110" r="8" fill="#27cfff"/><path d="M170 113 L190 121" stroke="#29dfff" stroke-width="4"/>
 <circle cx="171" cy="218" r="22" fill="#072a53" stroke="#17dfff" stroke-width="3"/><text x="171" y="215" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">N.I.</text><text x="171" y="227" text-anchor="middle" font-size="7" fill="#9ceaff">NOWCASTING</text>
 <path d="M35 201 L52 182 68 191 M192 191 L209 182 226 201" stroke="#1ae4ff" stroke-width="5" fill="none"/>
-</svg></div><div class="niKTitle">KOVALEN · NOWCASTING ITALIA</div><div class="niKMessage">Sono Kovalen, benvenuti in Analisi Sinottica! A destra trovate il menù a tendina; in alto il pulsante per lo schermo intero.</div><canvas class="niKParticles" id="niKParticles" aria-hidden="true"></canvas>`;
+</svg></div><div class="niKTitle">KOVALEN · NOWCASTING ITALIA</div><div class="niKMessage"><span class="niKTyped"></span><span class="niKCursor" aria-hidden="true">▌</span></div><canvas class="niKParticles" id="niKParticles" aria-hidden="true"></canvas>`;
  document.body.appendChild(el);
  const close=()=>{niKTimers.forEach(clearTimeout);niKTimers=[];cancelAnimationFrame(niKFrame);el.remove();};
  el.querySelector('button').onclick=close;
  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
  if(!reduced)niKParticles(true);
+ niKTimers.push(setTimeout(()=>{
+  if(!el.isConnected)return;
+  const bubble=el.querySelector('.niKMessage'),typed=el.querySelector('.niKTyped');
+  const message='Sono Kovalen, benvenuti in Analisi Sinottica! A destra trovate il menù a tendina; in alto il pulsante per lo schermo intero.';
+  bubble.classList.add('niKTyping');
+  let index=0;const duration=3400,interval=duration/message.length;
+  niKTypeTimer=setInterval(()=>{
+   index=Math.min(message.length,index+1);typed.textContent=message.slice(0,index);
+   if(index===message.length){clearInterval(niKTypeTimer);el.querySelector('.niKCursor').style.visibility='hidden';}
+  },interval);
+ },2000));
  niKTimers.push(setTimeout(()=>{el.classList.remove('arriving');el.classList.add('beaming');if(!reduced)niKParticles(false);},reduced?5500:5700));
  niKTimers.push(setTimeout(close,7000));
 }
