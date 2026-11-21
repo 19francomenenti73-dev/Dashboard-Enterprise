@@ -1,5 +1,5 @@
 {
-  "checked_utc": "2026-11-21T19:48:50.804013+00:00",
+  "checked_utc": "2026-11-21T19:54:20.962597+00:00",
   "source": "https://radar-backup.meteogate.eu/",
   "purpose": "catalog structure only",
   "product_verified": false,
@@ -81,5 +81,35 @@
   ],
   "conformance_count": 6,
   "items_count": 0,
-  "items": []
+  "items": [],
+  "all_europe": {
+    "error": "HTTPError: HTTP Error 504: Gateway Time-out"
+  },
+  "rate_europe": {
+    "count": 2,
+    "numberMatched": null,
+    "sample": [
+      {
+        "id": "596b0f3c3e05d22f973d3b5ae64a1718",
+        "properties": {
+          "standard_name": "RATE",
+          "format": "ODIM",
+          "method": "comp"
+        },
+        "assets": []
+      },
+      {
+        "id": "cfd52a3d56b8e627f6b00511fce80ddb",
+        "properties": {
+          "standard_name": "RATE",
+          "format": "GeoTIFF",
+          "method": "comp"
+        },
+        "assets": []
+      }
+    ]
+  },
+  "dbzh_europe": {
+    "error": "ValueError: Response too large"
+  }
 }
