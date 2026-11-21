@@ -1,5 +1,5 @@
 {
-  "checked_utc": "2026-11-21T19:54:20.962597+00:00",
+  "checked_utc": "2026-11-21T19:56:41.533277+00:00",
   "source": "https://radar-backup.meteogate.eu/",
   "purpose": "catalog structure only",
   "product_verified": false,
@@ -85,6 +85,19 @@
   "all_europe": {
     "error": "HTTPError: HTTP Error 504: Gateway Time-out"
   },
+  "rate_details": [
+    {
+      "id": "cfd52a3d56b8e627f6b00511fce80ddb",
+      "properties": {
+        "standard_name": "RATE",
+        "unit": "%",
+        "format": "GeoTIFF",
+        "method": "comp"
+      },
+      "links": [],
+      "assets": {}
+    }
+  ],
   "rate_europe": {
     "count": 2,
     "numberMatched": null,
