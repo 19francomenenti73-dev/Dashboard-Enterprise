@@ -108,6 +108,23 @@ def main():
                                         if len(detail_bytes)>350000:raise ValueError("Item too large")
                                         detail=json.loads(detail_bytes)
                                     dp=detail.get("properties",{})
+                                    # Examine the exact provider metadata without assuming RATE means mm/h.
+                                    result["rate_detail_structure"]={
+                                        "top_level_keys":list(detail.keys())[:40],
+                                        "property_keys":list(dp.keys())[:70],
+                                        "properties_safe":{k:str(v)[:350] for k,v in dp.items()
+                                            if k.lower() in ("title","description","parameter_name","standard_name",
+                                                "unit","units","format","method","product","data_type",
+                                                "datetime","time","start_datetime","end_datetime","duration",
+                                                "platform","institution","naming_authority","level")},
+                                        "geometry_type":detail.get("geometry",{}).get("type") if isinstance(detail.get("geometry"),dict) else None,
+                                        "bbox":detail.get("bbox")
+                                    }
+                                    # A feature can expose the data in fields other than assets/links.
+                                    result["rate_detail_value_shapes"]={
+                                        k:describe(v) for k,v in detail.items()
+                                        if k not in ("properties","geometry","assets","links")
+                                    }
                                     result["rate_details"].append({
                                         "id":item_id,"properties":{k:str(v)[:180] for k,v in dp.items()
                                             if k.lower() in ("datetime","start_datetime","end_datetime","standard_name","unit","units","format","method","product","created","updated")},
