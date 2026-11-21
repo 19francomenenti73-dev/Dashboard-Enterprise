@@ -77,15 +77,12 @@ def main():
             )
     wet = np.isfinite(values) & (values > 0)
     # A valid dry scene is still an observation: publish a transparent PNG.
-    # Transparent everywhere without rain; categorical palette, no dry backdrop.
+    # Single blue color for detected rain; no intensity inference or dry backdrop.
     rgba = np.zeros((h, w, 4), dtype=np.uint8)
-    levels = [(0, (82, 177, 239)), (1, (45, 182, 118)),
-              (5, (247, 209, 72)), (15, (244, 117, 47)),
-              (30, (204, 58, 150))]
-    for low, color in levels:
-        mask = wet & (values >= low)
-        rgba[mask, :3] = color
-        rgba[mask, 3] = 190
+    rgba[wet, 0] = 40
+    rgba[wet, 1] = 145
+    rgba[wet, 2] = 235
+    rgba[wet, 3] = 190
     OUT.mkdir(parents=True, exist_ok=True)
     name = "observed_rain.png"
     buffer = io.BytesIO()
