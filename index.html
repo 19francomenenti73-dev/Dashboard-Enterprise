@@ -848,6 +848,9 @@ function enterEnterprise(){
  const btn=document.getElementById('fingerprint');
  const canvas=document.getElementById('liquid-energy');
  btn.disabled=true;
+ // Nascondi subito il pulsante trasparente durante l'apertura.
+ btn.style.opacity='0';
+ btn.style.pointerEvents='none';
 
  const reduced=window.matchMedia(
   '(prefers-reduced-motion: reduce)'
