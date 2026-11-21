@@ -15,8 +15,8 @@ label{display:block;margin:7px 0}button{background:#114c76;border:1px solid #48b
 </style></head><body>
 <header><div><strong>N.I. SINOTTICA</strong><div><small>Nowcasting Italia · Natural Earth (pubblico dominio) · NOAA GFS · Leaflet BSD-2-Clause</small></div></div><div><button id="prev">◀</button><button id="play">▶</button><button id="next">▶|</button><button id="full">⛶</button></div></header>
 <div id="map"></div>
-<div class="panel layers"><b>Livelli</b><label><input id="satellite" type="checkbox"> Satellite RGB EUMETSAT</label><label><input id="fronts" type="checkbox" checked> Fronti</label><label><input id="isobars" type="checkbox" checked> Isobare</label><label><input id="pressure" type="checkbox" checked> H / L</label><label><input id="jet" type="checkbox" checked> Jet 250 hPa (flusso reale U/V)</label></div>
-<div class="panel legend"><b>Legenda</b><div><i class="sample cold"></i>Fronte freddo (non validato)</div><div><i class="sample warm"></i>Fronte caldo</div><div><i class="sample occluded"></i>Occluso</div><div><i class="sample iso"></i>Isobara</div></div>
+<div class="panel layers" id="layersPanel"><button id="toggleLayers" type="button" aria-expanded="true" style="background:transparent;border:0;color:#e9f7ff;font-weight:700;cursor:pointer;padding:0 4px 5px 0">Livelli ▾</button><div id="layersContent"><label><input id="satellite" type="checkbox"> Satellite RGB EUMETSAT</label><label><input id="fronts" type="checkbox" checked> Fronti</label><label><input id="isobars" type="checkbox" checked> Isobare</label><label><input id="pressure" type="checkbox" checked> H / L</label><label><input id="jet" type="checkbox" checked> Jet 250 hPa (flusso reale U/V)</label></div></div>
+<div class="panel legend"><b>Legenda</b><div><i class="sample iso"></i>Isobare NOAA GFS</div><div style="color:#ff5050">H — alta pressione</div><div style="color:#238dff">L — bassa pressione</div><div style="font-size:10px;opacity:.8">Fronti non validati: nascosti</div></div>
 <div class="panel status" id="status">Caricamento cartografia locale…</div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
@@ -28,6 +28,10 @@ map.createPane('relief').style.zIndex=215;
 map.createPane('baseLines').style.zIndex=220;
 map.createPane('satelliteRGB').style.zIndex=225;
 const status=document.getElementById('status');
+const layersPanel=document.getElementById('layersPanel'),layersContent=document.getElementById('layersContent'),layersToggle=document.getElementById('toggleLayers');
+function setLayersOpen(open){layersContent.hidden=!open;layersToggle.textContent=open?'Livelli ▾':'Livelli ▸';layersToggle.setAttribute('aria-expanded',String(open))}
+layersToggle.onclick=()=>setLayersOpen(layersContent.hidden);
+if(matchMedia('(max-width:650px)').matches)setLayersOpen(false);
 function notice(s){status.textContent=s}
 async function json(url){const r=await fetch(url);if(!r.ok)throw Error(url+' HTTP '+r.status);return r.json()}
 async function terrain(){
