@@ -5,13 +5,13 @@
 <style>
 *{box-sizing:border-box}html,body{margin:0;height:100%;font:14px system-ui;background:#aabfc9;color:#eaf8ff}
 header{height:64px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 15px;background:#061d38;border-bottom:2px solid #27c5f0}
-header strong{font-size:clamp(16px,3vw,25px)}small{color:#a7d7ee}
+header strong{font-size:clamp(16px,3vw,25px)}header>div:last-child{display:flex;gap:4px;flex-shrink:0}small{color:#a7d7ee}
 #map{height:calc(100% - 64px);background:#aabfc9}
 .panel{position:absolute;z-index:700;background:#061d38ed;border:1px solid #3a9bcb;border-radius:10px;padding:10px;box-shadow:0 3px 12px #0005}
-.layers{right:12px;top:76px}.legend{left:12px;bottom:20px}.status{left:12px;top:76px;max-width:min(48vw,430px)}
+.layers{right:12px;top:76px;max-width:180px}.legend{left:12px;bottom:20px}.status{left:12px;top:76px;max-width:min(48vw,430px)}
 label{display:block;margin:7px 0}button{background:#114c76;border:1px solid #48bde6;color:white;padding:7px;border-radius:6px;cursor:pointer}
 .sample{display:inline-block;width:22px;border-top:3px solid;margin-right:7px}.cold{border-color:#2059ff}.warm{border-color:#f3323d}.occluded{border-color:#b344db}.iso{border-color:#333}
-@media(max-width:650px){header{height:75px}#map{height:calc(100% - 75px)}.layers{top:85px;right:6px;font-size:11px}.status{top:85px;max-width:45vw;font-size:11px}.legend{font-size:11px}}
+@media(max-width:650px){header{height:76px;padding:6px;gap:5px}header strong{font-size:16px}header small{font-size:9px;display:block;max-width:210px;line-height:1.2}header button{padding:7px 5px;min-width:30px}#map{height:calc(100% - 76px)}.layers{top:86px;right:6px;font-size:11px;max-width:125px;padding:7px}.status{top:86px;left:6px;max-width:calc(100vw - 151px);font-size:10px;padding:7px}.legend{font-size:10px;left:6px;bottom:6px;padding:6px}.leaflet-control-zoom{margin-top:100px!important}}
 </style></head><body>
 <header><div><strong>N.I. SINOTTICA</strong><div><small>Nowcasting Italia · Natural Earth (pubblico dominio) · NOAA GFS · Leaflet BSD-2-Clause</small></div></div><div><button id="prev">◀</button><button id="play">▶</button><button id="next">▶|</button><button id="full">⛶</button></div></header>
 <div id="map"></div>
@@ -55,8 +55,12 @@ let frames=[],index=0,timer=null;
 function draw(){
  Object.values(groups).forEach(g=>g.clearLayers());
  const frame=frames[index];if(!frame)return;
+ const frontsValid=frame.fronts_status==='validated';
+ document.getElementById('fronts').disabled=!frontsValid;
+ if(!frontsValid&&map.hasLayer(groups.fronts))map.removeLayer(groups.fronts);
  for(const key of Object.keys(groups)){
-  const fc=frame[key];if(!fc||fc.type!=='FeatureCollection')continue;
+  const fc=frame[key];if(key==='fronts'&&!frontsValid)continue;
+  if(!fc||fc.type!=='FeatureCollection')continue;
   L.geoJSON(fc,{style:f=>{
    const type=String(f.properties?.type||'').toLowerCase();
    return {color:key==='isobars'?'#26333c':key==='jet'?'#8652da':({cold:'#2059ff',warm:'#f3323d',occluded:'#b344db',stationary:'#2059ff'}[type]||'#536477'),weight:key==='isobars'?1.3:3};
@@ -70,14 +74,14 @@ function draw(){
    return L.circleMarker(ll,{radius:3});
   }}).addTo(groups[key]);
  }
- notice('Fonte: '+frame.source+' · run '+(frame.run_utc||'?')+' · validità: '+frame.valid_utc+' · '+(index+1)+'/'+frames.length+' · Fronti: '+(frame.fronts_status==='not_computed'?'non diagnosticati':'dati disponibili'));
- document.getElementById('fronts').disabled=frame.fronts_status==='not_computed';
+ notice('Fonte: '+frame.source+' · run '+(frame.run_utc||'?')+' · validità: '+frame.valid_utc+' · '+(index+1)+'/'+frames.length+' · Fronti: '+(frontsValid?'validati':'non validati'));
+ document.getElementById('fronts').disabled=!frontsValid;
 }
 async function weather(){
  try{
   const data=await json('data/sinottica.json?t='+Date.now());
   if(!Array.isArray(data.frames)||!data.frames.length)throw Error('nessun dato');
-  frames=data.frames.filter(f=>f&&f.source&&f.valid_utc);
+  frames=data.frames.filter(f=>f&&f.source&&f.valid_utc&&f.run_utc&&f.isobars?.type==='FeatureCollection');
   if(!frames.length)throw Error('fonte o orario mancanti');
   index=0;draw();
  }catch(e){frames=[];document.getElementById('fronts').disabled=true;Object.values(groups).forEach(g=>g.clearLayers());notice('Dati meteorologici non disponibili: nessun fronte o isobara simulati')}
