@@ -39,14 +39,14 @@ def main():
                 parsed=urlsplit(absolute)
                 if parsed.scheme!="https" or parsed.hostname!="radar-backup.meteogate.eu":continue
                 result["navigation"].append({"path":parsed.path,"rel":item.get("rel"),"type":item.get("type")})
-            for path in ["/collections","/conformance"]:
+            for path in ["/api/collections","/api/conformance"]:
                 endpoint=urljoin(URL,path)
                 try:
                     with urllib.request.urlopen(urllib.request.Request(endpoint,headers={"Accept":"application/json","User-Agent":"Nowcasting-Italia-OPERA-catalog-check/1.0"}),timeout=12) as sub:
                         body=sub.read(250001)
                         if len(body)>250000:raise ValueError("Response too large")
                         obj=json.loads(body)
-                        if path=="/collections":
+                        if path=="/api/collections":
                             result["collections"]=[{"id":v.get("id"),"title":v.get("title")} for v in obj.get("collections",[]) if isinstance(v,dict)][:80]
                         else:
                             result["conformance_count"]=len(obj.get("conformsTo",[]))
