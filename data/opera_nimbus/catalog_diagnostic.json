@@ -1,5 +1,5 @@
 {
-  "checked_utc": "2026-11-21T19:36:41.241385+00:00",
+  "checked_utc": "2026-11-21T19:38:15.307276+00:00",
   "source": "https://radar-backup.meteogate.eu/",
   "purpose": "catalog structure only",
   "product_verified": false,
@@ -80,5 +80,65 @@
     }
   ],
   "conformance_count": 6,
-  "items_error": "HTTPError: HTTP Error 400: Bad Request"
+  "items_error": "HTTPError: HTTP Error 400: Bad Request",
+  "collection_detail": {
+    "id": "observations",
+    "itemType": null,
+    "extent": {
+      "spatial": {
+        "bbox": {
+          "count": 1,
+          "first": "list"
+        },
+        "crs": {
+          "type": "string",
+          "length": 9
+        }
+      },
+      "temporal": {
+        "interval": {
+          "count": 1,
+          "first": "list"
+        },
+        "values": {
+          "count": 1,
+          "first": "str"
+        },
+        "trs": {
+          "type": "string",
+          "length": 9
+        }
+      },
+      "custom": {
+        "count": 4,
+        "first": {
+          "id": "str",
+          "interval": "list",
+          "values": "list",
+          "reference": "str"
+        }
+      }
+    },
+    "links": [
+      {
+        "rel": "self",
+        "path": "/api/collections/observations"
+      },
+      {
+        "rel": "license",
+        "path": "/licenses/by/4.0/"
+      }
+    ]
+  },
+  "openapi_paths": [
+    "/collections",
+    "/collections/observations",
+    "/collections/observations/locations",
+    "/collections/observations/locations/{location_id}",
+    "/collections/observations/position",
+    "/collections/observations/area",
+    "/collections/observations/items",
+    "/collections/observations/items/{item_id}"
+  ],
+  "openapi_items_get": {}
 }
