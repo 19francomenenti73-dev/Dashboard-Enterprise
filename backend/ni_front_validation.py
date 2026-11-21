@@ -29,5 +29,7 @@ def validate_fronts(collection, *, diagnostic_validated=False, evidence=None):
             if not (-35<=lon<=55 and -12<=lat<=78):return empty,"out_of_domain"
         if not p.get("diagnostic") or not p.get("valid_utc"):
             return empty,"missing_provenance"
-        if p.get("validated") is not True or p.get("valid_utc")!=evidence["reference_valid_utc"]:\n            return empty,"unverified_feature"\n        features.append(f)
+        if p.get("validated") is not True or p.get("valid_utc")!=evidence["reference_valid_utc"]:
+            return empty,"unverified_feature"
+        features.append(f)
     return {"type":"FeatureCollection","features":features},"validated"
