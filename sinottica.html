@@ -21,7 +21,7 @@ label{display:block;margin:7px 0}button{background:#114c76;border:1px solid #48b
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 'use strict';
-const map=L.map('map',{preferCanvas:true,minZoom:3,maxZoom:9,maxBounds:[[-12,-35],[78,55]]}).setView([44,10],4);
+const map=L.map('map',{preferCanvas:true,minZoom:3,maxZoom:9,maxBounds:[[-12,-35],[78,55]],maxBoundsViscosity:1}).setView([44,10],4);
 map.createPane('bathymetry').style.zIndex=205;
 map.createPane('baseLand').style.zIndex=210;
 map.createPane('relief').style.zIndex=215;
@@ -55,6 +55,10 @@ let frames=[],index=0,timer=null;
 function draw(){
  Object.values(groups).forEach(g=>g.clearLayers());
  const frame=frames[index];if(!frame)return;
+ const validDate=Date.parse(frame.valid_utc);
+ const ageHours=(Date.now()-validDate)/3600000;
+ const stale=!Number.isFinite(validDate)||ageHours>9;
+ if(stale){Object.values(groups).forEach(g=>g.clearLayers());notice('Dati meteorologici scaduti: ultimo valido '+frame.valid_utc+' · mappa non aggiornata');return;}
  const frontsValid=frame.fronts_status==='validated';
  document.getElementById('fronts').disabled=!frontsValid;
  if(!frontsValid&&map.hasLayer(groups.fronts))map.removeLayer(groups.fronts);
@@ -75,17 +79,21 @@ function draw(){
    return L.circleMarker(ll,{radius:3});
   }}).addTo(groups[key]);
  }
- notice('Fonte: '+frame.source+' · run '+(frame.run_utc||'?')+' · validità: '+frame.valid_utc+' · '+(index+1)+'/'+frames.length+' · Fronti: '+(frontsValid?'validati':'non validati'));
+ notice('MODELLO PREVISIONALE · Fonte: '+frame.source+' · run '+(frame.run_utc||'?')+' · validità: '+frame.valid_utc+' · '+(index+1)+'/'+frames.length+' · Fronti: '+(frontsValid?'validati':'non validati'));
  document.getElementById('fronts').disabled=!frontsValid;
 }
 async function weather(){
  try{
   const data=await json('data/sinottica.json?t='+Date.now());
   if(!Array.isArray(data.frames)||!data.frames.length)throw Error('nessun dato');
-  frames=data.frames.filter(f=>f&&f.source&&f.valid_utc&&f.run_utc&&f.isobars?.type==='FeatureCollection');
+  frames=data.frames.filter(f=>f&&f.source&&f.valid_utc&&f.run_utc&&f.isobars?.type==='FeatureCollection'&&Number.isFinite(Date.parse(f.valid_utc)));
+  const current=Date.now();
+  const fresh=frames.findIndex(f=>Date.parse(f.valid_utc)>=current-3*3600000);
+  if(fresh<0)throw Error('previsioni scadute');
+  index=fresh;
   if(!frames.length)throw Error('fonte o orario mancanti');
-  index=0;draw();
- }catch(e){frames=[];document.getElementById('fronts').disabled=true;Object.values(groups).forEach(g=>g.clearLayers());notice('Dati meteorologici non disponibili: nessun fronte o isobara simulati')}
+  draw();
+ }catch(e){frames=[];document.getElementById('fronts').disabled=true;Object.values(groups).forEach(g=>g.clearLayers());notice('Dati meteorologici assenti o scaduti: nessuna rappresentazione meteo')}
 }
 for(const k of Object.keys(groups))document.getElementById(k).onchange=e=>e.target.checked?groups[k].addTo(map):map.removeLayer(groups[k]);
 function move(n){if(!frames.length)return;index=(index+n+frames.length)%frames.length;draw()}
