@@ -1,0 +1,30 @@
+name: N.I. Sinottica Rendering QA
+on:
+  push:
+    branches: [feature/ni-sinottica]
+    paths:
+      - 'sinottica.html'
+      - 'index.html'
+      - 'backend/test_render_sinottica.py'
+      - '.github/workflows/ni-sinottica-render.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install playwright
+      - run: python -m playwright install --with-deps chromium
+      - run: python backend/test_render_sinottica.py
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sinottica-render-screenshots
+          path: screenshots/
+          if-no-files-found: ignore

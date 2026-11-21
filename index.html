@@ -104,6 +104,8 @@ body{
  background:linear-gradient(#164875,#09203b);
  box-shadow:0 0 9px #00bfff88,inset 0 0 8px #00bfff44;
 }
+.tactical-btn.sinottica-btn{border-color:#b8d5dc;color:#e7f3f4;background:linear-gradient(110deg,#132a3b,#345366,#132a3b)}
+.tactical-btn.sinottica-btn.active{background:#395e73;border-color:#e4f5fa;color:#fff}
 .tactical-btn.amber{border-color:#d9ae34;color:#ffdb71}
 .tactical-btn.amber.active{background:#d9ae34;color:#020916}
 .tactical-btn.alert{border-color:#b84970;color:#ff91ad}
@@ -318,6 +320,11 @@ body{
   target="_blank" rel="noopener noreferrer">
   ⛶ ESPANDI I.R.I.D.E.
  </a>
+ <button class="tactical-btn sinottica-btn" type="button"
+  title="N.I. SINOTTICA — carta sinottica sperimentale"
+  onclick="switchTracker('sinottica.html',this)">
+  ◉ N.I. SINOTTICA
+ </button>
  <button class="tactical-btn"
   onclick="switchTracker('https://19francomenenti73-dev.github.io/Z.E.U.S./',this)">
   ⚡ Z.E.U.S.
