@@ -1,0 +1,54 @@
+name: SINOTTICA observed OPERA rain publication
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '7,37 * * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'backend/ni_opera_rain_publish.py'
+      - '.github/workflows/ni-opera-rain.yml'
+permissions:
+  contents: write
+concurrency:
+  group: sinottica-opera-rain
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install raster conversion dependencies
+        run: pip install 'numpy<3' 'rasterio>=1.4,<2' 'Pillow>=11,<13'
+      - name: Fetch and render verified observed precipitation
+        id: rain
+        continue-on-error: true
+        run: python backend/ni_opera_rain_publish.py
+      - name: Publish verified raster only
+        if: steps.rain.outcome == 'success'
+        run: |
+          cp data/opera_nimbus/observed_rain.png /tmp/observed_rain.png
+          cp data/opera_nimbus/manifest.json /tmp/observed_manifest.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for attempt in 1 2 3 4; do
+            git fetch origin main
+            git reset --hard origin/main
+            mkdir -p data/opera_nimbus
+            cp /tmp/observed_rain.png data/opera_nimbus/observed_rain.png
+            cp /tmp/observed_manifest.json data/opera_nimbus/manifest.json
+            git add data/opera_nimbus/observed_rain.png data/opera_nimbus/manifest.json
+            if git diff --cached --quiet; then exit 0; fi
+            git commit -m "data: publish verified OPERA observed rain"
+            if git push origin HEAD:main; then exit 0; fi
+            sleep $((attempt * 2))
+          done
+          exit 1
+      - name: Report unavailable radar without publishing fabricated data
+        if: steps.rain.outcome != 'success'
+        run: echo 'No verified mm/h GeoTIFF was available; no radar product published.'
