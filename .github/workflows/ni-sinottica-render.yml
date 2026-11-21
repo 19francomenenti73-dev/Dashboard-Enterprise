@@ -1,7 +1,7 @@
 name: N.I. Sinottica Rendering QA
 on:
   push:
-    branches: [feature/ni-sinottica]
+    branches: [main, feature/ni-sinottica]
     paths:
       - 'sinottica.html'
       - 'index.html'
