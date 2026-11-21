@@ -75,30 +75,30 @@ def main():
                         "asset_keys":list(assets)[:30],
                         "asset_types":{k:v.get("type") for k,v in assets.items() if isinstance(v,dict)}
                     })
-            # Compare availability without restrictive filters; do not infer missing data.
-            for label,query in [
-                ("all_europe","bbox=-12,34,37,72"),
-                ("rate_europe","bbox=-12,34,37,72&standard-name=RATE"),
-                ("dbzh_europe","bbox=-12,34,37,72&standard-name=DBZH")]:
-                try:
-                    endpoint=urljoin(URL,"/api/collections/observations/items?"+query)
-                    with urllib.request.urlopen(urllib.request.Request(endpoint,headers={
-                        "Accept":"application/json",
-                        "User-Agent":"Nowcasting-Italia-OPERA-catalog-check/1.0"
-                    }),timeout=18) as response:
-                        payload=response.read(400001)
-                        if len(payload)>400000:raise ValueError("Response too large")
-                        data=json.loads(payload)
-                    features=data.get("features",[])
-                    result[label]={
-                        "count":len(features),
-                        "numberMatched":data.get("numberMatched"),
-                        "sample":[{"id":str(f.get("id",""))[:100],
-                                   "properties":{k:str(v)[:90] for k,v in f.get("properties",{}).items()
-                                     if k.lower() in ("datetime","standard_name","standard-name","format","method","product")},
-                                   "assets":list(f.get("assets",{}))[:10]}
-                                  for f in features[:3] if isinstance(f,dict)]}
-                except Exception as error:
+                # Compare availability without restrictive filters; do not infer missing data.
+                for label,query in [
+                    ("all_europe","bbox=-12,34,37,72"),
+                    ("rate_europe","bbox=-12,34,37,72&standard-name=RATE"),
+                    ("dbzh_europe","bbox=-12,34,37,72&standard-name=DBZH")]:
+                    try:
+                        endpoint=urljoin(URL,"/api/collections/observations/items?"+query)
+                        with urllib.request.urlopen(urllib.request.Request(endpoint,headers={
+                            "Accept":"application/json",
+                            "User-Agent":"Nowcasting-Italia-OPERA-catalog-check/1.0"
+                        }),timeout=18) as response:
+                            payload=response.read(400001)
+                            if len(payload)>400000:raise ValueError("Response too large")
+                            data=json.loads(payload)
+                        features=data.get("features",[])
+                        result[label]={
+                            "count":len(features),
+                            "numberMatched":data.get("numberMatched"),
+                            "sample":[{"id":str(f.get("id",""))[:100],
+                                       "properties":{k:str(v)[:90] for k,v in f.get("properties",{}).items()
+                                         if k.lower() in ("datetime","standard_name","standard-name","format","method","product")},
+                                       "assets":list(f.get("assets",{}))[:10]}
+                                      for f in features[:3] if isinstance(f,dict)]}
+                    except Exception as error:
                     result[label]={"error":f"{type(error).__name__}: {str(error)[:120]}"}
             except Exception as error:
                 result["items_error"]=f"{type(error).__name__}: {str(error)[:160]}"
