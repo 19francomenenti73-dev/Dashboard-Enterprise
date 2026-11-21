@@ -1,7 +1,7 @@
 name: N.I. Sinottica NOAA GFS
 on:
   push:
-    branches: [feature/ni-sinottica]
+    branches: [main, feature/ni-sinottica]
     paths:
       - 'backend/ni_gfs.py'
       - 'backend/requirements-sinottica.txt'
@@ -16,13 +16,11 @@ concurrency:
   cancel-in-progress: false
 jobs:
   forecast:
-    if: github.ref == 'refs/heads/feature/ni-sinottica'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feature/ni-sinottica'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: feature/ni-sinottica
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -35,7 +33,7 @@ jobs:
           python backend/test_ni_front_validation.py
       - name: Retrieve and analyze NOAA GFS
         run: python backend/ni_gfs.py
-      - name: Commit data on development branch only
+      - name: Commit updated data to current branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
