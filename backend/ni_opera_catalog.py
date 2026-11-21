@@ -99,7 +99,7 @@ def main():
                                        "assets":list(f.get("assets",{}))[:10]}
                                       for f in features[:3] if isinstance(f,dict)]}
                     except Exception as error:
-                    result[label]={"error":f"{type(error).__name__}: {str(error)[:120]}"}
+                        result[label]={"error":f"{type(error).__name__}: {str(error)[:120]}"}
             except Exception as error:
                 result["items_error"]=f"{type(error).__name__}: {str(error)[:160]}"
                 if hasattr(error,"read"):
