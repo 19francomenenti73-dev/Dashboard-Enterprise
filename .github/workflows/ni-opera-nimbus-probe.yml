@@ -1,5 +1,11 @@
 name: SINOTTICA OPERA NIMBUS access diagnostic
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/ni_opera_probe.py'
+      - 'backend/ni_opera_catalog.py'
+      - '.github/workflows/ni-opera-nimbus-probe.yml'
   workflow_dispatch:
   schedule:
     - cron: '13 5 * * *'
