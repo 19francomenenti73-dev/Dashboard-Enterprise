@@ -58,6 +58,7 @@ function draw(){
  const frontsValid=frame.fronts_status==='validated';
  document.getElementById('fronts').disabled=!frontsValid;
  if(!frontsValid&&map.hasLayer(groups.fronts))map.removeLayer(groups.fronts);
+ if(frontsValid&&document.getElementById('fronts').checked&&!map.hasLayer(groups.fronts))groups.fronts.addTo(map);
  for(const key of Object.keys(groups)){
   const fc=frame[key];if(key==='fronts'&&!frontsValid)continue;
   if(!fc||fc.type!=='FeatureCollection')continue;
