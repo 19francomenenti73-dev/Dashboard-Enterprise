@@ -111,6 +111,17 @@ def main():
                                     # Examine the exact provider metadata without assuming RATE means mm/h.
                                     # Inspect nested data metadata without leaking signed URLs or payloads.
                                     nested=dp.get("data")
+                                    if isinstance(nested,str):
+                                        parsed_data=urlsplit(nested)
+                                        result["rate_data_reference"]={
+                                            "scheme":parsed_data.scheme,
+                                            "host":parsed_data.hostname,
+                                            "path":parsed_data.path[:220],
+                                            "has_query":bool(parsed_data.query),
+                                            "is_absolute_url":parsed_data.scheme in ("http","https"),
+                                            "prefix_class":("json" if nested.lstrip().startswith(("{","[")) else
+                                                "url" if parsed_data.scheme in ("http","https") else "other")
+                                        }
                                     result["rate_nested_data"]={
                                         "shape":describe(nested),
                                         "keys":list(nested.keys())[:40] if isinstance(nested,dict) else [],
