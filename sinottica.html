@@ -55,7 +55,7 @@ async function base(){
   try{L.geoJSON(await json('data/cartografia/'+file),{pane,style,interactive:false}).addTo(map);loaded++}
   catch(e){console.warn(e)}
  }
- notice(loaded===3?'Cartografia Natural Earth caricata · in attesa dei dati meteorologici':'Cartografia incompleta: generare i GeoJSON nel workflow');
+ if(!frames.length)notice(loaded===3?'Cartografia caricata · in attesa dei dati meteorologici':'Cartografia incompleta: generare i GeoJSON nel workflow');
 }
 // Same official EUMETSAT WMS service already used by Z.E.U.S.; no image copying.
 const satellite=L.tileLayer.wms('https://view.eumetsat.int/geoserver/wms',{
@@ -139,6 +139,10 @@ function draw(){
  const stale=!Number.isFinite(validDate)||ageHours>9;
  if(stale){Object.values(groups).forEach(g=>g.clearLayers());notice('Dati meteorologici scaduti: ultimo valido '+frame.valid_utc+' · mappa non aggiornata');return;}
  const frontsValid=frame.fronts_status==='validated';
+ const countCandidates=frame.frontal_candidates?.features?.length||0;
+ const candidateInput=document.getElementById('candidates');
+ candidateInput.disabled=countCandidates===0;
+ candidateInput.parentElement.title=countCandidates?'Zone candidate: '+countCandidates:'Nessuna zona candidata prodotta per questo orario';
  // Candidate zones are colored by proximity to a GFS pressure center, NOT by front type.
  const centers=(frame.pressure?.features||[]).filter(f=>['high','low'].includes(String(f.properties?.type||'').toLowerCase())&&f.geometry?.type==='Point');
  function candidateColor(f){
@@ -159,7 +163,7 @@ function draw(){
   if(!fc||fc.type!=='FeatureCollection')continue;
   L.geoJSON(fc,{style:f=>{
    const type=String(f.properties?.type||'').toLowerCase();
-   return {color:key==='candidates'?candidateColor(f):key==='isobars'?'#26333c':key==='jet'?'#6b9cc1':({cold:'#2059ff',warm:'#f3323d',occluded:'#b344db',stationary:'#2059ff'}[type]||'#536477'),weight:key==='candidates'?3.2:key==='isobars'?0.85:1.6,opacity:key==='candidates'?.7:key==='jet'?.42:.65,dashArray:key==='candidates'?'6 7':null};
+   return {color:key==='candidates'?candidateColor(f):key==='isobars'?'#f8fbff':key==='jet'?'#6b9cc1':({cold:'#2059ff',warm:'#f3323d',occluded:'#b344db',stationary:'#2059ff'}[type]||'#536477'),weight:key==='candidates'?3.2:key==='isobars'?1.8:1.6,opacity:key==='candidates'?.95:key==='isobars'?.92:key==='jet'?.42:.65,dashArray:key==='candidates'?'6 7':null};
   },pointToLayer:(f,ll)=>{
    const type=String(f.properties?.type||'').toLowerCase();
    if(key==='pressure'&&['high','low'].includes(type)){
@@ -170,7 +174,7 @@ function draw(){
    return L.circleMarker(ll,{radius:3});
   },onEachFeature:(f,layer)=>{if(key==='candidates'){const g=Number(f.properties?.max_gradient_k_per_100km);layer.bindPopup('<b>Zona frontale candidata GFS 850 hPa</b><p>Gradiente termico: '+(Number.isFinite(g)?g.toFixed(1)+' K/100 km':'non disponibile')+'</p><p>Non validata. Confrontare con le nubi satellitari solo a orari coerenti; una banda nuvolosa non dimostra un fronte al suolo.</p>')}}}).addTo(groups[key]);
  }
- notice('MODELLO PREVISIONALE · Fonte: '+frame.source+' · run '+(frame.run_utc||'?')+' · validità: '+frame.valid_utc+' · '+(index+1)+'/'+frames.length+' · Sinottica sperimentale');
+ notice('MODELLO PREVISIONALE · Fonte: '+frame.source+' · run '+(frame.run_utc||'?')+' · validità: '+frame.valid_utc+' · '+(index+1)+'/'+frames.length+' · Zone candidate: '+countCandidates+(countCandidates?'':' (nessuna rilevata)'));
  document.getElementById('fronts').disabled=!frontsValid;
 }
 async function weather(){
