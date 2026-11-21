@@ -1,0 +1,31 @@
+name: SINOTTICA OPERA NIMBUS access diagnostic
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '13 5 * * *'
+permissions:
+  contents: write
+concurrency:
+  group: sinottica-opera-probe
+  cancel-in-progress: false
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify DNS and endpoint reachability
+        run: python backend/ni_opera_probe.py
+      - name: Publish diagnostic only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/opera_nimbus/diagnostics.json
+          if ! git diff --cached --quiet; then
+            git commit -m "diagnostics: probe OPERA radar access"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
