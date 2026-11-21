@@ -36,8 +36,8 @@ in vec2 uv;out vec4 result;
 uniform sampler2D advTex;
 uniform sampler2D flowTex;
 vec3 palette(float s){
- vec3 a=vec3(.06,.15,.41),b=vec3(.05,.32,.84),c=vec3(0.,.72,.96);
- vec3 d=vec3(.14,.86,.61),e=vec3(.95,.88,.16),f=vec3(1.,.49,.11),g=vec3(.96,.15,.17);
+ vec3 a=vec3(.09,.24,.68),b=vec3(.06,.44,.99),c=vec3(.03,.83,1.);
+ vec3 d=vec3(.12,.95,.63),e=vec3(1.,.91,.12),f=vec3(1.,.53,.08),g=vec3(1.,.16,.22);
  if(s<110.)return mix(a,b,clamp((s-80.)/30.,0.,1.));
  if(s<145.)return mix(b,c,(s-110.)/35.);
  if(s<180.)return mix(c,d,(s-145.)/35.);
@@ -50,8 +50,8 @@ void main(){
  if(speed<85.){result=vec4(0.);return;}
  float n=texture(advTex,uv).r;
  // Texture contrast is deliberately broad and continuous, never discrete streaks.
- float variation=.67+.33*smoothstep(.18,.82,n);
- float opacity=clamp((speed-85.)/35.,0.,.53)*variation;
+ float variation=.76+.24*smoothstep(.18,.82,n);
+ float opacity=clamp((speed-85.)/35.,0.,.68)*variation;
  result=vec4(palette(speed)*variation,opacity);
 }`;
 function program(fs){
