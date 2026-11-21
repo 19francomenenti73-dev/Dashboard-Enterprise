@@ -462,14 +462,16 @@ function refreshTrackerIfNeeded(){
 }
 
 let niKFrame=0,niKTimers=[],niKTypeTimer=null;
+function closeKovalenWelcome(){niKTimers.forEach(clearTimeout);niKTimers=[];clearInterval(niKTypeTimer);niKTypeTimer=null;cancelAnimationFrame(niKFrame);niKFrame=0;document.getElementById('niKovalenWelcome')?.remove();}
 function niKParticles(entering){
  cancelAnimationFrame(niKFrame);
  const canvas=document.getElementById('niKParticles');if(!canvas)return;
  const box=canvas.getBoundingClientRect(),ratio=Math.min(devicePixelRatio||1,2);
  canvas.width=Math.max(1,Math.round(box.width*ratio));canvas.height=Math.max(1,Math.round(box.height*ratio));
- const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
+ const ctx=canvas.getContext('2d');if(!ctx)return;
+ const w=canvas.width,h=canvas.height;
  const left=w*.2,right=w*.8,top=h*.13,bottom=h*.8;
- const points=Array.from({length:190},()=>({x:left+Math.random()*(right-left),y:top+Math.random()*(bottom-top),vx:(Math.random()-.5)*w*.12,vy:(Math.random()-.5)*h*.24,r:(.6+Math.random()*2.5)*ratio}));
+ const points=Array.from({length:innerWidth<700?70:190},()=>({x:left+Math.random()*(right-left),y:top+Math.random()*(bottom-top),vx:(Math.random()-.5)*w*.12,vy:(Math.random()-.5)*h*.24,r:(.6+Math.random()*2.5)*ratio}));
  const started=performance.now();
  function draw(now){
   if(!canvas.isConnected)return;
@@ -486,13 +488,12 @@ function niKParticles(entering){
  niKFrame=requestAnimationFrame(draw);
 }
 function showKovalenWelcome(){
- niKTimers.forEach(clearTimeout);niKTimers=[];clearInterval(niKTypeTimer);cancelAnimationFrame(niKFrame);
- document.getElementById('niKovalenWelcome')?.remove();
+ closeKovalenWelcome();
  const el=document.createElement('div');el.id='niKovalenWelcome';el.className='visible arriving';
  el.setAttribute('role','dialog');el.setAttribute('aria-label','Benvenuto in Analisi Sinottica');
  el.innerHTML=`<button class="niKSkip" type="button">Salta ▶</button><div class="niKBody"><img class="niKPortrait" src="https://raw.githubusercontent.com/19francomenenti73-dev/Dashboard-Enterprise/main/kovalen_approved.webp" alt="Kovalen, ufficiale Nowcasting Italia in tuta gialla con bordi blu elettrico" onerror="this.style.display='none'"></div><div class="niKTitle">KOVALEN · NOWCASTING ITALIA</div><div class="niKMessage"><span class="niKTyped"></span><span class="niKCursor" aria-hidden="true">▌</span></div><canvas class="niKParticles" id="niKParticles" aria-hidden="true"></canvas>`;
  document.body.appendChild(el);
- const close=()=>{niKTimers.forEach(clearTimeout);niKTimers=[];cancelAnimationFrame(niKFrame);el.remove();};
+ const close=closeKovalenWelcome;
  el.querySelector('button').onclick=close;
  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
  if(!reduced)niKParticles(true);
@@ -511,7 +512,7 @@ function showKovalenWelcome(){
  niKTimers.push(setTimeout(close,7000));
 }
 function switchTracker(url,btnElement){
- if(url.includes('sinottica.html'))showKovalenWelcome();
+ if(new URL(url,window.location.href).pathname.endsWith('/sinottica.html'))showKovalenWelcome();else closeKovalenWelcome();
  loadTracker(url);
  document.querySelectorAll('.tactical-btn').forEach(
   b=>b.classList.remove('active')
@@ -522,7 +523,7 @@ setInterval(refreshTrackerIfNeeded,60*1000);
 document.addEventListener('visibilitychange',refreshTrackerIfNeeded);
 window.addEventListener('pageshow',refreshTrackerIfNeeded);
 window.addEventListener('focus',refreshTrackerIfNeeded);
-loadTracker(activeTrackerUrl);
+// Initial iframe src already loads IRIDE.
 function toggleMusic(){
  const audio=document.getElementById('tactical-audio');
  const btn=document.getElementById('audio-btn');
@@ -719,7 +720,8 @@ function startLiquidEnergy(){
 
   function render(now){
    if(!energyRunning)return;
-   const elapsed=(now-started)*.001;
+   if(gl.isContextLost())return;
+    const elapsed=(now-started)*.001;
 
    // Cedimento energetico in 2,5 secondi
    let collapse=Math.max(
