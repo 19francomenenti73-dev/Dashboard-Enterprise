@@ -54,7 +54,7 @@ def main():
                     result[path.strip("/")+"_error"]=f"{type(error).__name__}: {str(error)[:100]}"
             # Inspect latest observations and expose only non-sensitive metadata.
             try:
-                items_url=urljoin(URL,"/api/collections/observations/items?limit=5")
+                items_url=urljoin(URL,"/api/collections/observations/items?standard-name=RATE&format=GeoTIFF&method=comp")
                 with urllib.request.urlopen(urllib.request.Request(items_url,headers={
                     "Accept":"application/geo+json, application/json",
                     "User-Agent":"Nowcasting-Italia-OPERA-catalog-check/1.0"}),timeout=18) as response:
@@ -77,6 +77,8 @@ def main():
                     })
             except Exception as error:
                 result["items_error"]=f"{type(error).__name__}: {str(error)[:160]}"
+                if hasattr(error,"read"):
+                    result["items_error_detail"]=error.read(1800).decode("utf-8","replace")[:1800]
                 # A 400 may indicate required parameters or unsupported endpoint.
                 # Fetch the published OpenAPI schema and collection metadata instead of guessing.
                 for label,route in [
