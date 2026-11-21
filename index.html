@@ -303,6 +303,8 @@ body{
 @media(max-width:800px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.weather{height:100px}.weather svg{height:90px}.heading h1{font-size:24px}}
 
 #niKovalenWelcome{z-index:2147483640;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;pointer-events:auto}
+#niKovalenWelcome .niKBeamSilhouette{height:min(45dvh,370px);width:min(72vw,260px);margin:auto;background:linear-gradient(90deg,transparent,rgba(24,211,255,.22),transparent);border-radius:50%;filter:drop-shadow(0 0 28px #12cfff);animation:niKSilhouette 1.5s ease-in-out infinite alternate}
+@keyframes niKSilhouette{from{opacity:.25;transform:scaleX(.7)}to{opacity:.8;transform:scaleX(1)}}
 #niKovalenWelcome .niKMessage{visibility:hidden;opacity:0;transition:opacity .18s;min-height:100px}
 #niKovalenWelcome .niKMessage.niKTyping{visibility:visible;opacity:1}
 #niKovalenWelcome .niKCursor{display:inline-block;width:.55em;color:#59eaff;animation:niKCursorBlink .55s steps(1) infinite}
@@ -487,20 +489,7 @@ function showKovalenWelcome(){
  document.getElementById('niKovalenWelcome')?.remove();
  const el=document.createElement('div');el.id='niKovalenWelcome';el.className='visible arriving';
  el.setAttribute('role','dialog');el.setAttribute('aria-label','Benvenuto in Analisi Sinottica');
- el.innerHTML=`<button class="niKSkip" type="button">Salta ▶</button><div class="niKBody"><svg class="kovalenFigure" viewBox="0 0 260 340" role="img" aria-label="Kovalen, ufficiale di sistema con tuta gialla e bordi blu elettrico">
-<defs><linearGradient id="ksuit" x2="1" y2="1"><stop stop-color="#ffe46a"/><stop offset=".55" stop-color="#f7ac18"/><stop offset="1" stop-color="#9b5a0a"/></linearGradient></defs>
-<ellipse cx="130" cy="327" rx="100" ry="10" fill="#00bfff" opacity=".5"/>
-<path d="M43 315 Q30 220 54 173 L93 154 167 154 206 173 Q230 225 216 315Z" fill="url(#ksuit)" stroke="#21cfff" stroke-width="6"/>
-<path d="M96 155 L130 193 166 155 M130 193 V315" fill="none" stroke="#05d9ff" stroke-width="5"/>
-<path d="M93 158 L102 139 159 139 168 158 130 192Z" fill="#081c39" stroke="#39e0ff" stroke-width="3"/>
-<path d="M84 91 Q81 38 130 32 Q181 37 178 96 L169 131 Q156 155 131 159 Q104 154 92 131Z" fill="#f4b37c" stroke="#082b54" stroke-width="4"/>
-<path d="M80 93 Q75 30 126 20 Q178 15 186 80 Q159 65 143 51 Q120 79 84 80Z" fill="#7d3e1e" stroke="#25101a" stroke-width="4"/>
-<path d="M101 102 L119 99 M143 99 L161 102" stroke="#3d231c" stroke-width="5" stroke-linecap="round"/>
-<path d="M112 132 Q130 143 149 132" stroke="#873f32" stroke-width="3" fill="none"/>
-<circle cx="163" cy="110" r="8" fill="#27cfff"/><path d="M170 113 L190 121" stroke="#29dfff" stroke-width="4"/>
-<circle cx="171" cy="218" r="22" fill="#072a53" stroke="#17dfff" stroke-width="3"/><text x="171" y="215" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">N.I.</text><text x="171" y="227" text-anchor="middle" font-size="7" fill="#9ceaff">NOWCASTING</text>
-<path d="M35 201 L52 182 68 191 M192 191 L209 182 226 201" stroke="#1ae4ff" stroke-width="5" fill="none"/>
-</svg></div><div class="niKTitle">KOVALEN · NOWCASTING ITALIA</div><div class="niKMessage"><span class="niKTyped"></span><span class="niKCursor" aria-hidden="true">▌</span></div><canvas class="niKParticles" id="niKParticles" aria-hidden="true"></canvas>`;
+ el.innerHTML=`<button class="niKSkip" type="button">Salta ▶</button><div class="niKBody"><div class="niKBeamSilhouette" aria-label="Materializzazione di Kovalen"></div></div><div class="niKTitle">KOVALEN · NOWCASTING ITALIA</div><div class="niKMessage"><span class="niKTyped"></span><span class="niKCursor" aria-hidden="true">▌</span></div><canvas class="niKParticles" id="niKParticles" aria-hidden="true"></canvas>`;
  document.body.appendChild(el);
  const close=()=>{niKTimers.forEach(clearTimeout);niKTimers=[];cancelAnimationFrame(niKFrame);el.remove();};
  el.querySelector('button').onclick=close;
