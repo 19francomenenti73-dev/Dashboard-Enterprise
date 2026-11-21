@@ -90,6 +90,37 @@ def main():
                             if len(payload)>400000:raise ValueError("Response too large")
                             data=json.loads(payload)
                         features=data.get("features",[])
+                        if label=="rate_europe":
+                            result["rate_details"]=[]
+                            for feature in features[:8]:
+                                if not isinstance(feature,dict):continue
+                                props=feature.get("properties",{})
+                                if props.get("format")!="GeoTIFF":continue
+                                item_id=str(feature.get("id",""))
+                                if not item_id or not all(c in "0123456789abcdef" for c in item_id.lower()):continue
+                                detail_url=urljoin(URL,"/api/collections/observations/items/"+item_id)
+                                try:
+                                    with urllib.request.urlopen(urllib.request.Request(
+                                        detail_url,headers={"Accept":"application/json",
+                                        "User-Agent":"Nowcasting-Italia-OPERA-catalog-check/1.0"}
+                                    ),timeout=18) as detail_response:
+                                        detail_bytes=detail_response.read(350001)
+                                        if len(detail_bytes)>350000:raise ValueError("Item too large")
+                                        detail=json.loads(detail_bytes)
+                                    dp=detail.get("properties",{})
+                                    result["rate_details"].append({
+                                        "id":item_id,"properties":{k:str(v)[:180] for k,v in dp.items()
+                                            if k.lower() in ("datetime","start_datetime","end_datetime","standard_name","unit","units","format","method","product","created","updated")},
+                                        "links":[{"rel":v.get("rel"),"type":v.get("type"),
+                                            "host":urlsplit(urljoin(URL,v.get("href",""))).hostname,
+                                            "path":urlsplit(urljoin(URL,v.get("href",""))).path[:180]}
+                                            for v in detail.get("links",[]) if isinstance(v,dict)][:15],
+                                        "assets":{k:{"type":v.get("type"),"roles":v.get("roles"),
+                                            "host":urlsplit(v.get("href","")).hostname}
+                                            for k,v in detail.get("assets",{}).items() if isinstance(v,dict)}
+                                    })
+                                except Exception as detail_error:
+                                    result["rate_details"].append({"id":item_id,"error":str(detail_error)[:150]})
                         result[label]={
                             "count":len(features),
                             "numberMatched":data.get("numberMatched"),
