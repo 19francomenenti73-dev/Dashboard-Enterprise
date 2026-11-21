@@ -1,0 +1,42 @@
+name: N.I. Sinottica Satellite Availability
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '9,39 * * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'backend/ni_satellite_status.py'
+      - '.github/workflows/ni-satellite-status.yml'
+permissions:
+  contents: write
+concurrency:
+  group: ni-satellite-status
+  cancel-in-progress: false
+jobs:
+  availability:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install requests
+      - name: Inspect official WMS time coverage
+        run: python backend/ni_satellite_status.py
+      - name: Publish status
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/satellite_status.json
+          if ! git diff --cached --quiet; then
+            git commit -m "data(sinottica): update satellite availability"
+            for attempt in 1 2 3; do
+              git fetch origin "$GITHUB_REF_NAME"
+              git rebase "origin/$GITHUB_REF_NAME"
+              if git push origin "HEAD:$GITHUB_REF_NAME"; then exit 0; fi
+              sleep $((attempt * 3))
+            done
+            exit 1
+          fi
