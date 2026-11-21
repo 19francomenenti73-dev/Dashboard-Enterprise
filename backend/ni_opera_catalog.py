@@ -52,6 +52,31 @@ def main():
                             result["conformance_count"]=len(obj.get("conformsTo",[]))
                 except Exception as error:
                     result[path.strip("/")+"_error"]=f"{type(error).__name__}: {str(error)[:100]}"
+            # Inspect latest observations and expose only non-sensitive metadata.
+            try:
+                items_url=urljoin(URL,"/api/collections/observations/items?limit=5")
+                with urllib.request.urlopen(urllib.request.Request(items_url,headers={
+                    "Accept":"application/geo+json, application/json",
+                    "User-Agent":"Nowcasting-Italia-OPERA-catalog-check/1.0"}),timeout=18) as response:
+                    raw=response.read(500001)
+                    if len(raw)>500000:raise ValueError("Items response too large")
+                    listing=json.loads(raw)
+                result["items_count"]=len(listing.get("features",[]))
+                result["items"]=[]
+                for feature in listing.get("features",[])[:5]:
+                    props=feature.get("properties",{})
+                    assets=feature.get("assets",{})
+                    result["items"].append({
+                        "id":str(feature.get("id",""))[:120],
+                        "datetime":props.get("datetime"),
+                        "product_keys":[k for k in props if any(t in k.lower() for t in ("product","quantity","format","type"))][:20],
+                        "product_values":{k:str(v)[:120] for k,v in props.items()
+                            if k.lower() in ("product","product_type","quantity","data_type")},
+                        "asset_keys":list(assets)[:30],
+                        "asset_types":{k:v.get("type") for k,v in assets.items() if isinstance(v,dict)}
+                    })
+            except Exception as error:
+                result["items_error"]=f"{type(error).__name__}: {str(error)[:160]}"
     except Exception as exc:
         result["error"]=f"{type(exc).__name__}: {str(exc)[:180]}"
     OUT.parent.mkdir(parents=True,exist_ok=True)
