@@ -94,8 +94,22 @@ def main():
                             result["openapi_paths"]=[p for p in obj.get("paths",{})
                                 if "collection" in p or "observation" in p][:60]
                             result["openapi_items_get"]=describe(
-                                obj.get("paths",{}).get("/collections/{collectionId}/items",{}),0)
+                                obj.get("paths",{}).get("/collections/observations/items",{}),0)
+                            result["api_parameters"]={}
+                            for endpoint in ["/collections/observations/items",
+                                             "/collections/observations/area",
+                                             "/collections/observations/position"]:
+                                spec=obj.get("paths",{}).get(endpoint,{})
+                                params=spec.get("get",{}).get("parameters",[])
+                                result["api_parameters"][endpoint]=[
+                                    {"name":v.get("name"),"required":v.get("required"),
+                                     "schema":describe(v.get("schema",{}))}
+                                    for v in params if isinstance(v,dict)][:30]
                         else:
+                            result["collection_parameters"]=[
+                                {"id":v.get("id"),"values":v.get("values",[])[:30] if isinstance(v.get("values"),list) else None,
+                                 "interval":v.get("interval")} for v in obj.get("extent",{}).get("custom",[])
+                                 if isinstance(v,dict)][:12]
                             result["collection_detail"]={
                                 "id":obj.get("id"),
                                 "itemType":obj.get("itemType"),
