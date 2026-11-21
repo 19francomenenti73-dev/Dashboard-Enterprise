@@ -57,7 +57,7 @@ def main():
     if not isinstance(url, str):
         raise ValueError("No official data URL")
     payload, kind = fetch(url, "image/tiff, application/octet-stream")
-    if payload[:4] not in (b"II*\\x00", b"MM\\x00*"):
+    if payload[:4] not in (b"II*\x00", b"MM\x00*"):
         raise ValueError("Data endpoint did not return a GeoTIFF")
     with rasterio.MemoryFile(payload) as memory:
         with memory.open() as ds:
@@ -101,7 +101,7 @@ def main():
         "image": name, "rain_only": True, "transparent_no_rain": True,
         "attribution": "EUMETNET OPERA / MeteoGate",
     }
-    (OUT / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\\n")
+    (OUT / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     print("Published real observed rain", observed, int(wet.sum()))
 
 if __name__ == "__main__":
