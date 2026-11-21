@@ -8,7 +8,7 @@ ALLOWED={"cold","warm","occluded","stationary"}
 def validate_fronts(collection, *, diagnostic_validated=False, evidence=None):
     """Return validated GeoJSON. Fail closed unless diagnostic is independently approved."""
     empty={"type":"FeatureCollection","features":[]}
-    if not diagnostic_validated or not evidence:
+    if not diagnostic_validated or not isinstance(evidence,dict) or not evidence.get("independent_source") or not evidence.get("reference_valid_utc") or not evidence.get("verification_method") or not evidence.get("reviewer"):
         return empty, "not_validated"
     if not isinstance(collection,dict) or collection.get("type")!="FeatureCollection":
         return empty,"invalid_geometry"
@@ -29,5 +29,5 @@ def validate_fronts(collection, *, diagnostic_validated=False, evidence=None):
             if not (-35<=lon<=55 and -12<=lat<=78):return empty,"out_of_domain"
         if not p.get("diagnostic") or not p.get("valid_utc"):
             return empty,"missing_provenance"
-        features.append(f)
+        if p.get("validated") is not True or p.get("valid_utc")!=evidence["reference_valid_utc"]:\n            return empty,"unverified_feature"\n        features.append(f)
     return {"type":"FeatureCollection","features":features},"validated"
