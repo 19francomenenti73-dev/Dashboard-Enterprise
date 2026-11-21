@@ -489,7 +489,7 @@ function niKParticles(entering){
 }
 function showKovalenWelcome(){
  closeKovalenWelcome();
- const el=document.createElement('div');el.id='niKovalenWelcome';el.className='visible arriving';
+ const el=document.createElement('div');el.id='niKovalenWelcome';el.className='niKovalenWelcome visible arriving';
  el.setAttribute('role','dialog');el.setAttribute('aria-label','Benvenuto in Analisi Sinottica');
  el.innerHTML=`<button class="niKSkip" type="button">Salta ▶</button><div class="niKBody"><img class="niKPortrait" src="https://raw.githubusercontent.com/19francomenenti73-dev/Dashboard-Enterprise/main/kovalen_approved.webp" alt="Kovalen, ufficiale Nowcasting Italia in tuta gialla con bordi blu elettrico" onerror="this.style.display='none'"></div><div class="niKTitle">KOVALEN · NOWCASTING ITALIA</div><div class="niKMessage"><span class="niKTyped"></span><span class="niKCursor" aria-hidden="true">▌</span></div><canvas class="niKParticles" id="niKParticles" aria-hidden="true"></canvas>`;
  document.body.appendChild(el);
@@ -508,7 +508,7 @@ function showKovalenWelcome(){
    if(index===message.length){clearInterval(niKTypeTimer);el.querySelector('.niKCursor').style.visibility='hidden';}
   },interval);
  },2000));
- niKTimers.push(setTimeout(()=>{el.classList.remove('arriving');el.classList.add('beaming');if(!reduced)niKParticles(false);},reduced?5500:5700));
+ niKTimers.push(setTimeout(()=>{if(!el.isConnected)return;el.classList.remove('arriving');el.classList.add('beaming');if(!reduced)niKParticles(false);},reduced?5500:5700));
  niKTimers.push(setTimeout(close,7000));
 }
 function switchTracker(url,btnElement){
