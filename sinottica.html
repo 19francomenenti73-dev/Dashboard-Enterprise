@@ -17,7 +17,7 @@ body.fullscreen-fallback{position:fixed;inset:0;z-index:999999;background:#061d3
 </style></head><body>
 <header><div><strong>N.I. SINOTTICA</strong><div><small>Nowcasting Italia · Natural Earth (pubblico dominio) · NOAA GFS · Leaflet BSD-2-Clause</small></div></div><div><button id="prev">◀</button><button id="play">▶</button><button id="next">▶|</button><button id="full">⛶</button></div></header>
 <div id="map"></div>
-<div class="panel layers" id="layersPanel"><button id="toggleLayers" type="button" aria-expanded="true" style="background:transparent;border:0;color:#e9f7ff;font-weight:700;cursor:pointer;padding:0 4px 5px 0">Livelli ▾</button><div id="layersContent"><label><input id="satellite" type="checkbox"> Satellite RGB EUMETSAT</label><label><input id="fronts" type="checkbox" disabled hidden aria-hidden="true"><input id="candidates" type="checkbox"> Sinottica sperimentale</label><label><input id="isobars" type="checkbox" checked> Isobare</label><label><input id="pressure" type="checkbox" checked> H / L</label><label><input id="jet" type="checkbox" checked> Jet 250 hPa (flusso reale U/V)</label></div></div>
+<div class="panel layers" id="layersPanel"><button id="toggleLayers" type="button" aria-expanded="true" style="background:transparent;border:0;color:#e9f7ff;font-weight:700;cursor:pointer;padding:0 4px 5px 0">Livelli ▾</button><div id="layersContent"><label><input id="satellite" type="checkbox"> Satellite RGB EUMETSAT</label><div id="satCompare" style="font-size:10px;line-height:1.3;color:#c1e4f5" role="status">Confronto satellitare non attivo</div><label><input id="fronts" type="checkbox" disabled hidden aria-hidden="true"><input id="candidates" type="checkbox"> Sinottica sperimentale</label><label><input id="isobars" type="checkbox" checked> Isobare</label><label><input id="pressure" type="checkbox" checked> H / L</label><label><input id="jet" type="checkbox" checked> Jet 250 hPa (flusso reale U/V)</label></div></div>
 <div class="panel legend"><b>Legenda</b><div><i class="sample iso"></i>Isobare NOAA GFS</div><div style="color:#ff5050">H — alta pressione</div><div style="color:#238dff">L — bassa pressione</div><div style="font-size:10px;opacity:.8">Zone frontali sperimentali: rosso vicino a H, blu vicino a L; non indica fronte caldo/freddo</div></div>
 <div class="panel status" id="status">Caricamento cartografia locale…</div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -67,7 +67,8 @@ let satelliteErrors=0;
 satellite.on('tileerror',()=>{if(++satelliteErrors>=3){map.removeLayer(satellite);document.getElementById('satellite').checked=false;notice('Satellite EUMETSAT non disponibile: mantenuta cartografia sinottica')}});
 document.getElementById('satellite').onchange=e=>{
  satelliteErrors=0;
- if(e.target.checked)satellite.addTo(map);else map.removeLayer(satellite);
+ if(e.target.checked){satellite.addTo(map);document.getElementById('candidates').checked=true;groups.candidates.addTo(map);}else map.removeLayer(satellite);
+ document.getElementById('satCompare').textContent=e.target.checked?'Confronto visivo GFS/satellite · orario immagine non verificato · nessuna validazione automatica':'Confronto satellitare non attivo';
 };
 const groups=Object.fromEntries(['fronts','candidates','isobars','pressure','jet'].map(k=>[k,L.layerGroup().addTo(map)]));
 let frames=[],index=0,timer=null;
@@ -112,7 +113,7 @@ function draw(){
     return L.marker(ll,{icon:L.divIcon({className:'',html:'<div style="color:'+color+';font-weight:900;font-size:26px;text-align:center;text-shadow:0 1px white">'+label+'<div style="font-size:12px">'+(Number.isFinite(p)?p.toFixed(0):'')+'</div></div>',iconSize:[48,50]})});
    }
    return L.circleMarker(ll,{radius:3});
-  }}).addTo(groups[key]);
+  },onEachFeature:(f,layer)=>{if(key==='candidates'){const g=Number(f.properties?.max_gradient_k_per_100km);layer.bindPopup('<b>Zona frontale candidata GFS 850 hPa</b><p>Gradiente termico: '+(Number.isFinite(g)?g.toFixed(1)+' K/100 km':'non disponibile')+'</p><p>Non validata. Confrontare con le nubi satellitari solo a orari coerenti; una banda nuvolosa non dimostra un fronte al suolo.</p>')}}}).addTo(groups[key]);
  }
  notice('MODELLO PREVISIONALE · Fonte: '+frame.source+' · run '+(frame.run_utc||'?')+' · validità: '+frame.valid_utc+' · '+(index+1)+'/'+frames.length+' · Sinottica sperimentale');
  document.getElementById('fronts').disabled=!frontsValid;
