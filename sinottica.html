@@ -17,7 +17,7 @@ body.fullscreen-fallback{position:fixed;inset:0;z-index:999999;background:#061d3
 </style></head><body>
 <header><div><strong>N.I. SINOTTICA</strong><div><small>Nowcasting Italia · Natural Earth (pubblico dominio) · NOAA GFS · Leaflet BSD-2-Clause</small></div></div><div><button id="prev">◀</button><button id="play">▶</button><button id="next">▶|</button><button id="full">⛶</button></div></header>
 <div id="map"></div>
-<div class="panel layers" id="layersPanel"><button id="toggleLayers" type="button" aria-expanded="true" style="background:transparent;border:0;color:#e9f7ff;font-weight:700;cursor:pointer;padding:0 4px 5px 0">Livelli ▾</button><div id="layersContent"><label><input id="satellite" type="checkbox"> Satellite RGB EUMETSAT</label><label><input id="fronts" type="checkbox" disabled> Fronti validati (non disponibili)</label><label><input id="candidates" type="checkbox"> Zone frontali sperimentali</label><label><input id="isobars" type="checkbox" checked> Isobare</label><label><input id="pressure" type="checkbox" checked> H / L</label><label><input id="jet" type="checkbox" checked> Jet 250 hPa (flusso reale U/V)</label></div></div>
+<div class="panel layers" id="layersPanel"><button id="toggleLayers" type="button" aria-expanded="true" style="background:transparent;border:0;color:#e9f7ff;font-weight:700;cursor:pointer;padding:0 4px 5px 0">Livelli ▾</button><div id="layersContent"><label><input id="satellite" type="checkbox"> Satellite RGB EUMETSAT</label><label><input id="fronts" type="checkbox" disabled hidden aria-hidden="true"><input id="candidates" type="checkbox"> Sinottica sperimentale</label><label><input id="isobars" type="checkbox" checked> Isobare</label><label><input id="pressure" type="checkbox" checked> H / L</label><label><input id="jet" type="checkbox" checked> Jet 250 hPa (flusso reale U/V)</label></div></div>
 <div class="panel legend"><b>Legenda</b><div><i class="sample iso"></i>Isobare NOAA GFS</div><div style="color:#ff5050">H — alta pressione</div><div style="color:#238dff">L — bassa pressione</div><div style="font-size:10px;opacity:.8">Zone frontali sperimentali: rosso vicino a H, blu vicino a L; non indica fronte caldo/freddo</div></div>
 <div class="panel status" id="status">Caricamento cartografia locale…</div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -114,7 +114,7 @@ function draw(){
    return L.circleMarker(ll,{radius:3});
   }}).addTo(groups[key]);
  }
- notice('MODELLO PREVISIONALE · Fonte: '+frame.source+' · run '+(frame.run_utc||'?')+' · validità: '+frame.valid_utc+' · '+(index+1)+'/'+frames.length+' · Fronti: '+(frontsValid?'validati':'non validati'));
+ notice('MODELLO PREVISIONALE · Fonte: '+frame.source+' · run '+(frame.run_utc||'?')+' · validità: '+frame.valid_utc+' · '+(index+1)+'/'+frames.length+' · Sinottica sperimentale');
  document.getElementById('fronts').disabled=!frontsValid;
 }
 async function weather(){
