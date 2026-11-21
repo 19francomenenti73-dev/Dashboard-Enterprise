@@ -23,7 +23,7 @@ body.fullscreen-fallback{position:fixed;inset:0;z-index:999999;background:#061d3
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 'use strict';
-const map=L.map('map',{preferCanvas:true,minZoom:3,maxZoom:9,maxBounds:[[-12,-35],[78,55]],maxBoundsViscosity:1}).setView([44,10],4);
+const map=L.map('map',{preferCanvas:true,minZoom:4,maxZoom:9,maxBounds:[[-12,-35],[78,55]],maxBoundsViscosity:1}).setView([44,10],4);
 map.createPane('bathymetry').style.zIndex=205;
 map.createPane('baseLand').style.zIndex=210;
 map.createPane('relief').style.zIndex=215;
