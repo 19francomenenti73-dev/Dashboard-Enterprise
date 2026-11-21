@@ -54,7 +54,7 @@ def main():
                     result[path.strip("/")+"_error"]=f"{type(error).__name__}: {str(error)[:100]}"
             # Inspect latest observations and expose only non-sensitive metadata.
             try:
-                items_url=urljoin(URL,"/api/collections/observations/items?standard-name=RATE&format=GeoTIFF&method=comp")
+                items_url=urljoin(URL,"/api/collections/observations/items?bbox=-12,34,37,72&standard-name=RATE&format=GeoTIFF&method=comp")
                 with urllib.request.urlopen(urllib.request.Request(items_url,headers={
                     "Accept":"application/geo+json, application/json",
                     "User-Agent":"Nowcasting-Italia-OPERA-catalog-check/1.0"}),timeout=18) as response:
