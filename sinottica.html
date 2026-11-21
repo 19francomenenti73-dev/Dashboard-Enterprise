@@ -130,13 +130,24 @@ function toggleLocalFullscreen(){
  fullButton.textContent=on?'✕':'⛶';
  setTimeout(()=>map.invalidateSize(),100);
 }
-fullButton.onclick=async()=>{
- if(document.fullscreenElement){try{await document.exitFullscreen()}catch(e){toggleLocalFullscreen()}return}
- try{
-  if(!document.fullscreenEnabled||!document.documentElement.requestFullscreen)throw Error('fullscreen restricted');
-  await document.documentElement.requestFullscreen();
-  setTimeout(()=>map.invalidateSize(),100);
- }catch(e){toggleLocalFullscreen();try{window.parent.postMessage({type:'NI_SINOTTICA_FULLSCREEN'},location.origin)}catch(_){} }
+fullButton.setAttribute('aria-label','Apri Sinottica a schermo intero');
+fullButton.onclick=()=>{
+ // Google Sites embeds the Dashboard inside another iframe. A new top-level
+ // page is the only reliable way to escape that viewport on mobile.
+ if(window.top!==window.self){
+   const tab=window.open(new URL('sinottica.html',location.href).href,'_blank','noopener');
+   if(!tab){
+     const a=document.createElement('a');a.href=new URL('sinottica.html',location.href).href;
+     a.target='_blank';a.rel='noopener';a.textContent='Apri Sinottica in una nuova scheda';
+     a.style.cssText='position:absolute;z-index:1200;top:80px;left:12px;background:#103c60;color:white;padding:14px;border-radius:8px';
+     document.body.appendChild(a);
+   }
+   return;
+ }
+ if(document.fullscreenElement){document.exitFullscreen().catch(()=>toggleLocalFullscreen());return}
+ if(document.documentElement.requestFullscreen){
+   document.documentElement.requestFullscreen().then(()=>map.invalidateSize()).catch(()=>toggleLocalFullscreen());
+ }else toggleLocalFullscreen();
 };
 document.addEventListener('fullscreenchange',()=>{fullButton.textContent=document.fullscreenElement?'✕':'⛶';map.invalidateSize()});
 base().then(terrain);weather();setInterval(weather,1800000);
