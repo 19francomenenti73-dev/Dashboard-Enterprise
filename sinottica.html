@@ -18,7 +18,7 @@ body.fullscreen-fallback{position:fixed;inset:0;z-index:999999;background:#061d3
 <header><div><strong>N.I. SINOTTICA</strong><div><small>Nowcasting Italia · Natural Earth (pubblico dominio) · NOAA GFS · Leaflet BSD-2-Clause</small></div></div><div><button id="prev">◀</button><button id="play">▶</button><button id="next">▶|</button><button id="full">⛶</button></div></header>
 <div id="map"></div>
 <div class="panel layers" id="layersPanel"><button id="toggleLayers" type="button" aria-expanded="true" style="background:transparent;border:0;color:#e9f7ff;font-weight:700;cursor:pointer;padding:0 4px 5px 0">Livelli ▾</button><div id="layersContent"><label><input id="satellite" type="checkbox"> Satellite RGB EUMETSAT</label><label><button id="waterVapour" type="button" disabled aria-pressed="false" style="width:100%;background:#a83232">🔴 Vapore acqueo · verifica</button></label><div id="satCompare" style="font-size:10px;line-height:1.3;color:#c1e4f5" role="status">Confronto satellitare non attivo</div><label><input id="fronts" type="checkbox" disabled hidden aria-hidden="true"><input id="candidates" type="checkbox"> Sinottica sperimentale</label><label><input id="isobars" type="checkbox" checked> Isobare</label><label><input id="pressure" type="checkbox" checked> H / L</label><label><input id="jet" type="checkbox" checked> Jet 250 hPa (flusso reale U/V)</label></div></div>
-<div class="panel legend"><b>Legenda</b><div><i class="sample iso"></i>Isobare NOAA GFS</div><div style="color:#ff5050">H — alta pressione</div><div style="color:#238dff">L — bassa pressione</div><div style="font-size:10px;opacity:.8">Zone frontali sperimentali: rosso vicino a H, blu vicino a L; non indica fronte caldo/freddo</div></div>
+<div class="panel legend"><b>Legenda</b><div><i class="sample iso"></i>Isobare NOAA GFS · rosso aria più calda, blu più fredda (850 hPa), bianco neutro</div><div style="color:#ff5050">H — alta pressione</div><div style="color:#238dff">L — bassa pressione</div><div style="font-size:10px;opacity:.8">Zone frontali sperimentali: rosso vicino a H, blu vicino a L; non indica fronte caldo/freddo</div></div>
 <div class="panel status" id="status">Caricamento cartografia locale…</div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
@@ -163,7 +163,7 @@ function draw(){
   if(!fc||fc.type!=='FeatureCollection')continue;
   L.geoJSON(fc,{style:f=>{
    const type=String(f.properties?.type||'').toLowerCase();
-   return {color:key==='candidates'?candidateColor(f):key==='isobars'?'#f8fbff':key==='jet'?'#6b9cc1':({cold:'#2059ff',warm:'#f3323d',occluded:'#b344db',stationary:'#2059ff'}[type]||'#536477'),weight:key==='candidates'?3.2:key==='isobars'?1.8:1.6,opacity:key==='candidates'?.95:key==='isobars'?.92:key==='jet'?.42:.65,dashArray:key==='candidates'?'6 7':null};
+   return {color:key==='candidates'?candidateColor(f):key==='isobars'?({warm:'#ff5b4e',cold:'#399bff',neutral:'#f8fbff'}[f.properties?.thermal_band]||'#f8fbff'):key==='jet'?'#6b9cc1':({cold:'#2059ff',warm:'#f3323d',occluded:'#b344db',stationary:'#2059ff'}[type]||'#536477'),weight:key==='candidates'?3.2:key==='isobars'?1.8:1.6,opacity:key==='candidates'?.95:key==='isobars'?.92:key==='jet'?.42:.65,dashArray:key==='candidates'?'6 7':null};
   },pointToLayer:(f,ll)=>{
    const type=String(f.properties?.type||'').toLowerCase();
    if(key==='pressure'&&['high','low'].includes(type)){
