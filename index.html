@@ -282,6 +282,15 @@ body{
  font-size:21px;cursor:pointer;
  box-shadow:0 0 12px #00cfff;
 }
+
+#niKovalenWelcome{position:fixed;inset:0;z-index:2147483640;background:radial-gradient(ellipse at center,#174e8a,#06172e 72%,#020610);display:flex;align-items:center;justify-content:center;color:white;text-align:center;overflow:hidden}
+#niKovalenWelcome .niKBody{width:min(94vw,620px);padding:15px;animation:niKBeam 7s ease-in-out forwards}
+#niKovalenWelcome .kovalenFigure{height:min(49dvh,370px);width:auto;max-width:100%;display:block;margin:auto;filter:drop-shadow(0 0 22px #00bfff)}
+#niKovalenWelcome .niKMessage{font:700 clamp(17px,4vw,26px)/1.35 system-ui,sans-serif;color:#fff;text-shadow:0 0 13px #00bfff;margin-top:15px}
+#niKovalenWelcome .niKTitle{font:700 15px system-ui,sans-serif;letter-spacing:2px;color:#70dbff;margin-top:12px}
+#niKovalenWelcome .niKSkip{position:absolute;right:16px;top:16px;background:#06315a;color:#fff;border:1px solid #33dfff;border-radius:6px;padding:10px}
+@keyframes niKBeam{0%{opacity:0;transform:scale(.5);filter:blur(25px)}18%,82%{opacity:1;transform:scale(1);filter:blur(0)}100%{opacity:0;transform:scale(1.25);filter:blur(22px)}}
+@media(prefers-reduced-motion:reduce){#niKovalenWelcome .niKBody{animation:none}}
 </style>
 </head>
 <body>
@@ -431,7 +440,32 @@ function refreshTrackerIfNeeded(){
  if(Date.now()-lastTrackerLoad<TRACKER_REFRESH_MS)return;
  loadTracker(activeTrackerUrl);
 }
+
+function showKovalenWelcome(){
+ document.getElementById('niKovalenWelcome')?.remove();
+ const el=document.createElement('div');el.id='niKovalenWelcome';
+ el.setAttribute('role','dialog');el.setAttribute('aria-label','Benvenuto in Analisi Sinottica');
+ el.innerHTML=`<button class="niKSkip" type="button">Salta ▶</button><div class="niKBody"><svg class="kovalenFigure" viewBox="0 0 260 340" role="img" aria-label="Kovalen, ufficiale di sistema con tuta gialla e bordi blu elettrico">
+<defs><linearGradient id="ksuit" x2="1" y2="1"><stop stop-color="#ffe46a"/><stop offset=".55" stop-color="#f7ac18"/><stop offset="1" stop-color="#9b5a0a"/></linearGradient></defs>
+<ellipse cx="130" cy="327" rx="100" ry="10" fill="#00bfff" opacity=".5"/>
+<path d="M43 315 Q30 220 54 173 L93 154 167 154 206 173 Q230 225 216 315Z" fill="url(#ksuit)" stroke="#21cfff" stroke-width="6"/>
+<path d="M96 155 L130 193 166 155 M130 193 V315" fill="none" stroke="#05d9ff" stroke-width="5"/>
+<path d="M93 158 L102 139 159 139 168 158 130 192Z" fill="#081c39" stroke="#39e0ff" stroke-width="3"/>
+<path d="M84 91 Q81 38 130 32 Q181 37 178 96 L169 131 Q156 155 131 159 Q104 154 92 131Z" fill="#f4b37c" stroke="#082b54" stroke-width="4"/>
+<path d="M80 93 Q75 30 126 20 Q178 15 186 80 Q159 65 143 51 Q120 79 84 80Z" fill="#7d3e1e" stroke="#25101a" stroke-width="4"/>
+<path d="M101 102 L119 99 M143 99 L161 102" stroke="#3d231c" stroke-width="5" stroke-linecap="round"/>
+<path d="M112 132 Q130 143 149 132" stroke="#873f32" stroke-width="3" fill="none"/>
+<circle cx="163" cy="110" r="8" fill="#27cfff"/><path d="M170 113 L190 121" stroke="#29dfff" stroke-width="4"/>
+<circle cx="171" cy="218" r="22" fill="#072a53" stroke="#17dfff" stroke-width="3"/><text x="171" y="215" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">N.I.</text><text x="171" y="227" text-anchor="middle" font-size="7" fill="#9ceaff">NOWCASTING</text>
+<path d="M35 201 L52 182 68 191 M192 191 L209 182 226 201" stroke="#1ae4ff" stroke-width="5" fill="none"/>
+</svg><div class="niKTitle">KOVALEN · NOWCASTING ITALIA</div><div class="niKMessage">Sono Kovalen, benvenuti in Analisi Sinottica! A destra trovate il menù a tendina; in alto il pulsante per lo schermo intero.</div></div>`;
+ document.body.appendChild(el);
+ let closed=false;const close=()=>{if(closed)return;closed=true;el.remove();};
+ el.querySelector('button').onclick=close;
+ setTimeout(close,window.matchMedia('(prefers-reduced-motion: reduce)').matches?1000:7000);
+}
 function switchTracker(url,btnElement){
+ if(url.includes('sinottica.html'))showKovalenWelcome();
  loadTracker(url);
  document.querySelectorAll('.tactical-btn').forEach(
   b=>b.classList.remove('active')
