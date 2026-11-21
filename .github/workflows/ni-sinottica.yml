@@ -1,5 +1,11 @@
 name: N.I. Sinottica NOAA GFS
 on:
+  push:
+    branches: [feature/ni-sinottica]
+    paths:
+      - 'backend/ni_gfs.py'
+      - 'backend/requirements-sinottica.txt'
+      - '.github/workflows/ni-sinottica.yml'
   workflow_dispatch:
   schedule:
     - cron: '17 2,8,14,20 * * *'
@@ -22,7 +28,10 @@ jobs:
           python-version: '3.12'
           cache: pip
       - run: pip install -r backend/requirements-sinottica.txt
-      - run: python backend/ni_gfs.py
+      - name: Offline algorithm checks
+        run: python backend/test_sinottica.py
+      - name: Retrieve and analyze NOAA GFS
+        run: python backend/ni_gfs.py
       - name: Commit data on development branch only
         run: |
           git config user.name "github-actions[bot]"
