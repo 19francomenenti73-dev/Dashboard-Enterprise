@@ -1,5 +1,5 @@
 {
-  "checked_utc": "2026-11-21T19:38:15.307276+00:00",
+  "checked_utc": "2026-11-21T19:39:45.963929+00:00",
   "source": "https://radar-backup.meteogate.eu/",
   "purpose": "catalog structure only",
   "product_verified": false,
@@ -81,6 +81,101 @@
   ],
   "conformance_count": 6,
   "items_error": "HTTPError: HTTP Error 400: Bad Request",
+  "collection_parameters": [
+    {
+      "id": "standard_name",
+      "values": [
+        "ACRR",
+        "CCORH",
+        "DBZH",
+        "LDR",
+        "PHIDP",
+        "RATE",
+        "RHOHV",
+        "SQIH",
+        "TH",
+        "VRAD",
+        "VRADH",
+        "WRAD",
+        "WRADH",
+        "ZDR"
+      ],
+      "interval": [
+        [
+          "ACRR",
+          "ZDR"
+        ]
+      ]
+    },
+    {
+      "id": "level",
+      "values": [
+        -0.2,
+        0.0,
+        0.1,
+        0.2,
+        0.3,
+        0.4,
+        0.5,
+        0.6,
+        0.7,
+        0.8,
+        0.9,
+        1.0,
+        1.1,
+        1.2,
+        1.3,
+        1.4,
+        1.5,
+        1.6,
+        1.7,
+        1.8,
+        1.9,
+        2.0,
+        2.1,
+        2.2,
+        2.29,
+        2.4,
+        2.5,
+        2.6,
+        2.7,
+        2.8
+      ],
+      "interval": [
+        [
+          -0.2,
+          90.0
+        ]
+      ]
+    },
+    {
+      "id": "format",
+      "values": [
+        "GeoTIFF",
+        "ODIM"
+      ],
+      "interval": [
+        [
+          "GeoTIFF",
+          "ODIM"
+        ]
+      ]
+    },
+    {
+      "id": "method",
+      "values": [
+        "comp",
+        "point",
+        "scan"
+      ],
+      "interval": [
+        [
+          "comp",
+          "scan"
+        ]
+      ]
+    }
+  ],
   "collection_detail": {
     "id": "observations",
     "itemType": null,
@@ -140,5 +235,672 @@
     "/collections/observations/items",
     "/collections/observations/items/{item_id}"
   ],
-  "openapi_items_get": {}
+  "openapi_items_get": {
+    "get": {
+      "tags": {
+        "count": 1,
+        "first": "str"
+      },
+      "summary": {
+        "type": "string",
+        "length": 17
+      },
+      "operationId": {
+        "type": "string",
+        "length": 52
+      },
+      "parameters": {
+        "count": 15,
+        "first": "dict"
+      },
+      "responses": {
+        "200": "dict",
+        "422": "dict"
+      }
+    }
+  },
+  "api_parameters": {
+    "/collections/observations/items": [
+      {
+        "name": "bbox",
+        "required": false,
+        "schema": {
+          "anyOf": {
+            "count": 2,
+            "first": {
+              "type": "str"
+            }
+          },
+          "title": {
+            "type": "string",
+            "length": 4
+          }
+        }
+      },
+      {
+        "name": "datetime",
+        "required": false,
+        "schema": {
+          "anyOf": {
+            "count": 2,
+            "first": {
+              "type": "str"
+            }
+          },
+          "description": {
+            "type": "string",
+            "length": 54
+          },
+          "title": {
+            "type": "string",
+            "length": 8
+          }
+        }
+      },
+      {
+        "name": "id",
+        "required": false,
+        "schema": {
+          "anyOf": {
+            "count": 2,
+            "first": {
+              "type": "str"
+            }
+          },
+          "description": {
+            "type": "string",
+            "length": 18
+          },
+          "title": {
+            "type": "string",
+            "length": 2
+          }
+        }
+      },
+      {
+        "name": "parameter-name",
+        "required": false,
+        "schema": {
+          "anyOf": {
+            "count": 2,
+            "first": {
+              "type": "str"
+            }
+          },
+          "description": {
+            "type": "string",
+            "length": 18
+          },
+          "title": {
+            "type": "string",
+            "length": 14
+          }
+        }
+      },
+      {
+        "name": "naming-authority",
+        "required": false,
+        "schema": {
+          "anyOf": {
+            "count": 2,
+            "first": {
+              "type": "str"
+            }
+          },
+          "description": {
+            "type": "string",
+            "length": 38
+          },
+          "title": {
+            "type": "string",
+            "length": 16
+          }
+        }
+      },
+      {
+        "name": "institution",
+        "required": false,
+        "schema": {
+          "anyOf": {
+            "count": 2,
+            "first": {
+              "type": "str"
+            }
+          },
+          "description": {
+            "type": "string",
+            "length": 35
+          },
+          "title": {
+            "type": "string",
+            "length": 11
+          }
+        }
+      },
+      {
+        "name": "platform",
+        "required": false,
+        "schema": {
+          "anyOf": {
+            "count": 2,
+            "first": {
+              "type": "str"
+            }
+          },
+          "description": {
+            "type": "string",
+            "length": 39
+          },
+          "title": {
+            "type": "string",
+            "length": 8
+          }
+        }
+      },
+      {
+        "name": "standard-name",
+        "required": false,
+        "schema": {
+          "anyOf": {
+            "count": 2,
+            "first": {
+              "type": "str"
+            }
+          },
+          "description": {
+            "type": "string",
+            "length": 20
+          },
+          "title": {
+            "type": "string",
+            "length": 13
+          }
+        }
+      },
+      {
+        "name": "unit",
+        "required": false,
+        "schema": {
+          "anyOf": {
+            "count": 2,
+            "first": {
+              "type": "str"
+            }
+          },
+          "description": {
+            "type": "string",
+            "length": 34
+          },
+          "title": {
+            "type": "string",
+            "length": 4
+          }
+        }
+      },
+      {
+        "name": "instrument",
+        "required": false,
+        "schema": {
+          "anyOf": {
+            "count": 2,
+            "first": {
+              "type": "str"
+            }
+          },
+          "description": {
+            "type": "string",
+            "length": 13
+          },
+          "title": {
+            "type": "string",
+            "length": 10
+          }
+        }
+      },
+      {
+        "name": "level",
+        "required": false,
+        "schema": {
+          "anyOf": {
+            "count": 2,
+            "first": {
+              "type": "str"
+            }
+          },
+          "description": {
+            "type": "string",
+            "length": 30
+          },
+          "title": {
+            "type": "string",
+            "length": 5
+          }
+        }
+      },
+      {
+        "name": "format",
+        "required": false,
+        "schema": {
+          "$ref": {
+            "type": "string",
+            "length": 33
+          },
+          "description": {
+            "type": "string",
+            "length": 22
+          }
+        }
+      },
+      {
+        "name": "period",
+        "required": false,
+        "schema": {
+          "anyOf": {
+            "count": 2,
+            "first": {
+              "type": "str"
+            }
+          },
+          "description": {
+            "type": "string",
+            "length": 40
+          },
+          "title": {
+            "type": "string",
+            "length": 6
+          }
+        }
+      },
+      {
+        "name": "method",
+        "required": false,
+        "schema": {
+          "anyOf": {
+            "count": 2,
+            "first": {
+              "type": "str"
+            }
+          },
+          "description": {
+            "type": "string",
+            "length": 51
+          },
+          "title": {
+            "type": "string",
+            "length": 6
+          }
+        }
+      },
+      {
+        "name": "f",
+        "required": false,
+        "schema": {
+          "$ref": {
+            "type": "string",
+            "length": 37
+          },
+          "description": {
+            "type": "string",
+            "length": 21
+          },
+          "default": {
+            "type": "string",
+            "length": 7
+          }
+        }
+      }
+    ],
+    "/collections/observations/area": [
+      {
+        "name": "coords",
+        "required": true,
+        "schema": {
+          "type": {
+            "type": "string",
+            "length": 6
+          },
+          "description": {
+            "type": "string",
+            "length": 69
+          },
+          "title": {
+            "type": "string",
+            "length": 6
+          }
+        }
+      },
+      {
+        "name": "parameter-name",
+        "required": false,
+        "schema": {
+          "anyOf": {
+            "count": 2,
+            "first": {
+              "type": "str"
+            }
+          },
+          "description": {
+            "type": "string",
+            "length": 368
+          },
+          "title": {
+            "type": "string",
+            "length": 14
+          }
+        }
+      },
+      {
+        "name": "datetime",
+        "required": false,
+        "schema": {
+          "anyOf": {
+            "count": 2,
+            "first": {
+              "type": "str"
+            }
+          },
+          "description": {
+            "type": "string",
+            "length": 30
+          },
+          "title": {
+            "type": "string",
+            "length": 8
+          }
+        }
+      },
+      {
+        "name": "f",
+        "required": false,
+        "schema": {
+          "$ref": {
+            "type": "string",
+            "length": 28
+          },
+          "description": {
+            "type": "string",
+            "length": 29
+          },
+          "default": {
+            "type": "string",
+            "length": 12
+          }
+        }
+      },
+      {
+        "name": "standard_name",
+        "required": false,
+        "schema": {
+          "anyOf": {
+            "count": 2,
+            "first": {
+              "type": "str"
+            }
+          },
+          "description": {
+            "type": "string",
+            "length": 60
+          },
+          "title": {
+            "type": "string",
+            "length": 13
+          }
+        }
+      },
+      {
+        "name": "level",
+        "required": false,
+        "schema": {
+          "anyOf": {
+            "count": 2,
+            "first": {
+              "type": "str"
+            }
+          },
+          "description": {
+            "type": "string",
+            "length": 532
+          },
+          "title": {
+            "type": "string",
+            "length": 5
+          }
+        }
+      },
+      {
+        "name": "format",
+        "required": false,
+        "schema": {
+          "$ref": {
+            "type": "string",
+            "length": 33
+          },
+          "description": {
+            "type": "string",
+            "length": 22
+          },
+          "default": {
+            "type": "string",
+            "length": 4
+          }
+        }
+      },
+      {
+        "name": "method",
+        "required": false,
+        "schema": {
+          "anyOf": {
+            "count": 2,
+            "first": {
+              "type": "str"
+            }
+          },
+          "description": {
+            "type": "string",
+            "length": 63
+          },
+          "title": {
+            "type": "string",
+            "length": 6
+          }
+        }
+      },
+      {
+        "name": "duration",
+        "required": false,
+        "schema": {
+          "anyOf": {
+            "count": 2,
+            "first": {
+              "type": "str"
+            }
+          },
+          "description": {
+            "type": "string",
+            "length": 100
+          },
+          "title": {
+            "type": "string",
+            "length": 8
+          }
+        }
+      }
+    ],
+    "/collections/observations/position": [
+      {
+        "name": "coords",
+        "required": true,
+        "schema": {
+          "type": {
+            "type": "string",
+            "length": 6
+          },
+          "description": {
+            "type": "string",
+            "length": 95
+          },
+          "title": {
+            "type": "string",
+            "length": 6
+          }
+        }
+      },
+      {
+        "name": "parameter-name",
+        "required": false,
+        "schema": {
+          "anyOf": {
+            "count": 2,
+            "first": {
+              "type": "str"
+            }
+          },
+          "description": {
+            "type": "string",
+            "length": 368
+          },
+          "title": {
+            "type": "string",
+            "length": 14
+          }
+        }
+      },
+      {
+        "name": "datetime",
+        "required": false,
+        "schema": {
+          "anyOf": {
+            "count": 2,
+            "first": {
+              "type": "str"
+            }
+          },
+          "description": {
+            "type": "string",
+            "length": 30
+          },
+          "title": {
+            "type": "string",
+            "length": 8
+          }
+        }
+      },
+      {
+        "name": "f",
+        "required": false,
+        "schema": {
+          "$ref": {
+            "type": "string",
+            "length": 28
+          },
+          "description": {
+            "type": "string",
+            "length": 29
+          },
+          "default": {
+            "type": "string",
+            "length": 12
+          }
+        }
+      },
+      {
+        "name": "standard_name",
+        "required": false,
+        "schema": {
+          "anyOf": {
+            "count": 2,
+            "first": {
+              "type": "str"
+            }
+          },
+          "description": {
+            "type": "string",
+            "length": 60
+          },
+          "title": {
+            "type": "string",
+            "length": 13
+          }
+        }
+      },
+      {
+        "name": "level",
+        "required": false,
+        "schema": {
+          "anyOf": {
+            "count": 2,
+            "first": {
+              "type": "str"
+            }
+          },
+          "description": {
+            "type": "string",
+            "length": 532
+          },
+          "title": {
+            "type": "string",
+            "length": 5
+          }
+        }
+      },
+      {
+        "name": "format",
+        "required": false,
+        "schema": {
+          "$ref": {
+            "type": "string",
+            "length": 33
+          },
+          "description": {
+            "type": "string",
+            "length": 22
+          },
+          "default": {
+            "type": "string",
+            "length": 4
+          }
+        }
+      },
+      {
+        "name": "method",
+        "required": false,
+        "schema": {
+          "anyOf": {
+            "count": 2,
+            "first": {
+              "type": "str"
+            }
+          },
+          "description": {
+            "type": "string",
+            "length": 63
+          },
+          "title": {
+            "type": "string",
+            "length": 6
+          }
+        }
+      },
+      {
+        "name": "duration",
+        "required": false,
+        "schema": {
+          "anyOf": {
+            "count": 2,
+            "first": {
+              "type": "str"
+            }
+          },
+          "description": {
+            "type": "string",
+            "length": 100
+          },
+          "title": {
+            "type": "string",
+            "length": 8
+          }
+        }
+      }
+    ]
+  }
 }
