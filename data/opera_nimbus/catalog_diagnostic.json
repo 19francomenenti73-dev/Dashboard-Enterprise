@@ -1,5 +1,5 @@
 {
-  "checked_utc": "2026-11-21T19:28:22.879717+00:00",
+  "checked_utc": "2026-11-21T19:32:25.069333+00:00",
   "source": "https://radar-backup.meteogate.eu/",
   "purpose": "catalog structure only",
   "product_verified": false,
@@ -45,5 +45,34 @@
         "length": 25
       }
     }
-  }
+  },
+  "navigation": [
+    {
+      "path": "/api/",
+      "rel": "self",
+      "type": "application/json"
+    },
+    {
+      "path": "/api/docs",
+      "rel": "service-doc",
+      "type": "text/html"
+    },
+    {
+      "path": "/api/openapi.json",
+      "rel": "service-desc",
+      "type": "application/vnd.oai.openapi+json;version=3.1"
+    },
+    {
+      "path": "/api/conformance",
+      "rel": "conformance",
+      "type": "application/json"
+    },
+    {
+      "path": "/api/collections",
+      "rel": "data",
+      "type": null
+    }
+  ],
+  "collections_error": "HTTPError: HTTP Error 503: Service Unavailable",
+  "conformance_error": "HTTPError: HTTP Error 503: Service Unavailable"
 }
