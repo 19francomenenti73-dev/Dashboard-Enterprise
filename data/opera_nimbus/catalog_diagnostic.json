@@ -1,5 +1,5 @@
 {
-  "checked_utc": "2026-11-21T19:56:41.533277+00:00",
+  "checked_utc": "2026-11-21T19:58:51.983953+00:00",
   "source": "https://radar-backup.meteogate.eu/",
   "purpose": "catalog structure only",
   "product_verified": false,
@@ -98,6 +98,64 @@
       "assets": {}
     }
   ],
+  "rate_detail_structure": {
+    "top_level_keys": [
+      "type",
+      "geometry",
+      "properties",
+      "id"
+    ],
+    "property_keys": [
+      "summary",
+      "license",
+      "naming_authority",
+      "creator_type",
+      "creator_name",
+      "creator_email",
+      "creator_url",
+      "institution",
+      "platform",
+      "platform_name",
+      "standard_name",
+      "unit",
+      "period",
+      "parameter_name",
+      "timeseries_id",
+      "radar_meta",
+      "format",
+      "publisher_name",
+      "publisher_email",
+      "publisher_url",
+      "publisher_type",
+      "platform_vocabulary",
+      "level",
+      "method",
+      "data"
+    ],
+    "properties_safe": {
+      "naming_authority": "eu.eumetnet",
+      "institution": "EUMETNET",
+      "platform": "0-20010-0-OPERA",
+      "standard_name": "RATE",
+      "unit": "%",
+      "parameter_name": "RATE:comp",
+      "format": "GeoTIFF",
+      "level": "0.0",
+      "method": "comp"
+    },
+    "geometry_type": "Point",
+    "bbox": null
+  },
+  "rate_detail_value_shapes": {
+    "type": {
+      "type": "string",
+      "length": 7
+    },
+    "id": {
+      "type": "string",
+      "length": 32
+    }
+  },
   "rate_europe": {
     "count": 2,
     "numberMatched": null,
