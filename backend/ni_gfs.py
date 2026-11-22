@@ -30,7 +30,7 @@ def fetch_piece(cycle, hour, west, east):
     day, run = cycle
     params = {
         "file": f"gfs.t{run:02d}z.pgrb2.0p25.f{hour:03d}",
-        "lev_mean_sea_level": "on", "lev_250_mb": "on", "lev_850_mb": "on",
+        "lev_mean_sea_level": "on", "lev_250_mb": "on", "lev_850_mb": "on", "lev_10_m_above_ground": "on",
         "var_PRMSL": "on", "var_UGRD": "on", "var_VGRD": "on", "var_TMP": "on", "var_RH": "on",
         "subregion": "", "leftlon":str(west), "rightlon":str(east),
         "toplat":"78", "bottomlat":"-12",
@@ -46,7 +46,7 @@ def open_grib(raw, short_name, level=None):
     with tempfile.NamedTemporaryFile(suffix=".grib2") as t:
         t.write(raw);t.flush()
         ds=xr.open_dataset(t.name,engine="cfgrib",
-          backend_kwargs={"filter_by_keys":dict({"shortName":short_name}, **({"typeOfLevel":"isobaricInhPa","level":level} if level in (250,850) else {"typeOfLevel":"meanSea"})),"indexpath":""})
+          backend_kwargs={"filter_by_keys":dict({"shortName":short_name}, **({"typeOfLevel":"isobaricInhPa","level":level} if level in (250,850,10) else ({"typeOfLevel":"heightAboveGround","level":10} if level==10 else {"typeOfLevel":"meanSea"}))),"indexpath":""})
         ds.load()
         return ds
 
@@ -108,10 +108,10 @@ def thermal_isobars(lat,lon,msl,temp850):
               "geometry":{"type":"LineString","coordinates":segment}})
     return {"type":"FeatureCollection","features":feats}
 
-def wind_vectors(lat,lon,u,v,step=7):
+def wind_vectors(lat,lon,u,v,step=7,level=250):
     """Compact real 250 hPa U/V grid in m/s, never interpolated synthetic flow."""
     return {"lat":np.round(lat[::step],3).tolist(),"lon":np.round(lon[::step],3).tolist(),
-      "u":np.round(u[::step,::step],2).tolist(),"v":np.round(v[::step,::step],2).tolist(),"units":"m/s","level_hpa":250}
+      "u":np.round(u[::step,::step],2).tolist(),"v":np.round(v[::step,::step],2).tolist(),"units":"m/s","level_hpa":250} if level==250 else {"lat":np.round(lat[::step],3).tolist(),"lon":np.round(lon[::step],3).tolist(),"u":np.round(u[::step,::step],2).tolist(),"v":np.round(v[::step,::step],2).tolist(),"units":"m/s","height_m":10}
 
 def pressure_centers(lat,lon,z):
     # Avoid duplicate pressure centers by comparing in a broad local neighborhood.
@@ -173,6 +173,16 @@ def build():
                     thermal_lines=thermal_isobars(lat,lon,msl,low['temp'][2])
                 except Exception as e:
                     print("Frontal diagnostic unavailable, preserving other fields:",e)
+                surface=None
+                try:
+                    a10=open_grib(pieces[0],"u",10);b10=open_grib(pieces[1],"u",10)
+                    c10=open_grib(pieces[0],"v",10);d10=open_grib(pieces[1],"v",10)
+                    la10,lo10,u10=combine(a10,b10)
+                    lv10,lov10,v10=combine(c10,d10)
+                    if not (np.array_equal(la10,lv10) and np.array_equal(lo10,lov10) and np.isfinite(u10).all() and np.isfinite(v10).all()):raise ValueError("10m grid invalid")
+                    surface=wind_vectors(la10,lo10,u10,v10,step=7,level=10)
+                except Exception as e:
+                    print("10m wind unavailable:",e)
                 frames.append({
                   "source":"NOAA/NCEP GFS 0.25° (model forecast)",
                   "run_utc":initial.strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -182,6 +192,7 @@ def build():
                   "pressure":pressure_centers(lat,lon,msl),
                   "jet":contours(lat,lon,wind,[100,140,180,220,260],"jet_speed_kmh"),
                   "wind_vectors":wind_vectors(lat,lon,u,v),
+                  "surface_wind_vectors":surface,
                   "fronts":EMPTY,
                   "fronts_status":"not_validated",
                   "frontal_candidates":candidates
