@@ -76,6 +76,32 @@ select{max-width:100%;padding:11px;border-radius:10px;border:1px solid #40dfff;b
 @media(max-width:650px){.naira-person{height:65%;width:94%;left:3%;bottom:0;object-position:center bottom}.naira-bubble{left:5%;right:5%;top:8%;font-size:clamp(16px,4.5vw,22px);padding:16px}.naira-label{left:5%;bottom:2%;font-size:14px;padding:6px 12px}}
 @media(max-width:420px){.holo{padding:12px}.day{font-size:15px}.temp{font-size:18px}.close{width:37px;height:37px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}.overlay.open .holo-content{opacity:1;transform:none}.energy-shell{display:none}}
+
+/* Compact mobile forecast window, only inside Enterprise iframe. */
+html.embedded-mobile .overlay{place-items:stretch;overflow:hidden}
+html.embedded-mobile .holo{width:100%;height:100dvh;max-height:100dvh;border-radius:10px;
+ padding:10px;overflow-y:auto;overscroll-behavior:contain}
+html.embedded-mobile .top{gap:7px;padding-bottom:7px}
+html.embedded-mobile .emblem{width:30px;height:30px;font-size:18px}
+html.embedded-mobile .heading h1{font-size:20px;letter-spacing:1px}
+html.embedded-mobile .heading small{font-size:8px;letter-spacing:.6px}
+html.embedded-mobile .heading p{font-size:10px;letter-spacing:1px}
+html.embedded-mobile .close{width:35px;height:35px;font-size:21px}
+html.embedded-mobile .controls{margin:10px 0;gap:5px}
+html.embedded-mobile .controls label{font-size:12px}
+html.embedded-mobile select{padding:7px;font-size:13px}
+html.embedded-mobile .coord,html.embedded-mobile .status{font-size:10px}
+html.embedded-mobile .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+html.embedded-mobile .card{padding:7px 4px;border-radius:10px}
+html.embedded-mobile .day{font-size:14px}
+html.embedded-mobile .date{font-size:11px}
+html.embedded-mobile .weather{height:75px}
+html.embedded-mobile .weather svg{height:68px;width:90px}
+html.embedded-mobile .desc{min-height:28px;font-size:11px}
+html.embedded-mobile .temp{font-size:16px;margin:5px 0}
+html.embedded-mobile .rainfall{font-size:11px}
+html.embedded-mobile .projection{height:20px;margin-top:5px}
+html.embedded-mobile .credits{font-size:9px}
 </style>
 </head>
 <body>
@@ -115,6 +141,7 @@ select{max-width:100%;padding:11px;border-radius:10px;border:1px solid #40dfff;b
 <script>
 'use strict';
 const overlay=document.getElementById('overlay'),cards=document.getElementById('cards'),statusEl=document.getElementById('status'),city=document.getElementById('city'),coord=document.getElementById('coord');
+if(new URLSearchParams(location.search).has('embed') && matchMedia('(max-width:700px)').matches)document.documentElement.classList.add('embedded-mobile');
 const embedded=new URLSearchParams(location.search).has('embed'),cache=new Map();
 let controller=null,requestId=0,revealTimer=null,energyStop=()=>{},soundContext=null,nairaShowTimer=null,nairaBeamTimer=null,nairaHideTimer=null,nairaFrame=0;
 function startEnergy(){
