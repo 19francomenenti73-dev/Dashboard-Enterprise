@@ -38,21 +38,33 @@ jobs:
           python backend/test_ni_front_candidates.py
       - name: Retrieve and analyze NOAA GFS
         run: python backend/ni_gfs.py
-      - name: Commit updated data to current branch
+      - name: Publish generated data without rebase conflicts
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/sinottica.json
-          if ! git diff --cached --quiet; then
-            git commit -m "data(sinottica): refresh NOAA GFS"
-            for attempt in 1 2 3; do
-              git fetch origin "$GITHUB_REF_NAME"
-              git rebase "origin/$GITHUB_REF_NAME"
-              if git push origin "HEAD:$GITHUB_REF_NAME"; then
-                exit 0
-              fi
-              sleep $((attempt * 3))
-            done
-            echo "Unable to push updated data after three retries" >&2
-            exit 1
-          fi
+          set -euo pipefail
+          cp data/sinottica.json /tmp/ni-sinottica-generated.json
+          python - <<'PY'
+          import base64, json, os, pathlib, time, urllib.request, urllib.error
+          repo=os.environ["GITHUB_REPOSITORY"]
+          branch=os.environ["GITHUB_REF_NAME"]
+          token=os.environ["GH_TOKEN"]
+          url=f"https://api.github.com/repos/{repo}/contents/data/sinottica.json"
+          content=base64.b64encode(pathlib.Path("/tmp/ni-sinottica-generated.json").read_bytes()).decode()
+          headers={"Authorization":f"Bearer {token}","Accept":"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28","User-Agent":"NowcastingItalia-Sinottica"}
+          for attempt in range(5):
+              request=urllib.request.Request(url+"?ref="+branch,headers=headers)
+              with urllib.request.urlopen(request,timeout=45) as response:
+                  current=json.load(response)
+              body=json.dumps({"message":"data(sinottica): refresh NOAA GFS","content":content,"sha":current["sha"],"branch":branch}).encode()
+              req=urllib.request.Request(url,data=body,headers={**headers,"Content-Type":"application/json"},method="PUT")
+              try:
+                  with urllib.request.urlopen(req,timeout=90) as response:
+                      result=json.load(response)
+                  print("Published GFS data:",result["commit"]["sha"])
+                  break
+              except urllib.error.HTTPError as exc:
+                  if exc.code not in (409,422) or attempt==4:raise
+                  print("Concurrent data update; retrying",attempt+1)
+                  time.sleep(2*(attempt+1))
+          PY
