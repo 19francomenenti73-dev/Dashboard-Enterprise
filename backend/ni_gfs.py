@@ -175,8 +175,8 @@ def build():
                     print("Frontal diagnostic unavailable, preserving other fields:",e)
                 surface=None
                 try:
-                    a10=open_grib(pieces[0],"u",10);b10=open_grib(pieces[1],"u",10)
-                    c10=open_grib(pieces[0],"v",10);d10=open_grib(pieces[1],"v",10)
+                    a10=open_grib(pieces[0],"10u",10);b10=open_grib(pieces[1],"10u",10)
+                    c10=open_grib(pieces[0],"10v",10);d10=open_grib(pieces[1],"10v",10)
                     la10,lo10,u10=combine(a10,b10)
                     lv10,lov10,v10=combine(c10,d10)
                     if not (np.array_equal(la10,lv10) and np.array_equal(lo10,lov10) and np.isfinite(u10).all() and np.isfinite(v10).all()):raise ValueError("10m grid invalid")
