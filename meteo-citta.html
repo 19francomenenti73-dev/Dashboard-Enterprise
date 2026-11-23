@@ -60,6 +60,7 @@ select{max-width:100%;padding:11px;border-radius:10px;border:1px solid #40dfff;b
 .naira-person{position:absolute;left:3%;bottom:0;height:85%;width:58%;object-fit:contain;object-position:left bottom;filter:drop-shadow(0 0 20px #00cfff)}
 .naira-bubble{position:absolute;left:49%;right:4%;top:26%;padding:clamp(12px,2.5vw,28px);border:2px solid #62eeff;border-radius:24px;background:#03132cf2;color:#efffff;box-shadow:0 0 25px #00cfffaa,inset 0 0 15px #007bff66;font-size:clamp(16px,2.4vw,28px);font-weight:750;line-height:1.4}
 .naira-bubble strong{color:#63eaff}
+.naira-listen{display:block;margin-top:12px;padding:10px 15px;border:1px solid #62eeff;border-radius:10px;background:#064267;color:#fff;font:inherit;font-size:clamp(14px,2vw,18px);cursor:pointer}
 .naira-label{position:absolute;bottom:4%;left:5%;background:#03142bed;border:1px solid #49dfff;border-radius:10px;padding:8px 20px;font-size:clamp(14px,2vw,22px);font-weight:900;letter-spacing:2px;color:#b5faff}
 .naira-particles{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .naira-layer.arriving .naira-person{animation:nairaArrival 1.25s ease-out both}
@@ -134,7 +135,7 @@ html.embedded-mobile .credits{font-size:9px}
 </div></section></div>
 <div class="naira-layer" id="nairaLayer" aria-live="polite">
 <img class="naira-person" src="naira.png" alt="Naira, addetta ai sensori della Dashboard">
-<div class="naira-bubble">Benvenuti in Meteo Città, sono <strong>Naira</strong>. Qui trovate le informazioni per alcune città italiane. Potete scegliere quelle disponibili dal campo di ricerca in alto.</div>
+<div class="naira-bubble">Benvenuti in Meteo Città, sono <strong>Naira</strong>. Qui trovate le informazioni per alcune città italiane. Potete scegliere quelle disponibili dal campo di ricerca in alto.<button class="naira-listen" type="button">▶ ASCOLTA NAIRA</button></div>
 <div class="naira-label">NAIRA · SENSORI</div>
 <canvas class="naira-particles" id="nairaParticles" aria-hidden="true"></canvas>
 </div>
@@ -229,7 +230,26 @@ async function loadForecast(){
  }catch(e){if(e.name==='AbortError'||id!==requestId)return;statusEl.textContent='Dati non disponibili. Riprova più tardi.';console.error('Meteo Città:',e);}
 }
 const nairaLayer=document.getElementById('nairaLayer'),nairaCanvas=document.getElementById('nairaParticles');
+const nairaVoice=new Audio('naira-voice.mp3');
+nairaVoice.preload='none';
+const nairaListen=nairaLayer.querySelector('.naira-listen');
+nairaListen.addEventListener('click',()=>{
+ if(!nairaLayer.classList.contains('visible'))return;
+ nairaListen.disabled=true;
+ nairaListen.textContent='▶ RIPRODUZIONE';
+ clearTimeout(nairaBeamTimer);
+ nairaVoice.currentTime=0;
+ nairaVoice.play().then(()=>{
+  nairaBeamTimer=setTimeout(teleportNaira,14000);
+ }).catch(()=>{
+  nairaListen.disabled=false;
+  nairaListen.textContent='▶ ASCOLTA NAIRA';
+  nairaBeamTimer=setTimeout(teleportNaira,14000);
+ });
+});
 function clearNaira(){
+ nairaVoice.pause();nairaVoice.currentTime=0;
+ nairaListen.disabled=false;nairaListen.textContent='▶ ASCOLTA NAIRA';
  clearTimeout(nairaShowTimer);clearTimeout(nairaBeamTimer);clearTimeout(nairaHideTimer);cancelAnimationFrame(nairaFrame);
  nairaLayer.classList.remove('visible','beaming','arriving');
  const ctx=nairaCanvas.getContext('2d');ctx.clearRect(0,0,nairaCanvas.width,nairaCanvas.height);
@@ -280,6 +300,7 @@ function teleportParticles(entering){
 }
 function teleportNaira(){
  if(!nairaLayer.classList.contains('visible'))return;
+ nairaVoice.pause();
  nairaLayer.classList.remove('arriving');nairaLayer.classList.add('beaming');
  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
  if(!reduced){teleportParticles(false);teleportSound(false);}
@@ -294,7 +315,7 @@ function showNaira(){
  if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
  teleportParticles(true);teleportSound(true);
  }
- nairaBeamTimer=setTimeout(teleportNaira,10000);
+ // Attende il tocco su ASCOLTA NAIRA; nessun autoplay bloccato dal browser.
 }
 function openOlo(){
  clearTimeout(revealTimer);clearNaira();energyStop();
