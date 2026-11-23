@@ -515,6 +515,7 @@ function showKovalenWelcome(){
 }
 function switchTracker(url,btnElement){
  if(new URL(url,window.location.href).pathname.endsWith('/sinottica.html'))showKovalenWelcome();else closeKovalenWelcome();
+ if(new URL(url,window.location.href).pathname.includes('/S.I.B.I.L.L.A./'))window.showSarekWelcome?.();else window.closeSarekWelcome?.();
  loadTracker(url);
  document.querySelectorAll('.tactical-btn').forEach(
   b=>b.classList.remove('active')
@@ -932,6 +933,7 @@ document.addEventListener('keydown',event=>{
  if(event.key==='Escape')closeMeteoOlo();
 });
 </script>
+<script src="sarek-intro.js" defer></script>
 <script src="arden-intro.js" defer></script>
 </body>
 </html>
