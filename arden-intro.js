@@ -31,7 +31,7 @@ const voice=new Audio('arden-voice.mp3');
 voice.preload='none';
 voice.volume=0.9;
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-function finish(){if(closing)return;closing=true;clearTimeout(timer);cancelAnimationFrame(frame);voice.pause();voice.removeAttribute('src');cancelAnimationFrame(frame);el.remove();}
+function finish(){if(closing)return;closing=true;clearTimeout(timer);cancelAnimationFrame(frame);voice.pause();voice.removeAttribute('src');el.remove();}
 el.querySelector('button').addEventListener('click',finish);
 portrait.addEventListener('error',()=>{typed.textContent=MESSAGE;cursor.remove();});
 function particles(entering){
