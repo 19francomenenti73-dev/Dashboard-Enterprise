@@ -29,7 +29,8 @@ window.showSarekWelcome=function(){
  const voice=new Audio('sarek-voice.mp3');voice.preload='none';
  const typed=el.querySelector('.sarekTyped'),listen=el.querySelector('.sarekListen');
  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
- let timer=0,frame=0,closed=false,started=false;
+ let timer=0,frame=0,closed=false,started=false,typingDone=false,audioDone=false,departing=false;
+ function maybeDepart(){if(typingDone&&audioDone&&!departing&&!closed){departing=true;timer=setTimeout(depart,850);}}
  function close(){if(closed)return;closed=true;clearTimeout(timer);cancelAnimationFrame(frame);voice.pause();voice.removeAttribute('src');el.remove();if(closeActive===close)closeActive=()=>{};}
  closeActive=close;
  el.querySelector('.sarekSkip').addEventListener('click',close);
@@ -56,12 +57,14 @@ window.showSarekWelcome=function(){
   if(closed)return;
   if(i<MESSAGE.length){typed.textContent=MESSAGE.slice(0,i+1);timer=setTimeout(()=>type(i+1),55);return;}
   el.querySelector('.sarekCursor').style.visibility='hidden';
-  timer=setTimeout(depart,1800);
+  typingDone=true;maybeDepart();
  }
  listen.addEventListener('click',()=>{
   if(started||closed)return;
   started=true;listen.remove();
-  voice.play().catch(()=>{});
+  voice.addEventListener('ended',()=>{audioDone=true;maybeDepart();},{once:true});
+  voice.addEventListener('error',()=>{audioDone=true;maybeDepart();},{once:true});
+  voice.play().catch(()=>{audioDone=true;maybeDepart();});
   type();
  });
  el.querySelector('.sarekPortrait').addEventListener('error',()=>{el.querySelector('.sarekPortrait').style.display='none';});
