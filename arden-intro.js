@@ -9,6 +9,7 @@ style.textContent=`
 #ardenIntro .ardenBeam{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none}
 #ardenIntro .ardenBubble{position:relative;z-index:3;width:min(92vw,540px);min-height:116px;margin:0 auto max(5dvh,18px);padding:16px 18px 19px;border:2px solid #60e9ff;border-radius:20px;background:rgba(1,13,32,.95);box-shadow:0 0 24px #00cfffaa;color:#f1ffff;font-size:clamp(15px,3.8vw,20px);line-height:1.45;font-weight:650}
 #ardenIntro .ardenCursor{display:inline-block;color:#61efff;animation:ardenBlink .6s steps(1) infinite}
+#ardenIntro .ardenListen{position:absolute;left:12px;top:max(12px,env(safe-area-inset-top));z-index:5;padding:10px 14px;background:#075177;color:#fff;border:1px solid #66eaff;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer}
 #ardenIntro .ardenSkip{position:absolute;right:12px;top:max(12px,env(safe-area-inset-top));z-index:5;padding:10px 14px;background:#062447;color:#fff;border:1px solid #66eaff;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer}
 #ardenIntro .ardenPortrait{animation:ardenArrive 1.25s ease-out both}
 #ardenIntro.departing .ardenPortrait{animation:ardenLeave 1.25s ease-in forwards}
@@ -22,7 +23,7 @@ style.textContent=`
 document.head.appendChild(style);
 const el=document.createElement('section');
 el.id='ardenIntro';el.setAttribute('role','dialog');el.setAttribute('aria-label','Benvenuto del capitano Arden');
-el.innerHTML='<img class="ardenPortrait" src="arden.png" alt="Capitano Arden, Nowcasting Italia"><canvas class="ardenBeam" aria-hidden="true"></canvas><button class="ardenSkip" type="button">SALTA INTRO ▶</button><div class="ardenBubble" aria-live="polite"><span class="ardenTyped"></span><span class="ardenCursor" aria-hidden="true">▌</span></div>';
+el.innerHTML='<img class="ardenPortrait" src="arden.png" alt="Capitano Arden, Nowcasting Italia"><canvas class="ardenBeam" aria-hidden="true"></canvas><button class="ardenListen" type="button">▶ ASCOLTA ARDEN</button><button class="ardenSkip" type="button">SALTA INTRO ▶</button><div class="ardenBubble" aria-live="polite"><span class="ardenTyped"></span><span class="ardenCursor" aria-hidden="true">▌</span></div>';
 document.body.appendChild(el);
 const portrait=el.querySelector('img'),canvas=el.querySelector('canvas'),typed=el.querySelector('.ardenTyped'),cursor=el.querySelector('.ardenCursor');
 let frame=0,timer=0,closing=false;
@@ -32,7 +33,7 @@ voice.preload='none';
 voice.volume=0.9;
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 function finish(){if(closing)return;closing=true;clearTimeout(timer);cancelAnimationFrame(frame);voice.pause();voice.removeAttribute('src');el.remove();}
-el.querySelector('button').addEventListener('click',finish);
+el.querySelector('.ardenSkip').addEventListener('click',finish);
 portrait.addEventListener('error',()=>{typed.textContent=MESSAGE;cursor.remove();});
 function particles(entering){
  if(reduced)return;
@@ -66,10 +67,15 @@ function type(){
   timer=setTimeout(finish,reduced?100:1350);
  },1800);
 }
-timer=setTimeout(()=>{
- // I browser possono impedire l'autoplay: il rifiuto non blocca Arden.
+const listen=el.querySelector('.ardenListen');
+let started=false;
+listen.addEventListener('click',()=>{
+ if(started||closing)return;
+ started=true;
+ listen.remove();
+ // Avvio in risposta al tocco: compatibile con le restrizioni audio mobili.
  voice.play().catch(()=>{});
  type();
-},reduced?100:1500);
+});
 window.addEventListener('pagehide',finish,{once:true});
 })();
