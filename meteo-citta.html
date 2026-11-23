@@ -55,8 +55,9 @@ select{max-width:100%;padding:11px;border-radius:10px;border:1px solid #40dfff;b
 @keyframes rain{50%{transform:translateY(8px);opacity:.35}}
 @keyframes flash{0%,43%,49%,100%{opacity:1}45%,47%{opacity:.1}}
 /* Naira: presentazione fullscreen, teletrasporto in entrata e uscita */
-.naira-layer{position:fixed;inset:0;z-index:60;width:100vw;height:100dvh;overflow:hidden;pointer-events:none;opacity:0;visibility:hidden;background:radial-gradient(ellipse at 35% 50%,#06315aee,#010916f5 75%)}
+.naira-layer{position:fixed;inset:0;z-index:60;width:100vw;height:100dvh;overflow:hidden;pointer-events:auto;opacity:0;visibility:hidden;background:radial-gradient(ellipse at 35% 50%,#06315aee,#010916f5 75%)}
 .naira-layer.visible{opacity:1;visibility:visible}
+.naira-layer.visible .naira-listen{pointer-events:auto;position:relative;z-index:2}
 .naira-person{position:absolute;left:3%;bottom:0;height:85%;width:58%;object-fit:contain;object-position:left bottom;filter:drop-shadow(0 0 20px #00cfff)}
 .naira-bubble{position:absolute;left:49%;right:4%;top:26%;padding:clamp(12px,2.5vw,28px);border:2px solid #62eeff;border-radius:24px;background:#03132cf2;color:#efffff;box-shadow:0 0 25px #00cfffaa,inset 0 0 15px #007bff66;font-size:clamp(16px,2.4vw,28px);font-weight:750;line-height:1.4}
 .naira-bubble strong{color:#63eaff}
@@ -315,7 +316,8 @@ function showNaira(){
  if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
  teleportParticles(true);teleportSound(true);
  }
- // Attende il tocco su ASCOLTA NAIRA; nessun autoplay bloccato dal browser.
+ // Se non si ascolta il messaggio, la presentazione si chiude comunque.
+ nairaBeamTimer=setTimeout(teleportNaira,22000);
 }
 function openOlo(){
  clearTimeout(revealTimer);clearNaira();energyStop();
