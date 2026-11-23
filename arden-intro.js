@@ -26,8 +26,12 @@ el.innerHTML='<img class="ardenPortrait" src="arden.png" alt="Capitano Arden, No
 document.body.appendChild(el);
 const portrait=el.querySelector('img'),canvas=el.querySelector('canvas'),typed=el.querySelector('.ardenTyped'),cursor=el.querySelector('.ardenCursor');
 let frame=0,timer=0,closing=false;
+// Audio opzionale: l'introduzione resta utilizzabile anche se il file non è presente.
+const voice=new Audio('arden-voice.mp3');
+voice.preload='none';
+voice.volume=0.9;
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-function finish(){if(closing)return;closing=true;clearTimeout(timer);cancelAnimationFrame(frame);el.remove();}
+function finish(){if(closing)return;closing=true;clearTimeout(timer);cancelAnimationFrame(frame);voice.pause();voice.removeAttribute('src');cancelAnimationFrame(frame);el.remove();}
 el.querySelector('button').addEventListener('click',finish);
 portrait.addEventListener('error',()=>{typed.textContent=MESSAGE;cursor.remove();});
 function particles(entering){
@@ -54,7 +58,7 @@ particles(true);
 let index=0;
 function type(){
  if(closing)return;
- if(index<MESSAGE.length){typed.textContent=MESSAGE.slice(0,++index);timer=setTimeout(type,40);return;}
+ if(index<MESSAGE.length){typed.textContent=MESSAGE.slice(0,++index);timer=setTimeout(type,65);return;}
  cursor.style.visibility='hidden';
  timer=setTimeout(()=>{
   if(closing)return;
@@ -62,6 +66,10 @@ function type(){
   timer=setTimeout(finish,reduced?100:1350);
  },1800);
 }
-timer=setTimeout(type,reduced?100:1500);
+timer=setTimeout(()=>{
+ // I browser possono impedire l'autoplay: il rifiuto non blocca Arden.
+ voice.play().catch(()=>{});
+ type();
+},reduced?100:1500);
 window.addEventListener('pagehide',finish,{once:true});
 })();
