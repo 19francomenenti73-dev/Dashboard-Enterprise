@@ -1,7 +1,7 @@
 /* Arden — introduzione indipendente. Nessuna modifica alla porta Enterprise. */
 (()=>{
 'use strict';
-const MESSAGE='Benvenuto a bordo di Nowcasting Italia. Sono Arden, comandante della plancia. Da questo momento il comando passa a te. L’equipaggio è ai tuoi ordini. Tutti i sistemi sono operativi. Per entrare, tocca il lettore. Sei autorizzato, comandante. Arden, passo e chiudo.';
+const MESSAGE="Benvenuti nella Dashboard del sito Nowcasting Italia. Sono Arden. Vi cedo il comando. Siete autorizzati. Il mio equipaggio vi fornirà le informazioni sul funzionamento degli strumenti.";
 const style=document.createElement('style');
 style.textContent=`
 #ardenIntro{position:fixed;inset:0;z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;overflow:hidden;background:radial-gradient(ellipse at 50% 45%,#0b3663,#020a1b 80%);color:#eaffff;font-family:system-ui,Arial,sans-serif;isolation:isolate}
