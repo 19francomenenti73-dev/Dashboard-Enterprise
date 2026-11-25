@@ -23,7 +23,7 @@ BASE = "https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_0p25.pl"
 # longitude -35..55 => 325..360 and 0..55; download 0..360 would be huge.
 # Fetch two independent subsets, then merge by longitude.
 PARTS = [(325,359.75),(0,55)]
-LEVELS = [0,3,6,9,12,15,18,21,24]
+LEVELS = list(range(0, 61, 3))
 EMPTY = {"type":"FeatureCollection","features":[]}
 
 def fetch_piece(cycle, hour, west, east):
@@ -190,6 +190,7 @@ def build():
                   "forecast_hour":h,
                   "isobars":thermal_lines if thermal_lines is not None else contours(lat,lon,msl,np.arange(960,1053,4),"isobar"),
                   "pressure":pressure_centers(lat,lon,msl),
+                  "pressure_grid":{"lat":np.round(lat[::4],3).tolist(),"lon":np.round(lon[::4],3).tolist(),"values":np.round(msl[::4,::4],2).tolist(),"units":"hPa","level":"mean_sea_level"},
                   "jet":contours(lat,lon,wind,[100,140,180,220,260],"jet_speed_kmh"),
                   "wind_vectors":wind_vectors(lat,lon,u,v),
                   "surface_wind_vectors":surface,
