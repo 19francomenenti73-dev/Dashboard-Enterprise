@@ -1,19 +1,19 @@
 {
-  "checked_utc": "2026-11-27T23:41:31.949940+00:00",
+  "checked_utc": "2026-11-28T07:35:21.496133+00:00",
   "source": "https://view.eumetsat.int/geoserver/wms",
   "products": {
     "rgb": {
       "layer": "mtg_fd:rgb_geocolour",
       "state": "green",
-      "latest_utc": "2026-11-27T23:20:00+00:00",
-      "age_minutes": 22,
+      "latest_utc": "2026-11-28T07:10:00+00:00",
+      "age_minutes": 25,
       "reason": "Latest advertised imagery within 60 min"
     },
     "water_vapour": {
       "layer": "msg_fes:rgb_airmass",
       "state": "green",
-      "latest_utc": "2026-11-27T23:15:00+00:00",
-      "age_minutes": 27,
+      "latest_utc": "2026-11-28T07:00:00+00:00",
+      "age_minutes": 35,
       "reason": "Latest advertised imagery within 60 min"
     }
   }
